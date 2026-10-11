@@ -3,6 +3,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@600&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
 <style>
 /* Layout: рабочий стол агента — шапка с вкладками и входом, один рабочий вид под ней, сделка выезжает справа */
 :root {
@@ -128,6 +129,32 @@ textarea { resize: vertical; }
 .invoice { border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: grid; gap: 12px; background: var(--bg); }
 .invoice .total { display: flex; justify-content: space-between; font-weight: 700; border-top: 1px solid var(--line); padding-top: 10px; font-variant-numeric: tabular-nums; }
 
+#map { height: 460px; border-radius: var(--r); border: 1px solid var(--line); background: var(--sunken); z-index: 0; }
+#map.map-empty { display: grid; place-items: center; color: var(--muted); padding: 16px; text-align: center; }
+.pin span { display: inline-block; transform: translate(-50%, -100%); white-space: nowrap; font: 600 12px/1 var(--f-body); padding: 6px 8px; border-radius: 8px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); box-shadow: 0 2px 6px rgb(0 0 0 / .2); cursor: pointer; }
+.pin.new span { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.pin.off span { opacity: .55; }
+dialog.drawer.wide { width: min(660px, 100%); }
+.chess { display: grid; gap: 4px; overflow-x: auto; }
+.chess .fl { font-size: 12px; color: var(--muted); display: grid; place-items: center; font-variant-numeric: tabular-nums; }
+.unit { font: 600 11px/1.25 var(--f-body); padding: 5px 2px; border-radius: 6px; border: 2px solid transparent; cursor: pointer; text-align: center; font-variant-numeric: tabular-nums; color: var(--ink); }
+.unit small { display: block; font-weight: 500; color: var(--muted); }
+.unit.free { background: color-mix(in srgb, var(--ok) 18%, var(--surface)); }
+.unit.booked { background: color-mix(in srgb, var(--warn) 20%, var(--surface)); }
+.unit.sold { background: var(--sunken); color: var(--muted); }
+.unit.dim { opacity: .25; }
+.unit[aria-pressed="true"] { border-color: var(--ink); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); align-items: center; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
+.btn.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.plan { width: 100%; max-width: 440px; height: auto; }
+.plan .room { fill: var(--surface); stroke: var(--ink); stroke-width: 2; }
+.plan .wet { fill: var(--sunken); stroke: var(--ink); stroke-width: 2; }
+.plan .outer { fill: none; stroke: var(--ink); stroke-width: 5; }
+.plan text { fill: var(--ink); font: 500 12px var(--f-body); text-anchor: middle; }
+.plan .sub { fill: var(--muted); font-size: 11px; }
+.doc { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; }
+
 footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
 
 @media (max-width: 640px) {
@@ -157,9 +184,10 @@ footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: f
 <dialog id="drawer" class="drawer" aria-label="Сделка"></dialog>
 <dialog id="modal" class="modal"></dialog>
 
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="parse.js"></script>
 <script>
-const K = 'realtika-demo-v2';
+const K = 'realtika-demo-v3';
 const ROLES = { agent: 'Агент', head: 'Руководитель отдела продаж', director: 'Директор' };
 const TABS = [['tasks', 'Задачи'], ['deals', 'Сделки'], ['objects', 'Объекты'], ['bookings', 'Брони'], ['commissions', 'Комиссии'], ['team', 'Команда']];
 const PAYMENTS = ['', 'ипотека', 'наличные', 'рассрочка'];
@@ -194,9 +222,35 @@ const FIELDS = [
 ];
 const DEFAULTS = { budget: 0, rooms: null, district: '', type: 'любая', payment: '', downPayment: 0, mortgageApproved: false, alternative: false, source: '' };
 
+// Новостройки: дом с шахматкой квартир. Цены и статусы сгенерированы детерминированно для демо
+const COMPLEXES = [
+  { id: 'c1', name: 'ЖК «Северная гавань»', district: 'Приморский', developer: 'СЗ «Демо-Строй»', deadline: 'IV кв. 2027', lat: 60.003, lng: 30.212, floors: 12, layout: [0, 1, 1, 2, 2, 3], m2: 205000 },
+  { id: 'c2', name: 'ЖК «Пулковские высоты»', district: 'Московский', developer: 'СЗ «Демо-Строй»', deadline: 'II кв. 2027', lat: 59.836, lng: 30.322, floors: 14, layout: [1, 1, 2, 2, 3, 3], m2: 198000 },
+  { id: 'c3', name: 'ЖК «Невская волна»', district: 'Невский', developer: 'СЗ «Пример-Девелопмент»', deadline: 'дом сдан', lat: 59.884, lng: 30.468, floors: 10, layout: [0, 0, 1, 1, 2, 2], m2: 220000 },
+  { id: 'c4', name: 'ЖК «Охта-парк»', district: 'Красногвардейский', developer: 'СЗ «Пример-Девелопмент»', deadline: 'III кв. 2028', lat: 59.957, lng: 30.443, floors: 9, layout: [0, 1, 1, 2, 2, 3], m2: 190000 },
+];
+const AREA = { 0: 25, 1: 37, 2: 58, 3: 80 };
+function genUnits(c) {
+  const out = [];
+  for (let fl = 2; fl <= c.floors; fl++) c.layout.forEach((rooms, i) => {
+    const number = (fl - 2) * c.layout.length + i + 1, area = AREA[rooms] + (i % 2) * 2;
+    const h = (number * 37 + fl * 11 + c.id.charCodeAt(1)) % 10;
+    out.push({ id: `${c.id}-${number}`, complexId: c.id, number, floor: fl, rooms, area, type: 'новостройка', district: c.district, address: c.name, lat: c.lat, lng: c.lng,
+      price: Math.round(area * c.m2 * (1 + fl * 0.006) / 1e4) * 1e4, status: h < 3 ? 'продана' : h === 3 ? 'бронь' : 'свободна' });
+  });
+  return out;
+}
+const COMPLEX_DOCS = ['Разрешение на строительство', 'Проектная декларация', 'Договор ДДУ (шаблон)', 'Аккредитованные банки', 'Планировки и отделка'];
+const SECONDARY_DOCS = [['Выписка из ЕГРН', true], ['Технический план', true], ['Справка о зарегистрированных', false], ['Согласие супруга на продажу', false]];
+const UNIT_STATUS = { 'свободна': 'free', 'бронь': 'booked', 'продана': 'sold' };
+
 function seed() {
   const D = (id, agentId, stageId, name, phone, last, f) => ({ id, agentId, stageId, name, phone, lastContact: iso(last), notes: [], ...DEFAULTS, ...f });
-  const O = (id, rooms, type, district, address, area, price) => ({ id, rooms, type, district, address, area, price });
+  const O = (id, rooms, district, address, area, price, floor, lat, lng, status = 'свободна') => ({ id, rooms, type: 'вторичка', district, address, area, price, floor, lat, lng, status });
+  const units = COMPLEXES.flatMap(genUnits);
+  // квартиры под брони из демо-сделок: свободная на 5-м этаже и выше
+  const pick = (cid, rooms, status) => { const u = units.find(x => x.complexId === cid && x.rooms === rooms && x.status === 'свободна' && x.floor >= 5); u.status = status; return u; };
+  const u5 = pick('c2', 2, 'бронь'), u12 = pick('c1', 2, 'бронь'), u11 = pick('c2', 3, 'продана');
   const deals = [
     D('d1', 'u3', 's5', 'Анна Смирнова', '+7 900 000-00-01', -6, { budget: 12.5e6, rooms: 2, district: 'Приморский', type: 'вторичка', payment: 'ипотека', downPayment: 2.5e6, mortgageApproved: true, source: 'Авито' }),
     D('d2', 'u3', 's1', 'Игорь Ковалёв', '+7 900 000-00-02', -1, { budget: 8e6, rooms: 1, district: 'Московский', type: 'новостройка', payment: 'ипотека', source: 'Циан' }),
@@ -224,32 +278,27 @@ function seed() {
     ],
     stages: ['Лид', 'Связались', 'Встреча назначена', 'Встреча прошла', 'Показ', 'Бронь', 'Сделка закрыта'].map((name, i) => ({ id: 's' + (i + 1), name })),
     deals,
+    complexes: COMPLEXES,
     objects: [
-      O('o1', 2, 'вторичка', 'Приморский', 'Комендантский пр.', 58, 12.2e6),
-      O('o2', 2, 'новостройка', 'Приморский', 'ЖК «Северная гавань»', 61, 13.4e6),
-      O('o3', 1, 'новостройка', 'Московский', 'ЖК «Пулковские высоты»', 38, 7.9e6),
-      O('o4', 3, 'вторичка', 'Петроградский', 'ул. Ленина', 86, 17.5e6),
-      O('o5', 0, 'новостройка', 'Невский', 'ЖК «Невская волна»', 26, 6.3e6),
-      O('o6', 2, 'новостройка', 'Московский', 'ЖК «Пулковские высоты»', 59, 13.8e6),
-      O('o7', 1, 'вторичка', 'Выборгский', 'пр. Энгельса', 36, 9.6e6),
-      O('o8', 2, 'вторичка', 'Калининский', 'Гражданский пр.', 52, 10.7e6),
-      O('o9', 1, 'новостройка', 'Красногвардейский', 'ЖК «Охта-парк»', 35, 7.1e6),
-      O('o10', 2, 'вторичка', 'Выборгский', 'пр. Просвещения', 54, 10.3e6),
-      O('o11', 3, 'новостройка', 'Московский', 'ЖК «Пулковские высоты»', 82, 15.9e6),
-      O('o12', 3, 'вторичка', 'Петроградский', 'Большая Пушкарская ул.', 95, 24.5e6),
-      O('o13', 0, 'новостройка', 'Невский', 'ЖК «Невская волна»', 24, 5.9e6),
-      O('o14', 2, 'вторичка', 'Фрунзенский', 'Бухарестская ул.', 55, 8.9e6),
+      O('o1', 2, 'Приморский', 'Комендантский пр.', 58, 12.2e6, 7, 60.008, 30.258),
+      O('o4', 3, 'Петроградский', 'ул. Ленина', 86, 17.5e6, 4, 59.963, 30.307),
+      O('o7', 1, 'Выборгский', 'пр. Энгельса', 36, 9.6e6, 9, 60.035, 30.330, 'продана'),
+      O('o8', 2, 'Калининский', 'Гражданский пр.', 52, 10.7e6, 5, 60.020, 30.395),
+      O('o10', 2, 'Выборгский', 'пр. Просвещения', 54, 10.3e6, 11, 60.051, 30.360, 'бронь'),
+      O('o12', 3, 'Петроградский', 'Большая Пушкарская ул.', 95, 24.5e6, 3, 59.958, 30.302),
+      O('o14', 2, 'Фрунзенский', 'Бухарестская ул.', 55, 8.9e6, 6, 59.855, 30.390),
+      ...units,
     ],
     bookings: [
-      { id: 'b1', dealId: 'd5', objectId: 'o6', kind: 'Бронь у застройщика', amount: 50000, holder: 'Застройщик', expires: iso(2), closed: false },
+      { id: 'b1', dealId: 'd5', objectId: u5.id, kind: 'Бронь у застройщика', amount: 50000, holder: 'Застройщик', expires: iso(2), closed: false },
       { id: 'b2', dealId: 'd10', objectId: 'o10', kind: 'Аванс', amount: 100000, holder: 'Агентство', expires: iso(6), closed: false },
-      { id: 'b3', dealId: 'd12', objectId: 'o2', kind: 'Бронь у застройщика', amount: 30000, holder: 'Застройщик', expires: iso(-1), closed: false },
+      { id: 'b3', dealId: 'd12', objectId: u12.id, kind: 'Бронь у застройщика', amount: 30000, holder: 'Застройщик', expires: iso(-1), closed: false },
       { id: 'b4', dealId: 'd6', objectId: 'o7', kind: 'Задаток', amount: 150000, holder: 'Собственник', expires: iso(-10), closed: true },
-      { id: 'b5', dealId: 'd11', objectId: 'o11', kind: 'Бронь у застройщика', amount: 50000, holder: 'Застройщик', expires: iso(-14), closed: true },
+      { id: 'b5', dealId: 'd11', objectId: u11.id, kind: 'Бронь у застройщика', amount: 50000, holder: 'Застройщик', expires: iso(-14), closed: true },
     ],
     commissions: [
       { id: 'k1', dealId: 'd6', objectId: 'o7', payer: 'Продавец', amount: 290000, dealDate: iso(-5), status: 'ожидается' },
-      { id: 'k2', dealId: 'd11', objectId: 'o11', payer: 'Застройщик', amount: 477000, dealDate: iso(-12), status: 'счёт выставлен' },
+      { id: 'k2', dealId: 'd11', objectId: u11.id, payer: 'Застройщик', amount: Math.round(u11.price * 0.03 / 1000) * 1000, dealDate: iso(-12), status: 'счёт выставлен' },
     ],
     tasks: [
       { id: 't1', dealId: 'd1', title: 'Отправить подборку на Приморском, не ниже 3-го этажа', due: iso(0), done: false },
@@ -277,14 +326,16 @@ const me = () => user(S.me);
 const can = () => ({ all: me().role !== 'agent', users: me().role === 'director' });
 const lastStageId = () => S.stages[S.stages.length - 1].id;
 const isOpen = d => d.stageId !== lastStageId();
-const objTitle = o => o ? `${roomsLabel(o.rooms)}, ${o.area} м² · ${o.address}` : '—';
+const objTitle = o => o ? `${roomsLabel(o.rooms)}, ${o.area} м² · ${o.address}${o.complexId ? `, кв. ${o.number}` : ''}` : '—';
+const mlnShort = n => (n / 1e6).toLocaleString('ru-RU', { maximumFractionDigits: 1 }) + ' млн';
 const pill = (cls, text) => `<span class="pill ${cls}">${esc(text)}</span>`;
 const dealLink = d => `<button class="btn link" data-act="deal" data-id="${d.id}">${esc(d.name)}</button>`;
 const taskTitle = kind => kind === 'Звонок' ? 'Позвонить клиенту' : kind;
 
 let tab = location.hash.slice(1) || 'tasks';
 let filterAgent = '';
-let ui = { dealId: null, draft: false, editing: false, preview: null, stageErr: '' };
+let ui = { dealId: null, placeId: null, unitId: null, rooms: null, draft: false, editing: false, preview: null, stageErr: '' };
+let map = null, mapView = null;
 
 // Агент видит только свои сделки, руководители — все (с фильтром по сотруднику)
 function scoped() {
@@ -294,7 +345,8 @@ function scoped() {
 const scopedIds = () => new Set(scoped().map(d => d.id));
 
 function fits(d, o) {
-  return (d.type === 'любая' || o.type === d.type)
+  return o.status === 'свободна'
+    && (d.type === 'любая' || o.type === d.type)
     && (d.rooms == null || o.rooms === d.rooms)
     && (!d.budget || o.price <= d.budget * 1.05);
 }
@@ -384,9 +436,18 @@ const views = {
   },
   objects() {
     const open = scoped().filter(isOpen);
-    return `<section class="section"><div class="section-head"><h2>Объекты</h2><span class="muted small">${S.objects.length} в базе агентства</span></div>
-      <div class="tbl"><table><thead><tr><th>Объект</th><th>Тип</th><th>Район</th><th class="num">Площадь</th><th class="num">Цена</th><th class="num">₽ за м²</th><th class="num">Подходит сделкам</th></tr></thead><tbody>
-      ${S.objects.map(o => { const n = open.filter(d => fits(d, o)).length; return `<tr><td>${roomsLabel(o.rooms)}, ${esc(o.address)}</td><td>${o.type}</td><td>${o.district}</td><td class="num">${o.area} м²</td><td class="num">${mln(o.price)}</td><td class="num">${rub(o.price / o.area)}</td><td class="num">${n ? pill('accent', n) : '<span class="muted">—</span>'}</td></tr>`; }).join('')}
+    const fitN = list => open.filter(d => list.some(o => fits(d, o))).length;
+    const rows = [
+      ...S.complexes.map(c => {
+        const us = S.objects.filter(o => o.complexId === c.id), free = us.filter(o => o.status === 'свободна');
+        return { id: c.id, name: c.name, type: 'новостройка', district: c.district, info: `${free.length} из ${us.length} квартир свободно · сдача: ${c.deadline}`, price: free.length ? 'от ' + mln(Math.min(...free.map(o => o.price))) : pill('muted', 'нет свободных'), n: fitN(us) };
+      }),
+      ...S.objects.filter(o => !o.complexId).map(o => ({ id: o.id, name: `${roomsLabel(o.rooms)}, ${o.area} м² · ${o.address}`, type: 'вторичка', district: o.district, info: `${o.floor} этаж · ${rub(o.price / o.area)} за м²`, price: o.status === 'свободна' ? mln(o.price) : pill(UNIT_STATUS[o.status] === 'sold' ? 'muted' : 'warn', o.status), n: fitN([o]) })),
+    ];
+    return `<section class="section"><div class="section-head"><h2>Объекты</h2><span class="muted small">Нажмите на метку или строку: откроются документы, квартиры и планировки</span></div>
+      <div id="map" role="region" aria-label="Карта объектов"></div>
+      <div class="tbl"><table><thead><tr><th>Объект</th><th>Рынок</th><th>Район</th><th>Наличие</th><th class="num">Цена</th><th class="num">Подходит сделкам</th></tr></thead><tbody>
+      ${rows.map(r => `<tr><td><button class="btn link" data-act="place" data-id="${r.id}">${esc(r.name)}</button></td><td>${r.type}</td><td>${r.district}</td><td class="small">${r.info}</td><td class="num">${r.price}</td><td class="num">${r.n ? pill('accent', r.n) : '<span class="muted">—</span>'}</td></tr>`).join('')}
       </tbody></table></div></section>`;
   },
   bookings() {
@@ -445,8 +506,10 @@ function render() {
   const urgent = openTasks().filter(t => days(t.due) <= 0).length;
   $('tabs').innerHTML = TABS.filter(([k]) => k !== 'team' || c.all).map(([k, v]) => `<button class="tab" data-act="tab" data-tab="${k}"${k === tab ? ' aria-current="page"' : ''}>${v}${k === 'tasks' && urgent ? `<b>${urgent}</b>` : ''}</button>`).join('');
   $('me').innerHTML = S.users.map(u => `<option value="${u.id}"${u.id === S.me ? ' selected' : ''}>${esc(u.name)} · ${ROLES[u.role].toLowerCase()}</option>`).join('');
+  if (map) { map.remove(); map = null; }
   $('view').innerHTML = views[tab]();
-  if (ui.dealId && $('drawer').open) renderDeal();
+  if (tab === 'objects') initMap();
+  if ($('drawer').open) ui.placeId ? renderPlace() : ui.dealId && renderDeal();
 }
 
 function renderDeal() {
@@ -491,7 +554,7 @@ function renderDeal() {
     </div>
 
     <div class="block"><h3>Подходящие объекты</h3>
-      ${m.length ? m.map(x => `<div class="match"><strong>${esc(objTitle(x.o))}</strong><span>${mln(x.o.price)} · ${x.o.type}</span><span class="row">${x.why.map(([cls, t]) => pill(cls, t)).join('')}</span></div>`).join('') : '<span class="muted">В базе нет объектов под этот запрос.</span>'}
+      ${m.length ? m.map(x => `<div class="match"><button class="btn link" style="color:var(--ink);font-weight:600" data-act="place" data-id="${x.o.complexId || x.o.id}" data-unit="${x.o.id}">${esc(objTitle(x.o))}</button><span>${mln(x.o.price)} · ${x.o.type}</span><span class="row">${x.why.map(([cls, t]) => pill(cls, t)).join('')}</span></div>`).join('') : '<span class="muted">В базе нет объектов под этот запрос.</span>'}
     </div>
     ${bs.length ? `<div class="block"><h3>Брони</h3>${bs.map(b => { const [cls, t] = bookingState(b); return `<div class="actions">${pill(cls, t)}<span>${b.kind}, ${rub(b.amount)}, до ${fmtDate(b.expires)}</span></div>`; }).join('')}</div>` : ''}
     ${ks.length ? `<div class="block"><h3>Комиссии</h3>${ks.map(k => `<div class="actions">${pill(commState(k.status), k.status)}<span>${rub(k.amount)} от ${k.payer === 'Застройщик' ? 'застройщика' : 'продавца'}</span></div>`).join('')}</div>` : ''}
@@ -528,7 +591,8 @@ function readForm() {
 }
 
 function openDeal(id, draft = false) {
-  if (ui.dealId !== id) { ui = { ...ui, dealId: id, editing: false, preview: null }; if ($('note')) $('note').value = ''; }
+  if (ui.dealId !== id || ui.placeId) { ui = { ...ui, dealId: id, placeId: null, editing: false, preview: null }; if ($('note')) $('note').value = ''; }
+  $('drawer').classList.remove('wide');
   ui.draft = draft;
   renderDeal();
   if (!$('drawer').open) { $('drawer').showModal(); $('drawer').scrollTop = 0; }
@@ -544,6 +608,88 @@ function previewNote(text) {
   const st = r.stage && S.stages.find(s => s.name === r.stage);
   const task = r.next ? { title: taskTitle(r.next.kind), due: iso(r.next.inDays) } : null;
   return { text, changes, fields, stage: st && st.id !== d.stageId ? st : null, task };
+}
+
+function initMap() {
+  const el = $('map');
+  if (!window.L) { el.classList.add('map-empty'); el.textContent = 'Карта не загрузилась. Проверьте интернет и обновите страницу; список объектов ниже работает.'; return; }
+  map = L.map(el, { scrollWheelZoom: false, zoomSnap: 0.25 });
+  if (mapView) map.setView(mapView.c, mapView.z);
+  else map.fitBounds(S.objects.map(o => [o.lat, o.lng]), { padding: [60, 60] });
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(map);
+  const pin = (lat, lng, label, cls, id) => L.marker([lat, lng], { icon: L.divIcon({ className: 'pin ' + cls, html: `<span>${esc(label)}</span>`, iconSize: [0, 0] }), title: label })
+    .on('click', () => openPlace(id)).addTo(map);
+  S.complexes.forEach(c => {
+    const free = S.objects.filter(o => o.complexId === c.id && o.status === 'свободна');
+    pin(c.lat, c.lng, `${c.name.replace('ЖК ', '')} · ${free.length ? 'от ' + mlnShort(Math.min(...free.map(o => o.price))) : 'продано'}`, 'new', c.id);
+  });
+  S.objects.filter(o => !o.complexId).forEach(o => pin(o.lat, o.lng, `${roomsLabel(o.rooms)} · ${o.status === 'свободна' ? mlnShort(o.price) : o.status}`, o.status === 'свободна' ? '' : 'off', o.id));
+  map.on('moveend', () => { mapView = { c: map.getCenter(), z: map.getZoom() }; });
+}
+
+// Схема квартиры по числу комнат и площади. shortcut: схема, не настоящий план; заменить на картинки планировок от застройщика
+function planSvg(rooms, area) {
+  const W = 360, H = 220, L0 = 96, wet = 9;
+  const cells = rooms === 0 ? [['Студия', area - wet]] : [['Кухня', 11], ...Array.from({ length: rooms }, (_, i) => [rooms === 1 ? 'Комната' : `Комната ${i + 1}`, Math.round((area - 11 - wet) / rooms)])];
+  const cw = (W - L0) / cells.length;
+  const cell = (x, y, w, h, cls, name, m2) => `<rect class="${cls}" x="${x}" y="${y}" width="${w}" height="${h}"/><text x="${x + w / 2}" y="${y + h / 2 - 2}">${name}</text><text class="sub" x="${x + w / 2}" y="${y + h / 2 + 14}">${m2} м²</text>`;
+  return `<svg class="plan" viewBox="-6 -6 ${W + 12} ${H + 12}" role="img" aria-label="Схема квартиры: ${roomsLabel(rooms)}, ${area} м²">
+    ${cell(0, 0, L0, H * 0.45, 'wet', 'С/у', 4)}${cell(0, H * 0.45, L0, H * 0.55, 'room', 'Прихожая', 5)}
+    ${cells.map(([name, m2], i) => cell(L0 + i * cw, 0, cw, H, 'room', name, m2)).join('')}
+    <rect class="outer" x="0" y="0" width="${W}" height="${H}"/></svg>`;
+}
+
+function openPlace(id, unitId) {
+  ui = { ...ui, placeId: id, unitId: unitId || (id.startsWith('c') ? null : id), rooms: null, dealId: null };
+  $('drawer').classList.toggle('wide', id.startsWith('c'));
+  renderPlace();
+  if (!$('drawer').open) $('drawer').showModal();
+  $('drawer').scrollTop = 0;
+}
+
+function unitDetail(u) {
+  const open = scoped().filter(isOpen), fitting = open.filter(d => fits(d, u));
+  const b = S.bookings.find(x => x.objectId === u.id && !x.closed);
+  const options = [...fitting, ...open.filter(d => !fitting.includes(d))];
+  return `<div class="block"><h3>${u.complexId ? `Квартира № ${u.number}` : 'Квартира'}</h3>
+    <div class="actions">${pill(UNIT_STATUS[u.status] === 'free' ? 'ok' : UNIT_STATUS[u.status] === 'booked' ? 'warn' : 'muted', u.status)}<span class="small muted">схема, не в масштабе</span></div>
+    ${planSvg(u.rooms, u.area)}
+    <dl><dt>Комнаты</dt><dd>${roomsLabel(u.rooms)}</dd><dt>Площадь</dt><dd>${u.area} м²</dd><dt>Этаж</dt><dd>${u.floor}</dd>
+      <dt>Цена</dt><dd>${rub(u.price)}</dd><dt>За м²</dt><dd>${rub(u.price / u.area)}</dd></dl>
+    ${u.status === 'свободна' ? `<div class="actions"><span class="small muted">Подходит сделкам:</span>${fitting.length ? fitting.map(dealLink).join(', ') : '<span class="small muted">нет</span>'}</div>
+      ${options.length ? `<form id="book-form" class="fields">
+        <div class="field"><label for="b-deal">Забронировать для сделки</label><select id="b-deal">${options.map(d => `<option value="${d.id}">${esc(d.name)}${fitting.includes(d) ? ' · подходит' : ''}</option>`).join('')}</select></div>
+        <div class="field"><label for="b-amount">${u.complexId ? 'Платная бронь, ₽' : 'Аванс, ₽'}</label><input id="b-amount" type="number" min="0" step="1000" value="${u.complexId ? 50000 : 100000}"></div>
+        <div class="field" style="align-content:end"><button class="btn primary" type="submit">Забронировать на 7 дней</button></div></form>` : ''}`
+      : b ? `<p class="small" style="margin:0">Бронь: ${dealLink(deal(b.dealId))}, ${b.kind.toLowerCase()} до ${fmtDate(b.expires)}</p>` : ''}
+  </div>`;
+}
+
+function renderPlace() {
+  const c = S.complexes.find(x => x.id === ui.placeId), u = ui.unitId && ob(ui.unitId);
+  const units = c ? S.objects.filter(o => o.complexId === c.id) : [u];
+  const count = st => units.filter(o => o.status === st).length;
+  const roomsShort = r => r === 0 ? 'ст' : r + 'к';
+  let chess = '';
+  if (c) {
+    const sizes = [...new Set(c.layout)].sort();
+    chess = `<div class="block"><h3>Шахматка</h3>
+      <div class="actions">${[['', 'Все'], ...sizes.map(r => [r, roomsLabel(r)])].map(([r, t]) => `<button class="btn sm chip" data-act="rooms" data-rooms="${r}" aria-pressed="${String(ui.rooms ?? '') === String(r)}">${t}</button>`).join('')}</div>
+      <div class="legend"><span><i style="background:color-mix(in srgb, var(--ok) 18%, var(--surface))"></i>свободна · ${count('свободна')}</span><span><i style="background:color-mix(in srgb, var(--warn) 20%, var(--surface))"></i>бронь · ${count('бронь')}</span><span><i style="background:var(--sunken)"></i>продана · ${count('продана')}</span></div>
+      <div class="chess" style="grid-template-columns: 32px repeat(${c.layout.length}, minmax(46px, 1fr))">
+        ${Array.from({ length: c.floors - 1 }, (_, i) => c.floors - i).map(fl => `<div class="fl">${fl}</div>` + units.filter(o => o.floor === fl).map(o =>
+          `<button class="unit ${UNIT_STATUS[o.status]}${ui.rooms != null && o.rooms !== ui.rooms ? ' dim' : ''}" data-act="unit" data-id="${o.id}" aria-pressed="${o.id === ui.unitId}" aria-label="Квартира ${o.number}, ${roomsLabel(o.rooms)}, ${o.area} м², ${mln(o.price)}, ${o.status}">${o.number}<small>${roomsShort(o.rooms)} · ${(o.price / 1e6).toLocaleString('ru-RU', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</small></button>`).join('')).join('')}
+      </div><p class="small muted" style="margin:0">Этаж слева, в ячейке номер квартиры, комнаты и цена в млн ₽. Нажмите на квартиру, чтобы увидеть планировку.</p></div>`;
+  }
+  const docs = c ? COMPLEX_DOCS.map(n => [n, true]) : SECONDARY_DOCS;
+  $('drawer').innerHTML = `<div class="dlg">
+    <div class="dlg-head"><div><h2>${esc(c ? c.name : objTitle(u))}</h2><span class="muted">${c ? `${c.district} район · ${esc(c.developer)} · сдача: ${c.deadline}` : `${u.district} район · ${u.floor} этаж · вторичка`}</span></div><button class="x" data-act="close" aria-label="Закрыть">×</button></div>
+    ${chess}
+    ${u ? unitDetail(u) : ''}
+    <div class="block"><h3>Документы</h3>
+      ${docs.map(([n, ok]) => `<div class="doc"><span>${n}</span>${ok ? pill('ok', 'загружен') : pill('warn', 'запросить')}</div>`).join('')}
+      <span class="small muted">В демо файлы не прикладываются.</span></div>
+  </div>`;
 }
 
 const SAMPLE_CHAT = 'Добрый день! Меня зовут Ксения Романова, нам посоветовали ваше агентство. Ищем однушку в новостройке, лучше Московский район, бюджет до 8,2 млн, берём ипотеку. Звоните: +7 900 000-00-15';
@@ -638,7 +784,15 @@ document.addEventListener('click', e => {
     case 'edit': ui.editing = true; renderDeal(); return;
     case 'edit-cancel': ui.editing = false; renderDeal(); return;
     case 'extend': { const b = S.bookings.find(x => x.id === id); b.expires = iso(Math.max(days(b.expires), 0) + 7); break; }
-    case 'close-booking': S.bookings.find(x => x.id === id).closed = true; break;
+    case 'close-booking': {
+      const b = S.bookings.find(x => x.id === id), o = ob(b.objectId);
+      b.closed = true;
+      if (o?.status === 'бронь') o.status = isOpen(deal(b.dealId)) ? 'свободна' : 'продана';
+      break;
+    }
+    case 'place': openPlace(id, el.dataset.unit); return;
+    case 'unit': ui.unitId = id; renderPlace(); return;
+    case 'rooms': ui.rooms = el.dataset.rooms === '' ? null : Number(el.dataset.rooms); renderPlace(); return;
     case 'invoice': openInvoice(id); return;
     case 'issue': S.commissions.find(x => x.id === id).status = 'счёт выставлен'; $('modal').close(); break;
     case 'paid': S.commissions.find(x => x.id === id).status = 'получена'; break;
@@ -655,7 +809,7 @@ document.addEventListener('click', e => {
       else { S.stages = S.stages.filter(s => s.id !== id); stagesChanged(); return; }
       openStages(); return;
     }
-    case 'reset': S = seed(); ui = { dealId: null, draft: false, editing: false, preview: null, stageErr: '' }; filterAgent = ''; $('drawer').close(); $('modal').close(); break;
+    case 'reset': S = seed(); ui = { dealId: null, placeId: null, unitId: null, rooms: null, draft: false, editing: false, preview: null, stageErr: '' }; filterAgent = ''; $('drawer').close(); $('modal').close(); break;
     default: return;
   }
   save(); render();
@@ -678,6 +832,12 @@ document.addEventListener('submit', e => {
   e.preventDefault();
   if (f.id === 'edit-deal') { Object.assign(deal(ui.dealId), readForm()); ui.editing = false; }
   else if (f.id === 'add-task') S.tasks.push({ id: 't' + (++S.seq), dealId: ui.dealId, title: $('nt-title').value.trim(), due: $('nt-due').value, done: false });
+  else if (f.id === 'book-form') {
+    const u = ob(ui.unitId), d = deal($('b-deal').value), st = S.stages.find(x => x.name === 'Бронь');
+    S.bookings.push({ id: 'b' + (++S.seq), dealId: d.id, objectId: u.id, kind: u.complexId ? 'Бронь у застройщика' : 'Аванс', amount: Math.max(0, Number($('b-amount').value) || 0), holder: u.complexId ? 'Застройщик' : 'Агентство', expires: iso(7), closed: false });
+    u.status = 'бронь';
+    if (st) d.stageId = st.id;
+  }
   else if (f.id === 'add-user') S.users.push({ id: 'u' + (++S.seq), name: $('nu-name').value.trim(), role: $('nu-role').value });
   else if (f.id === 'parsed') {
     const text = $('chat').value.trim(), r = parseChat(text);
