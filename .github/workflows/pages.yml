@@ -1,0 +1,37 @@
+name: Deploy site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: node app/parse.test.js
+      # app/index.html пишется без <head> (так его принимает и артефакт Claude), поэтому шапку документа добавляем при сборке
+      - name: Build
+        run: |
+          mkdir _site
+          cp app/parse.js _site/
+          { printf '<!doctype html>\n<html lang="ru">\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<style>body{margin:0}[hidden]{display:none!important}img{max-width:100%%}</style>\n'; cat app/index.html; } > _site/index.html
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

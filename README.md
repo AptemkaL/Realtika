@@ -6,6 +6,7 @@
 
 Product discovery + кликабельный прототип на вымышленных данных.
 
+- Сайт: https://aptemkal.github.io/Realtika/ (собирается из `main` автоматически)
 - [`app/`](app) — прототип: одна страница без бэкенда, данные в браузере. Открыть локально: `cd app && python3 -m http.server`, затем http://localhost:8000
 - Тест парсера переписки: `node app/parse.test.js`
 
