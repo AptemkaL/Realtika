@@ -1,14 +1,10 @@
-# Gov Services Portal
+# AI-CRM для агентств недвижимости
 
-Portal for government-style services (citizen account, service catalog, applications) — target country not yet decided.
+Портфолио-проект: CRM для агентств недвижимости (вторичка + новостройки), которую заполняет ИИ — карточки клиентов из переписки, подбор объектов, follow-up, учёт броней и залогов.
 
-## Status
+## Статус
 
-Planning stage. Open question before building payment/application-submission features:
-accepting official government fees/fines as a private initiative generally requires
-authorization (licensed payment agent status, agreement with the relevant state body).
-This needs to be resolved (or scoped around) before implementing that part.
+Product discovery. Код ещё не начат.
 
-## Next steps
-
-See conversation history / `.claude` plans for requirements gathering.
+- [`docs/one-pager.md`](docs/one-pager.md) — проблема, сегмент, MVP, метрики, риски
+- [`docs/interview-script.md`](docs/interview-script.md) — скрипт интервью с агентствами
