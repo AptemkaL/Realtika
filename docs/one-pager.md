@@ -1,6 +1,6 @@
-# Риэлтика — one-pager
+# Realtika — one-pager
 
-> Рабочее название: Риэлтика (латиницей — Realtika, не финал). Статус: черновик до customer discovery (см. `interview-script.md`).
+> Рабочее название: Realtika (по-русски — Риелтика, не финал). Статус: черновик до customer discovery (см. `interview-script.md`).
 
 ## Проблема
 
