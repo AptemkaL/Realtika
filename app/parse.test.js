@@ -1,6 +1,6 @@
 // Запуск: node app/parse.test.js
 const assert = require('assert');
-const { parseChat } = require('./parse.js');
+const { parseChat, parseListing } = require('./parse.js');
 const SUNDAY = new Date(2026, 9, 11); // 11.10.2026, воскресенье
 
 assert.deepStrictEqual(
@@ -25,5 +25,16 @@ assert.deepStrictEqual(parseChat('Встреча прошла, клиент пр
 assert.strictEqual(parseChat('Ищу студию').rooms, 0);
 assert.strictEqual(parseChat('нужна 3-х комнатная').rooms, 3);
 assert.deepStrictEqual(parseChat('просто привет'), {});
+
+// описание квартиры от собственника
+assert.deepStrictEqual(
+  parseListing('Двушка 54 кв.м, кухня 9 м², 7/12 эт., ул. Савушкина, д. 12, Приморский район. Евроремонт, санузел раздельный, есть лоджия. Цена 11,9 млн.'),
+  { rooms: 2, district: 'Приморский', price: 11900000, area: 54, kitchen: 9, floor: 7, floors: 12, address: 'ул. Савушкина, д. 12', renovation: 'евро', bathroom: 'раздельный', balcony: true },
+);
+assert.deepStrictEqual(
+  parseListing('Продаю 1-к квартиру 36 метров на 3 этаже 5-этажного дома, без ремонта, без балкона, санузел совмещенный'),
+  { rooms: 1, area: 36, floor: 3, floors: 5, renovation: 'без ремонта', bathroom: 'совмещённый', balcony: false },
+);
+assert.deepStrictEqual(parseListing('просто текст'), {});
 
 console.log('parse.test.js: ok');
