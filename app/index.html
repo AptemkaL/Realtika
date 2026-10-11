@@ -98,10 +98,10 @@ td select { width: auto; }
 
 dialog { border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 0; }
 dialog::backdrop { background: rgb(10 14 12 / .45); }
-dialog.drawer { margin: 0 0 0 auto; width: min(520px, 100%); height: 100%; max-height: 100%; border-width: 0 0 0 1px; }
+dialog.drawer { margin: 0 0 0 auto; width: min(520px, 100%); max-width: 100%; height: 100%; max-height: 100%; border-width: 0 0 0 1px; }
 dialog.modal { width: min(600px, calc(100% - 32px)); border-radius: var(--r); }
 .dlg { padding: 20px; display: grid; gap: 22px; align-content: start; box-sizing: border-box; min-height: 100%; }
-.dlg-head { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+.dlg-head { display: flex; justify-content: space-between; align-items: start; gap: 12px; position: sticky; top: 0; z-index: 5; background: var(--surface); margin: -20px -20px 0; padding: 16px 20px 12px; border-bottom: 1px solid var(--line); }
 .x { font: 24px/1 var(--f-body); background: none; border: 0; color: var(--muted); cursor: pointer; padding: 0 4px; }
 dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; }
 dt { color: var(--muted); } dd { margin: 0; }
@@ -196,10 +196,57 @@ dialog.modal.wide { width: min(860px, calc(100% - 32px)); }
 
 footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
 
+.tab svg { display: none; }
+.only-mobile { display: none; }
+
+/* Телефон: нижняя панель вкладок, свайп по этапам, окна на весь экран, таблицы карточками */
 @media (max-width: 640px) {
   .alert { grid-template-columns: 1fr; }
   .trow { grid-template-columns: auto minmax(0, 1fr); }
   .trow > :last-child { grid-column: 2; justify-self: start; }
+  .only-mobile { display: inline-flex; }
+  .only-desktop { display: none; }
+
+  header.top { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; padding-block: 12px; }
+  header.top .btn.primary { position: fixed; right: 16px; bottom: calc(78px + env(safe-area-inset-bottom, 0px)); z-index: 51; border-radius: 999px; padding: 12px 18px; box-shadow: 0 4px 14px rgb(0 0 0 / .25); }
+  .me { grid-column: 2; grid-row: 1; justify-self: end; min-width: 0; max-width: 100%; }
+  .me label { display: none; }
+  .me select { max-width: 100%; }
+  nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 0;
+    background: var(--surface); border-top: 1px solid var(--line); padding: 4px 2px calc(4px + env(safe-area-inset-bottom, 0px)); }
+  .tab { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; padding: 6px 2px; border-radius: 8px; position: relative; }
+  .tab svg { display: block; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .tab[aria-current="page"] { background: none; color: var(--accent); }
+  .tab b { position: absolute; top: 2px; left: calc(50% + 6px); margin: 0; font-size: 10px; line-height: 16px; min-width: 16px; padding: 0 4px; border-radius: 8px; background: var(--crit); color: #fff; box-sizing: border-box; }
+  main { padding-block: 16px 24px; gap: 20px; }
+  footer { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+  .toast { bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+
+  input, select, textarea { font-size: 16px; }
+  .btn.sm { padding: 8px 12px; font-size: 14px; }
+  .unit { padding-block: 8px; }
+
+  .kanban { grid-auto-columns: 86%; scroll-snap-type: x mandatory; gap: 10px; margin-inline: -16px; padding-inline: 16px; scroll-padding-inline: 16px; }
+  .col { scroll-snap-align: start; }
+
+  .filters { padding: 12px; }
+  .filters:not(.open) > .field:not(.wide-field) { display: none; }
+  .filters .wide-field .search-row { display: flex; gap: 8px; }
+  #map { height: 62vh; }
+
+  dialog.modal, dialog.modal.wide { width: 100%; max-width: 100%; height: 100%; max-height: 100%; margin: 0; border: 0; border-radius: 0; }
+  .dlg { padding: 20px 16px calc(24px + env(safe-area-inset-bottom, 0px)); }
+  .dlg-head { margin: -20px -16px 0; padding: 12px 16px; }
+
+  .tbl.cards { background: none; border: 0; overflow: visible; }
+  .tbl.cards table, .tbl.cards tbody, .tbl.cards tr, .tbl.cards td { display: block; }
+  .tbl.cards thead { display: none; }
+  .tbl.cards tr { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 6px 14px; margin-bottom: 10px; }
+  .tbl.cards td { border: 0; padding: 5px 0; display: flex; justify-content: space-between; gap: 12px; text-align: right; }
+  .tbl.cards td::before { content: attr(data-label); color: var(--muted); font-size: 13px; text-align: left; }
+  .tbl.cards td:first-child { font-weight: 600; font-size: 16px; text-align: left; }
+  .tbl.cards td:first-child::before, .tbl.cards td:last-child::before { content: none; }
+  .tbl.cards td:last-child:empty { display: none; }
 }
 @media (prefers-reduced-motion: no-preference) {
   .card, .btn { transition: border-color .15s; }
@@ -210,7 +257,7 @@ footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: f
   <header class="top">
     <div class="brand">Realtika <span>демо</span></div>
     <nav class="tabs" id="tabs" aria-label="Разделы"></nav>
-    <button class="btn primary" data-act="import-open">+ Сделка из переписки</button>
+    <button class="btn primary" data-act="import-open">+ Сделка<span class="only-desktop">&nbsp;из переписки</span></button>
     <div class="me"><label for="me">Вы</label><select id="me"></select></div>
   </header>
   <main id="view"></main>
@@ -229,6 +276,14 @@ footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: f
 const K = 'realtika-demo-v5';
 const ROLES = { agent: 'Агент', head: 'Руководитель отдела продаж', director: 'Директор' };
 const TABS = [['tasks', 'Задачи'], ['deals', 'Сделки'], ['objects', 'Объекты'], ['bookings', 'Брони'], ['commissions', 'Комиссии'], ['team', 'Команда']];
+const TAB_ICONS = {
+  tasks: '<path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
+  deals: '<rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="10" rx="1"/><rect x="17" y="4" width="4" height="13" rx="1"/>',
+  objects: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/>',
+  bookings: '<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9"/><path d="M17 6l3 3"/>',
+  commissions: '<circle cx="12" cy="12" r="9"/><path d="M10 17V7h3a3 3 0 0 1 0 6h-5"/><path d="M8 15h5"/>',
+  team: '<circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.5A5 5 0 0 1 21 19"/>',
+};
 const PAYMENTS = ['', 'ипотека', 'наличные', 'рассрочка'];
 const DAY = 864e5;
 
@@ -521,8 +576,9 @@ const views = {
     return `<section class="section"><div class="section-head"><h2>Объекты</h2>
         <div class="toolbar"><div class="seg" role="group" aria-label="Вид"><button class="btn sm" data-act="objview" data-view="list" aria-pressed="${objView === 'list'}">Список</button><button class="btn sm" data-act="objview" data-view="map" aria-pressed="${objView === 'map'}">Карта</button></div>
         <button class="btn primary sm" data-act="listing-new">+ Выставить на продажу</button></div></div>
-      <form id="filters" class="filters" role="search">
-        <div class="field wide-field"><label for="f-q">Название ЖК, улица или район</label><input id="f-q" type="search" placeholder="Например: Пулковские или Ленина" value="${n(F.q)}"></div>
+      <form id="filters" class="filters${ui.filtersOpen ? ' open' : ''}" role="search">
+        <div class="field wide-field"><label for="f-q">Название ЖК, улица или район</label><div class="search-row"><input id="f-q" type="search" placeholder="Например: Пулковские или Ленина" value="${n(F.q)}">
+          <button type="button" class="btn only-mobile" data-act="toggle-filters" aria-expanded="${!!ui.filtersOpen}">Фильтры${activeFilters() ? ` · ${activeFilters()}` : ''}</button></div></div>
         <div class="field"><label for="f-market">Рынок</label><select id="f-market">${opts([['', 'любой'], ['новостройка', 'новостройки'], ['вторичка', 'вторичка']], F.market)}</select></div>
         <div class="field"><span class="lbl">Комнаты</span><div class="actions">${[[0, 'Ст'], [1, '1'], [2, '2'], [3, '3']].map(([r, t]) => `<button type="button" class="btn sm chip" data-act="f-room" data-rooms="${r}" aria-pressed="${F.rooms.includes(r)}" aria-label="${roomsLabel(r)}">${t}</button>`).join('')}</div></div>
         <div class="field"><span class="lbl">Цена, млн ₽</span><div class="range"><input id="f-pf" type="number" min="0" step="0.1" placeholder="от" aria-label="Цена от, млн" value="${n(F.priceFrom)}"><input id="f-pt" type="number" min="0" step="0.1" placeholder="до" aria-label="Цена до, млн" value="${n(F.priceTo)}"></div></div>
@@ -540,7 +596,7 @@ const views = {
   bookings() {
     const ids = scopedIds(), bs = S.bookings.filter(b => ids.has(b.dealId)), all = can().all;
     return `<section class="section"><div class="section-head"><h2>Брони</h2><span class="muted small">Только учёт: деньги держит указанная сторона, Realtika их не принимает</span></div>
-      <div class="tbl"><table><thead><tr><th>Сделка</th>${all ? '<th>Агент</th>' : ''}<th>Объект</th><th>Тип</th><th class="num">Сумма</th><th>Деньги у</th><th>Срок</th><th>Статус</th><th></th></tr></thead><tbody>
+      <div class="tbl cards"><table><thead><tr><th>Сделка</th>${all ? '<th>Агент</th>' : ''}<th>Объект</th><th>Тип</th><th class="num">Сумма</th><th>Деньги у</th><th>Срок</th><th>Статус</th><th></th></tr></thead><tbody>
       ${bs.map(b => { const d = deal(b.dealId), [cls, txt] = bookingState(b); return `<tr><td>${dealLink(d)}</td>${all ? `<td>${esc(user(d.agentId)?.name)}</td>` : ''}<td>${esc(objTitle(ob(b.objectId)))}</td><td>${b.kind}</td><td class="num">${rub(b.amount)}</td><td>${b.holder}</td><td>${fmtDate(b.expires)}</td><td>${pill(cls, txt)}</td>
         <td>${b.closed ? '' : `<div class="actions"><button class="btn sm" data-act="extend" data-id="${b.id}">+7 дней</button><button class="btn sm" data-act="close-booking" data-id="${b.id}">Закрыть</button></div>`}</td></tr>`; }).join('') || `<tr><td colspan="9" class="muted">Броней нет.</td></tr>`}
       </tbody></table></div></section>`;
@@ -554,7 +610,7 @@ const views = {
         <div class="stat"><span class="muted small">Получено</span><b>${rub(sum('получена'))}</b></div>
       </div>
       <section class="section"><div class="section-head"><h2>Комиссии</h2><span class="muted small">Новостройки: платит застройщик после сделки. Вторичка: платит продавец</span></div>
-      <div class="tbl"><table><thead><tr><th>Сделка</th>${all ? '<th>Агент</th>' : ''}<th>Объект</th><th>Платит</th><th class="num">Сумма</th><th>Дата сделки</th><th>Статус</th><th></th></tr></thead><tbody>
+      <div class="tbl cards"><table><thead><tr><th>Сделка</th>${all ? '<th>Агент</th>' : ''}<th>Объект</th><th>Платит</th><th class="num">Сумма</th><th>Дата сделки</th><th>Статус</th><th></th></tr></thead><tbody>
       ${ks.map(k => { const d = deal(k.dealId); return `<tr><td>${dealLink(d)}</td>${all ? `<td>${esc(user(d.agentId)?.name)}</td>` : ''}<td>${esc(objTitle(ob(k.objectId)))}</td><td>${k.payer}</td><td class="num">${rub(k.amount)}</td><td>${fmtDate(k.dealDate)}</td><td>${pill(commState(k.status), k.status)}</td>
         <td>${k.status === 'ожидается' ? `<button class="btn sm" data-act="invoice" data-id="${k.id}">Выставить счёт</button>` : k.status === 'счёт выставлен' ? `<div class="actions"><button class="btn sm" data-act="invoice" data-id="${k.id}">Счёт</button><button class="btn sm" data-act="paid" data-id="${k.id}">Оплачено</button></div>` : ''}</td></tr>`; }).join('') || `<tr><td colspan="8" class="muted">Комиссий пока нет: они появляются после закрытия сделки.</td></tr>`}
       </tbody></table></div></section>`;
@@ -573,7 +629,7 @@ const views = {
         <td class="num">${overdue ? pill('crit', overdue) : '0'}</td><td class="num">${cold ? pill('warn', cold) : '0'}</td><td class="num">${ds.filter(d => !d.lost && d.stageId === lastStageId()).length}</td><td class="num">${due ? rub(due) : '—'}</td></tr>`;
     };
     return `<section class="section"><div class="section-head"><h2>Команда</h2><span class="muted small">${c.users ? 'Вы назначаете роли и добавляете сотрудников' : 'Роли назначает директор'}</span></div>
-      <div class="tbl"><table><thead><tr><th>Сотрудник</th><th>Роль</th><th class="num">Сделок в работе</th><th class="num">Просрочено задач</th><th class="num">Без касания 5+ дней</th><th class="num">Закрыто</th><th class="num">Комиссии к получению</th></tr></thead>
+      <div class="tbl cards"><table><thead><tr><th>Сотрудник</th><th>Роль</th><th class="num">Сделок в работе</th><th class="num">Просрочено задач</th><th class="num">Без касания 5+ дней</th><th class="num">Закрыто</th><th class="num">Комиссии к получению</th></tr></thead>
       <tbody>${S.users.map(row).join('')}</tbody></table></div>
       ${c.users ? `<form id="add-user" class="actions"><input id="nu-name" required placeholder="Имя и фамилия" aria-label="Имя нового сотрудника" style="max-width:260px"><select id="nu-role" aria-label="Роль нового сотрудника" style="width:auto">${Object.entries(ROLES).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select><button class="btn" type="submit">Добавить сотрудника</button></form>` : ''}
     </section>
@@ -591,11 +647,16 @@ function render() {
   const c = can();
   if ((tab === 'team' && !c.all) || !views[tab]) tab = 'tasks';
   const urgent = openTasks().filter(t => days(t.due) <= 0).length;
-  $('tabs').innerHTML = TABS.filter(([k]) => k !== 'team' || c.all).map(([k, v]) => `<button class="tab" data-act="tab" data-tab="${k}"${k === tab ? ' aria-current="page"' : ''}>${v}${k === 'tasks' && urgent ? `<b>${urgent}</b>` : ''}</button>`).join('');
+  $('tabs').innerHTML = TABS.filter(([k]) => k !== 'team' || c.all).map(([k, v]) => `<button class="tab" data-act="tab" data-tab="${k}"${k === tab ? ' aria-current="page"' : ''}><svg viewBox="0 0 24 24" aria-hidden="true">${TAB_ICONS[k]}</svg>${v}${k === 'tasks' && urgent ? `<b>${urgent}</b>` : ''}</button>`).join('');
   $('me').innerHTML = S.users.map(u => `<option value="${u.id}"${u.id === S.me ? ' selected' : ''}>${esc(u.name)} · ${ROLES[u.role].toLowerCase()}</option>`).join('');
   if (map) { map.remove(); map = null; }
   $('view').innerHTML = views[tab]();
   if (tab === 'objects') fillResults();
+  // подписи колонок для таблиц, которые на телефоне показываются карточками
+  document.querySelectorAll('.tbl.cards table').forEach(t => {
+    const hs = [...t.querySelectorAll('thead th')].map(th => th.textContent);
+    t.querySelectorAll('tbody tr').forEach(tr => [...tr.children].forEach((td, i) => { td.dataset.label = hs[i] || ''; }));
+  });
   if ($('drawer').open) ui.placeId ? renderPlace() : ui.dealId && renderDeal();
 }
 
@@ -836,6 +897,7 @@ function previewNote(text) {
   return { text, changes, fields, stage: null, task };
 }
 
+const activeFilters = () => [F.market, F.rooms.length, F.priceFrom, F.priceTo, F.areaFrom, F.areaTo, F.district, F.notFirst, F.notLast, !F.onlyFree].filter(Boolean).length;
 function passes(o) {
   const num = v => v === '' ? null : Number(v);
   if (!visible(o)) return false;
@@ -1275,6 +1337,7 @@ document.addEventListener('click', e => {
     case 'unit': ui.unitId = id; renderPlace(); return;
     case 'rooms': ui.rooms = el.dataset.rooms === '' ? null : Number(el.dataset.rooms); renderPlace(); return;
     case 'objview': objView = el.dataset.view; break;
+    case 'toggle-filters': ui.filtersOpen = !ui.filtersOpen; break;
     case 'f-room': { const r = Number(el.dataset.rooms); F.rooms = F.rooms.includes(r) ? F.rooms.filter(x => x !== r) : [...F.rooms, r]; el.setAttribute('aria-pressed', F.rooms.includes(r)); fillResults(); return; }
     case 'f-reset': F = { ...F0, rooms: [] }; mapView = null; break;
     case 'deal-search': F = fromDeal(deal(id)); objView = 'list'; tab = 'objects'; mapView = null; $('drawer').close(); try { history.replaceState(null, '', '#objects'); } catch (err) {} break;
