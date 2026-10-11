@@ -40,8 +40,36 @@ nav.tabs { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; }
 .tab:hover { color: var(--ink); background: var(--sunken); }
 .tab[aria-current="page"] { color: var(--ink); background: var(--sunken); font-weight: 600; }
 .tab b { font-weight: 600; color: var(--crit); margin-left: 4px; font-variant-numeric: tabular-nums; }
-.me { display: flex; align-items: center; gap: 8px; }
-.me select { width: auto; max-width: 260px; }
+.me { display: flex; align-items: center; gap: 10px; font: 500 14px var(--f-body); color: var(--ink); background: none; border: 1px solid transparent; border-radius: 999px; padding: 3px 12px 3px 3px; cursor: pointer; }
+.me:hover, .me[aria-current="page"] { border-color: var(--line); background: var(--surface); }
+.avatar { --size: 34px; width: var(--size); height: var(--size); border-radius: 50%; flex: none; display: inline-grid; place-items: center; overflow: hidden;
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface)); color: var(--accent); font: 600 calc(var(--size) * .38) / 1 var(--f-body); letter-spacing: .02em; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.avatar.big { --size: 88px; }
+
+.login { min-height: 100vh; display: grid; place-items: center; padding-block: 24px; box-sizing: border-box; }
+.login-card { width: min(940px, 100%); display: grid; grid-template-columns: 1fr 1fr; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.login-brand { background: var(--accent); color: var(--accent-ink); padding: 40px; display: grid; gap: 18px; align-content: space-between; }
+.login-brand .logo { font: 600 34px/1 var(--f-display); letter-spacing: -.02em; }
+.login-brand .lead { font-size: 18px; line-height: 1.4; margin: 0; max-width: 30ch; }
+.login-brand ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.login-brand li { display: flex; gap: 10px; align-items: start; }
+.login-brand li::before { content: ""; width: 8px; height: 8px; margin-top: 7px; border-radius: 50%; background: currentColor; opacity: .7; flex: none; }
+.login-brand .fine { font-size: 12px; opacity: .8; margin: 0; }
+.login-form { padding: 40px; display: grid; gap: 14px; align-content: start; }
+.login-form h1 { font-size: 24px; }
+.login-form .btn.primary { padding-block: 11px; justify-content: center; }
+.demo-acc { display: grid; gap: 6px; border-top: 1px solid var(--line); padding-top: 14px; margin-top: 4px; }
+.acc { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; font: inherit; color: var(--ink); background: none; border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; cursor: pointer; }
+.acc:hover { border-color: var(--accent); }
+.acc .avatar { --size: 30px; }
+.acc small { display: block; color: var(--muted); font-size: 12px; }
+
+.profile-head { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 20px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; }
+.profile-head h2 { font: 600 22px/1.2 var(--f-display); }
+.profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; align-items: start; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 12px; }
+.panel h3 { font-size: 15px; }
 header.top .btn { white-space: normal; text-align: left; }
 
 .btn { font: 600 14px var(--f-body); padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; white-space: nowrap; }
@@ -211,9 +239,12 @@ footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: f
 
   header.top { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; padding-block: 12px; }
   header.top .btn.primary { position: fixed; right: 16px; bottom: calc(78px + env(safe-area-inset-bottom, 0px)); z-index: 51; border-radius: 999px; padding: 12px 18px; box-shadow: 0 4px 14px rgb(0 0 0 / .25); }
-  .me { grid-column: 2; grid-row: 1; justify-self: end; min-width: 0; max-width: 100%; }
-  .me label { display: none; }
-  .me select { max-width: 100%; }
+  .me { grid-column: 2; grid-row: 1; justify-self: end; padding: 2px; }
+  .me-name { display: none; }
+  .login-card { grid-template-columns: 1fr; border-radius: 12px; }
+  .login-brand, .login-form { padding: 24px 20px; }
+  .login-brand .logo { font-size: 28px; }
+  .login-brand ul, .login-brand .fine { display: none; }
   nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 0;
     background: var(--surface); border-top: 1px solid var(--line); padding: 4px 2px calc(4px + env(safe-area-inset-bottom, 0px)); }
   .tab { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; padding: 6px 2px; border-radius: 8px; position: relative; }
@@ -255,16 +286,17 @@ footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: f
 }
 </style>
 
-<div class="wrap">
+<section id="login" class="login wrap" hidden></section>
+<div class="wrap" id="app" hidden>
   <header class="top">
     <div class="brand">Realtika <span>демо</span></div>
     <nav class="tabs" id="tabs" aria-label="Разделы"></nav>
     <button class="btn primary" data-act="import-open">+ Сделка<span class="only-desktop">&nbsp;из переписки</span></button>
-    <div class="me"><label for="me">Вы</label><select id="me"></select></div>
+    <button class="me" id="me" data-act="tab" data-tab="profile" aria-label="Личный кабинет"></button>
   </header>
   <main id="view"></main>
   <footer class="small muted">
-    <span>Вымышленные данные. Вход демонстрационный: выберите сотрудника вверху справа. ИИ работает в режиме заглушки: правила вместо модели.</span>
+    <span>Вымышленные данные. Вход демонстрационный: пароль для всех аккаунтов — demo. ИИ работает в режиме заглушки: правила вместо модели.</span>
     <button class="btn link small" data-act="reset">Сбросить демо-данные</button>
   </footer>
 </div>
@@ -400,11 +432,11 @@ function seed() {
   return {
     seq: 100, me: 'u3',
     users: [
-      { id: 'u1', name: 'Ирина Белова', role: 'director' },
-      { id: 'u2', name: 'Олег Савин', role: 'head' },
-      { id: 'u3', name: 'Анна Ким', role: 'agent' },
-      { id: 'u4', name: 'Максим Егоров', role: 'agent' },
-      { id: 'u5', name: 'Дарья Лис', role: 'agent' },
+      { id: 'u1', name: 'Ирина Белова', role: 'director', email: 'irina.belova@realtika.demo', phone: '+7 900 100-00-01' },
+      { id: 'u2', name: 'Олег Савин', role: 'head', email: 'oleg.savin@realtika.demo', phone: '+7 900 100-00-02' },
+      { id: 'u3', name: 'Анна Ким', role: 'agent', email: 'anna.kim@realtika.demo', phone: '+7 900 100-00-03' },
+      { id: 'u4', name: 'Максим Егоров', role: 'agent', email: 'maxim.egorov@realtika.demo', phone: '+7 900 100-00-04' },
+      { id: 'u5', name: 'Дарья Лис', role: 'agent', email: 'darya.lis@realtika.demo', phone: '+7 900 100-00-05' },
     ],
     stages: [['Лид', ''], ['Связались', 'call'], ['Встреча назначена', 'meeting'], ['Встреча прошла', 'meetingDone'], ['Показ', 'showing'], ['Бронь', 'booking'], ['Сделка закрыта', 'won']].map(([name, gate], i) => ({ id: 's' + (i + 1), name, gate })),
     deals,
@@ -445,6 +477,17 @@ function seed() {
 let S = null;
 try { S = JSON.parse(localStorage.getItem(K)); } catch (e) {}
 if (!S || !S.deals) S = seed();
+// Данные, сохранённые до появления кабинета: дописываем недостающее, ничего не сбрасывая
+const SEED_USERS = Object.fromEntries(seed().users.map(u => [u.id, u]));
+const fixUsers = () => S.users.forEach(u => {
+  u.email ??= SEED_USERS[u.id]?.email || `${u.id}@realtika.demo`;
+  u.phone ??= SEED_USERS[u.id]?.phone || '';
+  u.settings ??= { theme: 'system', aiHints: true };
+});
+fixUsers();
+const SK = 'realtika-session';
+let session = null;
+try { session = localStorage.getItem(SK); } catch (e) {}
 const save = () => { try { localStorage.setItem(K, JSON.stringify(S)); return true; } catch (e) { return false; } };
 
 const $ = id => document.getElementById(id);
@@ -547,7 +590,7 @@ function taskRow(t) {
 
 const views = {
   tasks() {
-    const ts = openTasks(), h = hints();
+    const ts = openTasks(), h = me().settings.aiHints ? hints() : [];
     const groups = [['Просрочено', ts.filter(t => days(t.due) < 0)], ['Сегодня', ts.filter(t => days(t.due) === 0)], ['Дальше', ts.filter(t => days(t.due) > 0)]];
     return `<section class="section"><div class="section-head"><h2>Задачи</h2><div class="toolbar">${agentFilter()}</div></div>
       ${groups.map(([name, list]) => list.length ? `<div class="block"><h3 class="group-title">${name} · ${list.length}</h3><div class="list">${list.map(taskRow).join('')}</div></div>` : '').join('') || '<div class="list"><div class="empty">Открытых задач нет. Задачи создаются в карточке сделки или из заметки агента.</div></div>'}
@@ -636,7 +679,7 @@ const views = {
     return `<section class="section"><div class="section-head"><h2>Команда</h2><span class="muted small">${c.users ? 'Вы назначаете роли и добавляете сотрудников' : 'Роли назначает директор'}</span></div>
       <div class="tbl cards"><table><thead><tr><th>Сотрудник</th><th>Роль</th><th class="num">Сделок в работе</th><th class="num">Просрочено задач</th><th class="num">Без касания 5+ дней</th><th class="num">Закрыто</th><th class="num">Комиссии к получению</th></tr></thead>
       <tbody>${S.users.map(row).join('')}</tbody></table></div>
-      ${c.users ? `<form id="add-user" class="actions"><input id="nu-name" required placeholder="Имя и фамилия" aria-label="Имя нового сотрудника" style="max-width:260px"><select id="nu-role" aria-label="Роль нового сотрудника" style="width:auto">${Object.entries(ROLES).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select><button class="btn" type="submit">Добавить сотрудника</button></form>` : ''}
+      ${c.users ? `<form id="add-user" class="actions"><input id="nu-name" required placeholder="Имя и фамилия" aria-label="Имя нового сотрудника" style="max-width:220px"><input id="nu-email" type="email" required placeholder="Почта для входа" aria-label="Почта нового сотрудника" style="max-width:220px"><select id="nu-role" aria-label="Роль нового сотрудника" style="width:auto">${Object.entries(ROLES).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select><button class="btn" type="submit">Добавить сотрудника</button></form>` : ''}
     </section>
     <section class="section"><h2>Права доступа</h2>
       <div class="tbl"><table><thead><tr><th>Что можно</th><th>Агент</th><th>Руководитель отдела продаж</th><th>Директор</th></tr></thead><tbody>
@@ -648,12 +691,90 @@ const views = {
   },
 };
 
+const initials = u => u.name.split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
+const avatar = (u, cls = '') => `<span class="avatar ${cls}" aria-hidden="true">${u.photo ? `<img src="${u.photo}" alt="">` : esc(initials(u))}</span>`;
+function applyTheme() {
+  const t = S.me && me().settings.theme;
+  if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme;
+}
+function renderLogin(email = '') {
+  $('login').innerHTML = `<div class="login-card">
+    <div class="login-brand"><div class="logo">Realtika</div>
+      <p class="lead">CRM для агентств недвижимости, которую заполняет ИИ</p>
+      <ul><li>Сделка из переписки за пару секунд</li><li>Брони, показы и комиссии под контролем</li><li>Подбор квартиры прямо на встрече с клиентом</li></ul>
+      <p class="fine">Демо-версия на вымышленных данных</p></div>
+    <form id="login-form" class="login-form">
+      <h1>Вход в кабинет</h1>
+      <div class="field"><label for="lg-email">Почта</label><input id="lg-email" type="email" autocomplete="username" required value="${esc(email)}" placeholder="name@agency.ru"></div>
+      <div class="field"><label for="lg-pass">Пароль</label><input id="lg-pass" type="password" autocomplete="current-password" required></div>
+      <p class="err" id="lg-err" role="alert" hidden></p>
+      <button class="btn primary" type="submit">Войти</button>
+      <button type="button" class="btn link small" data-act="forgot" style="justify-self:start">Забыли пароль?</button>
+      <div class="demo-acc"><span class="lbl">Демо-аккаунты, пароль demo</span>
+        ${S.users.map(u => `<button type="button" class="acc" data-act="demo-login" data-id="${u.id}">${avatar(u)}<span>${esc(u.name)}<small>${ROLES[u.role]}</small></span></button>`).join('')}</div>
+    </form></div>`;
+}
+function showLogin(email) {
+  $('drawer').close(); $('modal').close();
+  delete document.documentElement.dataset.theme;
+  $('app').hidden = true; $('login').hidden = false;
+  renderLogin(email);
+}
+function logIn(id, restore = false) {
+  S.me = id; session = id;
+  try { localStorage.setItem(SK, id); } catch (e) {}
+  ui = { dealId: null, placeId: null, unitId: null, rooms: null, draft: false, editing: false, preview: null, stageErr: '' }; filterAgent = '';
+  if (!restore) tab = 'tasks';
+  save(); applyTheme();
+  $('login').hidden = true; $('app').hidden = false;
+  render(); window.scrollTo(0, 0);
+}
+function logOut() {
+  session = null;
+  try { localStorage.removeItem(SK); } catch (e) {}
+  showLogin(me().email);
+}
+
+views.profile = () => {
+  // руководителю показываем цифры по всей команде, агенту — по своим сделкам
+  const u = me(), team = can().all, ds = team ? S.deals : S.deals.filter(d => d.agentId === u.id), ids = new Set(ds.map(d => d.id));
+  const won = ds.filter(d => !d.lost && d.stageId === lastStageId()).length, lost = ds.filter(d => d.lost).length;
+  const ks = S.commissions.filter(k => ids.has(k.dealId));
+  const sum = f => ks.filter(f).reduce((t, k) => t + k.amount, 0);
+  const st = u.settings;
+  return `<section class="section">
+    <div class="profile-head">
+      <label class="avatar big" style="cursor:pointer" title="Сменить фото">${u.photo ? `<img src="${u.photo}" alt="Фото профиля">` : esc(initials(u))}<input id="pf-photo" type="file" accept="image/*" hidden></label>
+      <div style="display:grid;gap:4px;flex:1;min-width:200px"><h2>${esc(u.name)}</h2><span class="muted">${ROLES[u.role]} · ${esc(u.email)}</span><span class="small muted">Нажмите на аватар, чтобы загрузить фото</span></div>
+      <button class="btn" data-act="logout">Выйти</button>
+    </div>
+    ${team ? '<p class="small muted" style="margin:0">Показатели по всей команде</p>' : ''}
+    <div class="stats">
+      <div class="stat"><span class="muted small">Сделок в работе</span><b>${ds.filter(isOpen).length}</b></div>
+      <div class="stat"><span class="muted small">Закрыто сделок</span><b>${won}</b><span class="muted small">отказов: ${lost}</span></div>
+      <div class="stat"><span class="muted small">Конверсия в сделку</span><b>${won + lost ? Math.round(won / (won + lost) * 100) + '%' : '—'}</b><span class="muted small">от завершённых сделок</span></div>
+      <div class="stat"><span class="muted small">Комиссии: получено</span><b>${rub(sum(k => k.status === 'получена'))}</b><span class="muted small">ожидается ${rub(sum(k => k.status !== 'получена'))}</span></div>
+    </div>
+    <div class="profile-grid">
+      <form id="profile-form" class="panel"><h3>Профиль</h3>
+        <div class="field"><label for="pf-name">Имя и фамилия</label><input id="pf-name" required value="${esc(u.name)}"></div>
+        <div class="field"><label for="pf-phone">Телефон</label><input id="pf-phone" type="tel" value="${esc(u.phone)}"></div>
+        <div class="field"><label for="pf-email">Почта для входа</label><input id="pf-email" type="email" required value="${esc(u.email)}"></div>
+        <button class="btn primary" type="submit" style="justify-self:start">Сохранить</button></form>
+      <div class="panel"><h3>Настройки</h3>
+        <div class="field"><label for="pf-theme">Тема оформления</label><select id="pf-theme">${[['system', 'как в системе'], ['light', 'светлая'], ['dark', 'тёмная']].map(([v, t]) => `<option value="${v}"${st.theme === v ? ' selected' : ''}>${t}</option>`).join('')}</select></div>
+        <label class="check"><input type="checkbox" id="pf-hints"${st.aiHints ? ' checked' : ''}> Подсказки ИИ во вкладке «Задачи»</label>
+        <span class="small muted">Уведомления в Telegram и утренняя сводка появятся в рабочей версии.</span></div>
+    </div></section>`;
+};
+
 function render() {
   const c = can();
   if ((tab === 'team' && !c.all) || !views[tab]) tab = 'tasks';
   const urgent = openTasks().filter(t => days(t.due) <= 0).length;
   $('tabs').innerHTML = TABS.filter(([k]) => k !== 'team' || c.all).map(([k, v]) => `<button class="tab" data-act="tab" data-tab="${k}"${k === tab ? ' aria-current="page"' : ''}><svg viewBox="0 0 24 24" aria-hidden="true">${TAB_ICONS[k]}</svg>${v}${k === 'tasks' && urgent ? `<b>${urgent}</b>` : ''}</button>`).join('');
-  $('me').innerHTML = S.users.map(u => `<option value="${u.id}"${u.id === S.me ? ' selected' : ''}>${esc(u.name)} · ${ROLES[u.role].toLowerCase()}</option>`).join('');
+  $('me').innerHTML = `${avatar(me())}<span class="me-name">${esc(me().name)}</span>`;
+  $('me').toggleAttribute('aria-current', tab === 'profile');
   if (map) { map.remove(); map = null; }
   $('view').innerHTML = views[tab]();
   if (tab === 'objects') fillResults();
@@ -1193,11 +1314,11 @@ function initPickMap() {
   });
 }
 // Фото уменьшаем на клиенте: localStorage вмещает всего несколько мегабайт
-function readPhoto(file) {
+function readPhoto(file, max = 1000) {
   return new Promise((ok, fail) => {
     const img = new Image(), url = URL.createObjectURL(file);
     img.onload = () => {
-      const k = Math.min(1, 1000 / Math.max(img.width, img.height)), cv = document.createElement('canvas');
+      const k = Math.min(1, max / Math.max(img.width, img.height)), cv = document.createElement('canvas');
       cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k);
       cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
       URL.revokeObjectURL(url); ok(cv.toDataURL('image/jpeg', 0.72));
@@ -1294,6 +1415,9 @@ document.addEventListener('click', e => {
   switch (el.dataset.act) {
     case 'tab': tab = el.dataset.tab; try { history.replaceState(null, '', '#' + tab); } catch (err) {} $('modal').close(); $('drawer').close(); window.scrollTo(0, 0); break;
     case 'deal': openDeal(id); return;
+    case 'logout': logOut(); return;
+    case 'demo-login': logIn(id); return;
+    case 'forgot': { const er = $('lg-err'); er.textContent = 'Это демо: пароль для всех аккаунтов — demo.'; er.hidden = false; return; }
     case 'advance': openAdvance(id); return;
     case 'lose': openLose(id); return;
     case 'back': {
@@ -1377,7 +1501,7 @@ document.addEventListener('click', e => {
       else { S.stages = S.stages.filter(s => s.id !== id); stagesChanged(); return; }
       openStages(); return;
     }
-    case 'reset': S = seed(); ui = { dealId: null, placeId: null, unitId: null, rooms: null, draft: false, editing: false, preview: null, stageErr: '' }; filterAgent = ''; $('drawer').close(); $('modal').close(); break;
+    case 'reset': S = seed(); fixUsers(); if (user(session)) S.me = session; applyTheme(); ui = { dealId: null, placeId: null, unitId: null, rooms: null, draft: false, editing: false, preview: null, stageErr: '' }; filterAgent = ''; $('drawer').close(); $('modal').close(); break;
     default: return;
   }
   save(); render();
@@ -1406,7 +1530,13 @@ document.addEventListener('change', async e => {
     renderListing(); initPickMap(); return;
   }
   if (t.closest?.('#filters') || t.closest?.('#listing-form')) return;
-  if (t.id === 'me') { S.me = t.value; filterAgent = ''; $('drawer').close(); $('modal').close(); ui.dealId = null; }
+  if (t.id === 'pf-theme') { me().settings.theme = t.value; applyTheme(); }
+  else if (t.id === 'pf-hints') me().settings.aiHints = t.checked;
+  else if (t.id === 'pf-photo') {
+    const f = t.files[0];
+    if (!f) return;
+    try { me().photo = await readPhoto(f, 256); } catch (err) { toast('Не удалось прочитать фото: выберите изображение.'); return; }
+  }
   else if (t.id === 'filter-agent') filterAgent = t.value;
   else if (t.id === 'deal-agent') deal(ui.dealId).agentId = t.value;
   else if (t.dataset.role) user(t.dataset.role).role = t.value;
@@ -1438,7 +1568,21 @@ document.addEventListener('submit', e => {
     u.status = 'бронь';
     if (st) d.stageId = st.id;
   }
-  else if (f.id === 'add-user') S.users.push({ id: 'u' + (++S.seq), name: $('nu-name').value.trim(), role: $('nu-role').value });
+  else if (f.id === 'add-user') {
+    const email = $('nu-email').value.trim().toLowerCase();
+    if (S.users.some(u => u.email.toLowerCase() === email)) { toast('Сотрудник с такой почтой уже есть.'); return; }
+    S.users.push({ id: 'u' + (++S.seq), name: $('nu-name').value.trim(), role: $('nu-role').value, email, phone: '', settings: { theme: 'system', aiHints: true } });
+  }
+  else if (f.id === 'login-form') {
+    const u = S.users.find(x => x.email.toLowerCase() === $('lg-email').value.trim().toLowerCase());
+    if (!u || $('lg-pass').value !== 'demo') { const er = $('lg-err'); er.textContent = 'Неверная почта или пароль. В демо пароль для всех аккаунтов: demo.'; er.hidden = false; return; }
+    return logIn(u.id);
+  }
+  else if (f.id === 'profile-form') {
+    const u = me();
+    Object.assign(u, { name: $('pf-name').value.trim() || u.name, phone: $('pf-phone').value.trim(), email: $('pf-email').value.trim() || u.email });
+    toast('Профиль сохранён.');
+  }
   else if (f.id === 'parsed') {
     const text = $('chat').value.trim(), r = parseChat(text);
     const d = { id: 'd' + (++S.seq), agentId: $('n-agent')?.value || S.me, stageId: S.stages[0].id, lastContact: iso(0), notes: [{ date: iso(0), author: S.me, text }], ...DEFAULTS, ...readForm() };
@@ -1483,5 +1627,5 @@ document.addEventListener('drop', e => {
 
 $('modal').addEventListener('close', () => { $('modal').classList.remove('wide'); if (pickMap) { pickMap.remove(); pickMap = null; } });
 
-render();
+if (session && user(session)) logIn(session, true); else showLogin();
 </script>
