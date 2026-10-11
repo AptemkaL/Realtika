@@ -6,23 +6,56 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
 <style>
 /* Layout: рабочий инструмент — меню слева (на телефоне снизу), плотный рабочий вид справа, сделка выезжает справа. Серые нейтрали, один синий акцент для главного действия */
+/* Цветовые схемы. Базовая — «Графит»: тёмное меню, светлая рабочая область, сигнальный оранжевый для главного действия.
+   Остальные включаются атрибутом data-palette на <html> из настроек кабинета. */
 :root {
-  --bg: #F7F7F8; --surface: #FFFFFF; --sunken: #F0F1F3; --hover: #EDEEF1; --side: #FBFBFC; --ink: #18191C; --muted: #686C74; --line: #E3E4E8;
-  --accent: #3A5BD9; --accent-ink: #FFFFFF;
+  --bg: #F6F6F5; --surface: #FFFFFF; --sunken: #EEEEEC; --hover: #EBEBE8; --ink: #1A1A19; --muted: #686965; --line: #E2E2DE;
+  --accent: #D9480F; --accent-ink: #FFFFFF; --accent-d: #FF8C55; --accent-ink-d: #1C0C03;
+  --side-bg: #1C1D1F; --side-ink: #F2F2F0; --side-muted: #9C9D99; --side-hover: rgb(255 255 255 / .07); --side-line: #2A2B2E; --side-field: rgb(255 255 255 / .06);
+  --panel: #1C1D1F;
   --ok: #1D7A4C; --warn: #9A5800; --crit: #C2372C;
   --f-display: "Golos Text", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --f-body: "Golos Text", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --r: 8px;
 }
+:root[data-palette="burgundy"] {
+  --bg: #F7F5F3; --surface: #FFFDFC; --sunken: #EFEBE7; --hover: #ECE6E1; --ink: #231B1A; --muted: #72645E; --line: #E5DED8;
+  --accent: #8A1C3B; --accent-ink: #FFFFFF; --accent-d: #E77D9B; --accent-ink-d: #2A0711;
+  --side-bg: #F0EBE6; --side-ink: #231B1A; --side-muted: #72645E; --side-hover: #E5DDD6; --side-line: #E2D9D1; --side-field: #FFFDFC;
+  --panel: #3A1220;
+}
+:root[data-palette="emerald"] {
+  --bg: #F5F7F6; --surface: #FFFFFF; --sunken: #ECF1EE; --hover: #E6ECE8; --ink: #142019; --muted: #5C6D63; --line: #DCE4DF;
+  --accent: #14724F; --accent-ink: #FFFFFF; --accent-d: #4FCB98; --accent-ink-d: #04140D;
+  --side-bg: #10301F; --side-ink: #EAF3EE; --side-muted: #94B4A3; --side-hover: rgb(255 255 255 / .08); --side-line: #1B4430; --side-field: rgb(255 255 255 / .07);
+  --panel: #10301F;
+}
+:root[data-palette="mono"] {
+  --bg: #FAFAFA; --surface: #FFFFFF; --sunken: #F2F2F2; --hover: #EEEEEE; --ink: #111111; --muted: #6B6B6B; --line: #E4E4E4;
+  --accent: #111111; --accent-ink: #FFFFFF; --accent-d: #F2F2F2; --accent-ink-d: #111111;
+  --side-bg: #FAFAFA; --side-ink: #111111; --side-muted: #6B6B6B; --side-hover: #EEEEEE; --side-line: #E4E4E4; --side-field: #FFFFFF;
+  --panel: #111111;
+}
+:root[data-palette="classic"] {
+  --bg: #F7F7F8; --surface: #FFFFFF; --sunken: #F0F1F3; --hover: #EDEEF1; --ink: #18191C; --muted: #686C74; --line: #E3E4E8;
+  --accent: #3A5BD9; --accent-ink: #FFFFFF; --accent-d: #7D92FF; --accent-ink-d: #0D1022;
+  --side-bg: #FBFBFC; --side-ink: #18191C; --side-muted: #686C74; --side-hover: #EDEEF1; --side-line: #E3E4E8; --side-field: #FFFFFF;
+  --panel: #17181B;
+}
+/* Тёмная тема: общие тёмные нейтрали, акцент — светлый вариант цвета выбранной схемы */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #111214; --surface: #18191C; --sunken: #1F2024; --hover: #232429; --side: #141518; --ink: #E8E9EC; --muted: #9A9DA5; --line: #2A2C31;
-    --accent: #7D92FF; --accent-ink: #0D1022; --ok: #4CC38A; --warn: #E3A04A; --crit: #F07468; color-scheme: dark;
+    --bg: #111213; --surface: #18191B; --sunken: #1F2023; --hover: #232427; --ink: #E9E9E7; --muted: #9C9D99; --line: #2A2B2E;
+    --accent: var(--accent-d); --accent-ink: var(--accent-ink-d);
+    --side-bg: #141516; --side-ink: #E9E9E7; --side-muted: #9C9D99; --side-hover: #232427; --side-line: #2A2B2E; --side-field: #1B1C1E;
+    --ok: #4CC38A; --warn: #E3A04A; --crit: #F07468; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #111214; --surface: #18191C; --sunken: #1F2024; --hover: #232429; --side: #141518; --ink: #E8E9EC; --muted: #9A9DA5; --line: #2A2C31;
-  --accent: #7D92FF; --accent-ink: #0D1022; --ok: #4CC38A; --warn: #E3A04A; --crit: #F07468; color-scheme: dark;
+  --bg: #111213; --surface: #18191B; --sunken: #1F2023; --hover: #232427; --ink: #E9E9E7; --muted: #9C9D99; --line: #2A2B2E;
+  --accent: var(--accent-d); --accent-ink: var(--accent-ink-d);
+  --side-bg: #141516; --side-ink: #E9E9E7; --side-muted: #9C9D99; --side-hover: #232427; --side-line: #2A2B2E; --side-field: #1B1C1E;
+  --ok: #4CC38A; --warn: #E3A04A; --crit: #F07468; color-scheme: dark;
 }
 body { background: var(--bg); color: var(--ink); font: 14px/1.45 var(--f-body); }
 .wrap { max-width: 1440px; margin: 0 auto; padding-inline: 16px; box-sizing: border-box; }
@@ -33,28 +66,30 @@ h2 { font-size: 17px; font-weight: 600; letter-spacing: -.005em; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .shell { display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100vh; }
-.side { position: sticky; top: 0; height: 100vh; box-sizing: border-box; background: var(--side); border-right: 1px solid var(--line); padding: 12px 10px; display: flex; flex-direction: column; gap: 10px; }
+.side { position: sticky; top: 0; height: 100vh; box-sizing: border-box; background: var(--side-bg); color: var(--side-ink); border-right: 1px solid var(--side-line); padding: 12px 10px; display: flex; flex-direction: column; gap: 10px; }
 .side-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 2px 4px; }
 .logo { display: flex; align-items: center; gap: 8px; font: 700 15px/1 var(--f-body); letter-spacing: -.01em; }
-.logo small { font: 500 11px/1 var(--f-body); color: var(--muted); }
-.mark { width: 22px; height: 22px; border-radius: 6px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font: 700 12px/1 var(--f-body); flex: none; }
-.icon-btn { position: relative; width: 30px; height: 30px; display: grid; place-items: center; border: 0; border-radius: 6px; background: none; color: var(--muted); cursor: pointer; }
-.icon-btn:hover { background: var(--hover); color: var(--ink); }
+.logo small { font: 500 11px/1 var(--f-body); color: var(--side-muted); }
+.mark { width: 24px; height: 24px; border-radius: 6px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; flex: none; }
+.mark svg { width: 70%; height: 70%; fill: currentColor; }
+.icon-btn { position: relative; width: 30px; height: 30px; display: grid; place-items: center; border: 0; border-radius: 6px; background: none; color: var(--side-muted); cursor: pointer; }
+.icon-btn:hover { background: var(--side-hover); color: var(--side-ink); }
 .icon-btn svg, .side-search svg, .tab svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 .icon-btn b { position: absolute; top: 1px; right: 1px; min-width: 15px; height: 15px; padding: 0 3px; box-sizing: border-box; border-radius: 8px; background: var(--crit); color: #fff; font: 600 10px/15px var(--f-body); text-align: center; }
-.side-search { display: flex; align-items: center; gap: 8px; width: 100%; font: inherit; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; cursor: pointer; text-align: left; }
-.side-search:hover { border-color: color-mix(in srgb, var(--ink) 25%, var(--line)); }
+.side-search { display: flex; align-items: center; gap: 8px; width: 100%; font: inherit; color: var(--side-muted); background: var(--side-field); border: 1px solid var(--side-line); border-radius: 6px; padding: 6px 8px; cursor: pointer; text-align: left; }
+.side-search:hover { color: var(--side-ink); }
+.side kbd { color: var(--side-muted); border-color: var(--side-line); background: none; }
 .side-search span { flex: 1; }
 kbd { font: 500 11px/1.4 var(--f-body); color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; background: var(--bg); }
 .side-new { width: 100%; justify-content: center; display: flex; }
 nav.tabs { display: grid; gap: 1px; flex: 1; align-content: start; }
-.tab { display: flex; align-items: center; gap: 10px; font: 500 14px var(--f-body); color: var(--muted); background: none; border: 0; padding: 6px 8px; border-radius: 6px; cursor: pointer; text-align: left; }
-.tab:hover { background: var(--hover); color: var(--ink); }
-.tab[aria-current="page"] { background: var(--hover); color: var(--ink); font-weight: 600; }
+.tab { display: flex; align-items: center; gap: 10px; font: 500 14px var(--f-body); color: var(--side-muted); background: none; border: 0; padding: 6px 8px; border-radius: 6px; cursor: pointer; text-align: left; }
+.tab:hover { background: var(--side-hover); color: var(--side-ink); }
+.tab[aria-current="page"] { background: var(--side-hover); color: var(--side-ink); font-weight: 600; }
 .tab b { margin-left: auto; font: 600 11px/18px var(--f-body); min-width: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 9px; background: var(--crit); color: #fff; text-align: center; font-variant-numeric: tabular-nums; }
 .main-col { min-width: 0; padding-inline: 28px; }
-.me { display: flex; align-items: center; gap: 10px; width: 100%; font: 500 14px var(--f-body); color: var(--ink); background: none; border: 0; border-radius: 6px; padding: 6px; cursor: pointer; text-align: left; }
-.me:hover, .me[aria-current="page"] { background: var(--hover); }
+.me { display: flex; align-items: center; gap: 10px; width: 100%; font: 500 14px var(--f-body); color: var(--side-ink); background: none; border: 0; border-radius: 6px; padding: 6px; cursor: pointer; text-align: left; }
+.me:hover, .me[aria-current="page"] { background: var(--side-hover); }
 .me .avatar { --size: 26px; }
 .avatar { --size: 34px; width: var(--size); height: var(--size); border-radius: 50%; flex: none; display: inline-grid; place-items: center; overflow: hidden;
   background: color-mix(in srgb, var(--accent) 16%, var(--surface)); color: var(--accent); font: 600 calc(var(--size) * .38) / 1 var(--f-body); letter-spacing: .02em; }
@@ -63,13 +98,13 @@ nav.tabs { display: grid; gap: 1px; flex: 1; align-content: start; }
 
 .login { min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding-block: 24px; box-sizing: border-box; }
 .login-card { width: min(900px, 100%); display: grid; grid-template-columns: 1fr 1fr; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
-.login-brand { background: #17181B; color: #F2F3F5; padding: 40px; display: grid; gap: 18px; align-content: space-between; }
+.login-brand { background: var(--panel); color: #F4F3F1; padding: 40px; display: grid; gap: 18px; align-content: space-between; }
 .login-brand .logo { font-size: 24px; gap: 10px; }
-.login-brand .mark { width: 30px; height: 30px; font-size: 16px; border-radius: 8px; }
+.login-brand .mark { width: 32px; height: 32px; border-radius: 8px; }
 .login-brand .lead { font-size: 17px; line-height: 1.4; margin: 0; max-width: 30ch; }
 .login-brand ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
 .login-brand li { display: flex; gap: 10px; align-items: start; }
-.login-brand li::before { content: ""; width: 6px; height: 6px; margin-top: 8px; border-radius: 50%; background: #7D92FF; flex: none; }
+.login-brand li::before { content: ""; width: 6px; height: 6px; margin-top: 8px; border-radius: 50%; background: currentColor; opacity: .5; flex: none; }
 .login-brand .fine { font-size: 12px; opacity: .8; margin: 0; }
 .login-form { padding: 40px; display: grid; gap: 14px; align-content: start; }
 .login-form h1 { font-size: 20px; font-weight: 600; }
@@ -82,6 +117,11 @@ nav.tabs { display: grid; gap: 1px; flex: 1; align-content: start; }
 
 .profile-head { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 20px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; }
 .profile-head h2 { font-size: 20px; }
+.palettes { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.pal { display: grid; gap: 8px; text-align: left; font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px; cursor: pointer; }
+.pal[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent); }
+.pal i { display: flex; height: 28px; border-radius: 5px; overflow: hidden; }
+.pal i b { flex: 1; }
 .profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; align-items: start; }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 12px; }
 .panel h3 { font-size: 15px; }
@@ -138,7 +178,7 @@ main { max-width: 1400px; padding-block: 24px 40px; display: grid; grid-template
 
 .tbl { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
 table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
-th { text-align: left; font-size: 12.5px; font-weight: 500; color: var(--muted); padding: 8px 12px; background: var(--side); border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { text-align: left; font-size: 12.5px; font-weight: 500; color: var(--muted); padding: 8px 12px; background: var(--sunken); border-bottom: 1px solid var(--line); white-space: nowrap; }
 td { padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
 tbody tr:hover td { background: color-mix(in srgb, var(--hover) 50%, transparent); }
 tr:last-child td { border-bottom: 0; }
@@ -291,7 +331,9 @@ footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: f
     background: var(--surface); border-top: 1px solid var(--line); padding: 4px 2px calc(4px + env(safe-area-inset-bottom, 0px)); }
   .tab { flex-direction: column; align-items: center; gap: 2px; font-size: 11px; padding: 6px 2px; border-radius: 8px; position: relative; }
   .tab svg { width: 22px; height: 22px; }
-  .tab[aria-current="page"] { background: none; color: var(--accent); }
+  nav.tabs .tab { color: var(--muted); }
+  nav.tabs .tab:hover { background: none; }
+  nav.tabs .tab[aria-current="page"] { background: none; color: var(--accent); }
   .tab b { position: absolute; top: 2px; left: calc(50% + 6px); margin: 0; font-size: 10px; min-width: 16px; line-height: 16px; min-width: 16px; padding: 0 4px; border-radius: 8px; background: var(--crit); color: #fff; box-sizing: border-box; }
   main { padding-block: 16px 24px; gap: 20px; }
   footer { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
@@ -331,7 +373,7 @@ footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: f
 <section id="login" class="login wrap" hidden></section>
 <div class="shell" id="app" hidden>
   <aside class="side">
-    <div class="side-head"><span class="logo"><span class="mark" aria-hidden="true">R</span>Realtika<small>демо</small></span>
+    <div class="side-head"><span class="logo"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 11.2 12 4l8.5 7.2V20a1 1 0 0 1-1 1h-5v-5.5h-5V21h-5a1 1 0 0 1-1-1z"/></svg></span>Realtika<small>демо</small></span>
       <button class="icon-btn" data-act="notif" aria-label="Уведомления"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><b id="notif-count" hidden></b></button></div>
     <button class="side-search" data-act="search" aria-label="Поиск"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg><span>Поиск</span><kbd>Ctrl K</kbd></button>
     <button class="btn primary side-new" data-act="import-open">+ Сделка<span class="only-desktop">&nbsp;из переписки</span></button>
@@ -793,13 +835,16 @@ const views = {
 
 const initials = u => u.name.split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
 const avatar = (u, cls = '') => `<span class="avatar ${cls}" aria-hidden="true">${u.photo ? `<img src="${u.photo}" alt="">` : esc(initials(u))}</span>`;
+const PALETTES = [['graphite', 'Графит', '#1C1D1F', '#D9480F'], ['burgundy', 'Бордо', '#F0EBE6', '#8A1C3B'], ['emerald', 'Изумруд', '#10301F', '#14724F'], ['mono', 'Монохром', '#FAFAFA', '#111111'], ['classic', 'Классика', '#FBFBFC', '#3A5BD9']];
 function applyTheme() {
+  const pal = S.me && me().settings.palette;
+  if (pal && pal !== 'graphite') document.documentElement.dataset.palette = pal; else delete document.documentElement.dataset.palette;
   const t = S.me && me().settings.theme;
   if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme;
 }
 function renderLogin(email = '') {
   $('login').innerHTML = `<div class="login-card">
-    <div class="login-brand"><div class="logo"><span class="mark" aria-hidden="true">R</span>Realtika</div>
+    <div class="login-brand"><div class="logo"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 11.2 12 4l8.5 7.2V20a1 1 0 0 1-1 1h-5v-5.5h-5V21h-5a1 1 0 0 1-1-1z"/></svg></span>Realtika</div>
       <p class="lead">CRM для агентств недвижимости, которую заполняет ИИ</p>
       <ul><li>Сделка из переписки за пару секунд</li><li>Брони, показы и комиссии под контролем</li><li>Подбор квартиры прямо на встрече с клиентом</li></ul>
       <p class="fine">Демо-версия на вымышленных данных</p></div>
@@ -863,6 +908,7 @@ views.profile = () => {
         <button class="btn primary" type="submit" style="justify-self:start">Сохранить</button></form>
       <div class="panel"><h3>Настройки</h3>
         <div class="field"><label for="pf-theme">Тема оформления</label><select id="pf-theme">${[['system', 'как в системе'], ['light', 'светлая'], ['dark', 'тёмная']].map(([v, t]) => `<option value="${v}"${st.theme === v ? ' selected' : ''}>${t}</option>`).join('')}</select></div>
+        <div class="field"><span class="lbl">Цветовая схема</span><div class="palettes">${PALETTES.map(([k, n, side, acc]) => `<button type="button" class="pal" data-act="palette" data-id="${k}" aria-pressed="${(st.palette || 'graphite') === k}"><i><b style="background:${side}"></b><b style="background:${acc}"></b></i>${n}</button>`).join('')}</div></div>
         <label class="check"><input type="checkbox" id="pf-hints"${st.aiHints ? ' checked' : ''}> Подсказки ИИ во вкладке «Задачи»</label>
         <span class="small muted">Уведомления в Telegram и утренняя сводка появятся в рабочей версии.</span></div>
     </div></section>`;
@@ -1521,6 +1567,7 @@ document.addEventListener('click', e => {
     case 'search': openSearch(); return;
     case 'notif': openNotif(); return;
     case 'logout': logOut(); return;
+    case 'palette': me().settings.palette = id; applyTheme(); break;
     case 'demo-login': logIn(id); return;
     case 'forgot': { const er = $('lg-err'); er.textContent = 'Это демо: пароль для всех аккаунтов — demo.'; er.hidden = false; return; }
     case 'advance': openAdvance(id); return;
