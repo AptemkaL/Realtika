@@ -9,6 +9,15 @@ const DISTRICTS = {
 const SOURCES = [[/авито/, 'Авито'], [/циан/, 'Циан'], [/домклик/, 'Домклик'], [/рекоменд|посоветовал/, 'Рекомендация'], [/с сайта|на сайте/, 'Сайт']];
 const WEEKDAYS = [[/воскресень/, 0], [/понедельник/, 1], [/вторник/, 2], [/сред[уа]/, 3], [/четверг/, 4], [/пятниц/, 5], [/суббот/, 6]];
 
+function roomsOf(t) {
+  if (/студи/.test(t)) return 0;
+  if (/однушк|однокомнат/.test(t)) return 1;
+  if (/двушк|двухкомнат/.test(t)) return 2;
+  if (/трешк|трехкомнат/.test(t)) return 3;
+  const m = t.match(/(\d)\s*-?\s*(?:х\s*)?(?:к(?![а-я])|комн)/);
+  return m ? Number(m[1]) : undefined;
+}
+
 function parseChat(text, now = new Date()) {
   const t = text.toLowerCase().replace(/ё/g, 'е');
   const r = {};
@@ -33,14 +42,8 @@ function parseChat(text, now = new Date()) {
 
   // фразы про продажу своего жилья не описывают запрос клиента
   const want = t.split(/[.;!?]/).filter(s => !/прода/.test(s)).join('.');
-  if (/студи/.test(want)) r.rooms = 0;
-  else if (/однушк|однокомнат/.test(want)) r.rooms = 1;
-  else if (/двушк|двухкомнат/.test(want)) r.rooms = 2;
-  else if (/трешк|трехкомнат/.test(want)) r.rooms = 3;
-  else {
-    const m = want.match(/(\d)\s*-?\s*(?:х\s*)?(?:к(?![а-я])|комн)/);
-    if (m) r.rooms = Number(m[1]);
-  }
+  const rooms = roomsOf(want);
+  if (rooms !== undefined) r.rooms = rooms;
 
   const d = Object.keys(DISTRICTS).find(stem => t.includes(stem));
   if (d) r.district = DISTRICTS[d];
@@ -79,4 +82,45 @@ function parseChat(text, now = new Date()) {
   return r;
 }
 
-if (typeof module !== 'undefined') module.exports = { parseChat, DISTRICTS };
+// Описание квартиры на продажу (вторичка): из него ИИ заполняет объявление
+function parseListing(text) {
+  const t = text.toLowerCase().replace(/ё/g, 'е');
+  const base = parseChat(text);
+  const r = {};
+  const rooms = roomsOf(t);
+  if (rooms !== undefined) r.rooms = rooms;
+  if (base.district) r.district = base.district;
+  if (base.budget) r.price = base.budget;
+
+  for (const m of t.matchAll(/(\d+(?:[.,]\d+)?)\s*(?:м²|м2|кв\.?\s*м|квадрат|метр)/g)) {
+    const v = parseFloat(m[1].replace(',', '.'));
+    if (/кухн/.test(t.slice(0, m.index).split(/[.,;!?]/).pop())) r.kitchen ??= v;
+    else r.area ??= v;
+  }
+
+  const ff = t.match(/(\d+)\s*\/\s*(\d+)\s*эт/);
+  if (ff) { r.floor = Number(ff[1]); r.floors = Number(ff[2]); }
+  else {
+    const f = t.match(/(\d+)\s*-?\s*(?:м|й|ом)?\s*этаж(?!н)/);
+    const total = t.match(/(\d+)\s*-?\s*(?:ти|х|и)?\s*-?\s*этажн/) || t.match(/этаж[а-я]*\s+из\s+(\d+)/);
+    if (f) r.floor = Number(f[1]);
+    if (total) r.floors = Number(total[1]);
+  }
+
+  const addr = text.match(/((?:ул\.|улица|пр\.|проспект|наб\.|набережная|пер\.|переулок|шоссе|бульвар)\s+[А-ЯЁ][А-Яа-яЁё.\- ]*?(?:,?\s*(?:д\.|дом)\s*\d+[а-я]?)?)(?=[,.;]|$)/m);
+  if (addr) r.address = addr[1].trim();
+
+  if (/дизайнерск/.test(t)) r.renovation = 'дизайнерский';
+  else if (/евро/.test(t)) r.renovation = 'евро';
+  else if (/косметическ/.test(t)) r.renovation = 'косметический';
+  else if (/без ремонта|требует ремонта|под ремонт/.test(t)) r.renovation = 'без ремонта';
+
+  if (/раздельн/.test(t)) r.bathroom = 'раздельный';
+  else if (/совмещ/.test(t)) r.bathroom = 'совмещённый';
+
+  if (/без балкона/.test(t)) r.balcony = false;
+  else if (/балкон|лоджи/.test(t)) r.balcony = true;
+  return r;
+}
+
+if (typeof module !== 'undefined') module.exports = { parseChat, parseListing, DISTRICTS };

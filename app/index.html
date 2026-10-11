@@ -155,6 +155,37 @@ dialog.drawer.wide { width: min(660px, 100%); }
 .plan .sub { fill: var(--muted); font-size: 11px; }
 .doc { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; }
 
+dialog.modal.wide { width: min(860px, calc(100% - 32px)); }
+.filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; }
+.filters .wide-field { grid-column: 1 / -1; }
+.range { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.lbl { font-size: 13px; font-weight: 600; color: var(--muted); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg .btn { border: 0; border-radius: 0; }
+.seg .btn[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.results { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 16px; }
+.rcard { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; display: grid; grid-template-rows: auto 1fr; }
+.rphoto { display: block; position: relative; padding: 0; border: 0; background: var(--sunken); cursor: pointer; aspect-ratio: 16 / 10; width: 100%; }
+.rphoto img, .rphoto svg, .gallery img, .gallery svg { width: 100%; height: 100%; object-fit: cover; display: block; }
+.badge { position: absolute; left: 8px; bottom: 8px; font: 600 11px/1 var(--f-body); padding: 4px 7px; border-radius: 6px; background: rgb(20 24 22 / .72); color: #fff; }
+.rbody { padding: 12px 14px 14px; display: grid; gap: 6px; align-content: start; }
+.rtitle { display: flex; justify-content: space-between; gap: 8px; align-items: start; }
+.rtitle .btn.link { color: var(--ink); font-weight: 600; text-decoration: none; }
+.price { font: 600 18px/1.2 var(--f-display); font-variant-numeric: tabular-nums; }
+.ulist { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font-size: 13px; }
+.ulist li { display: flex; justify-content: space-between; gap: 8px; font-variant-numeric: tabular-nums; }
+.ulist .btn.link { color: var(--ink); }
+.gallery { display: grid; grid-auto-flow: column; grid-auto-columns: 100%; overflow-x: auto; scroll-snap-type: x mandatory; border-radius: 8px; background: var(--sunken); }
+.gallery figure { margin: 0; scroll-snap-align: start; position: relative; aspect-ratio: 16 / 10; }
+.gallery figure .plan { padding: 12px; box-sizing: border-box; background: var(--surface); }
+.gallery figcaption { position: absolute; left: 8px; bottom: 8px; font: 600 11px/1 var(--f-body); padding: 4px 7px; border-radius: 6px; background: rgb(20 24 22 / .72); color: #fff; }
+.thumbs { display: flex; flex-wrap: wrap; gap: 8px; }
+.thumbs figure { margin: 0; position: relative; width: 112px; aspect-ratio: 4 / 3; border-radius: 6px; overflow: hidden; background: var(--sunken); }
+.thumbs img { width: 100%; height: 100%; object-fit: cover; }
+.thumbs .x { position: absolute; top: 2px; right: 2px; background: rgb(20 24 22 / .72); color: #fff; border-radius: 6px; font-size: 16px; padding: 2px 6px; }
+#pickmap { height: 240px; border-radius: 8px; border: 1px solid var(--line); background: var(--sunken); z-index: 0; }
+.info { color: var(--ok); font-size: 13px; margin: 0; }
+
 footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
 
 @media (max-width: 640px) {
@@ -187,7 +218,7 @@ footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: f
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="parse.js"></script>
 <script>
-const K = 'realtika-demo-v3';
+const K = 'realtika-demo-v4';
 const ROLES = { agent: 'Агент', head: 'Руководитель отдела продаж', director: 'Директор' };
 const TABS = [['tasks', 'Задачи'], ['deals', 'Сделки'], ['objects', 'Объекты'], ['bookings', 'Брони'], ['commissions', 'Комиссии'], ['team', 'Команда']];
 const PAYMENTS = ['', 'ипотека', 'наличные', 'рассрочка'];
@@ -235,18 +266,27 @@ function genUnits(c) {
   for (let fl = 2; fl <= c.floors; fl++) c.layout.forEach((rooms, i) => {
     const number = (fl - 2) * c.layout.length + i + 1, area = AREA[rooms] + (i % 2) * 2;
     const h = (number * 37 + fl * 11 + c.id.charCodeAt(1)) % 10;
-    out.push({ id: `${c.id}-${number}`, complexId: c.id, number, floor: fl, rooms, area, type: 'новостройка', district: c.district, address: c.name, lat: c.lat, lng: c.lng,
+    out.push({ id: `${c.id}-${number}`, complexId: c.id, number, floor: fl, rooms, area, type: 'новостройка', district: c.district, address: c.name, lat: c.lat, lng: c.lng, floors: c.floors,
       price: Math.round(area * c.m2 * (1 + fl * 0.006) / 1e4) * 1e4, status: h < 3 ? 'продана' : h === 3 ? 'бронь' : 'свободна' });
   });
   return out;
 }
 const COMPLEX_DOCS = ['Разрешение на строительство', 'Проектная декларация', 'Договор ДДУ (шаблон)', 'Аккредитованные банки', 'Планировки и отделка'];
-const SECONDARY_DOCS = [['Выписка из ЕГРН', true], ['Технический план', true], ['Справка о зарегистрированных', false], ['Согласие супруга на продажу', false]];
+const REQUIRED_DOCS = ['Выписка из ЕГРН', 'Технический план', 'Справка о зарегистрированных', 'Согласие супруга на продажу'];
+const PLATFORMS = [['avito', 'Авито'], ['cian', 'Циан'], ['domclick', 'Домклик'], ['yandex', 'Яндекс Недвижимость']];
+const RENOVATIONS = ['', 'без ремонта', 'косметический', 'евро', 'дизайнерский'];
+const RENO_TEXT = { 'без ремонта': 'без ремонта', 'косметический': 'косметический ремонт', 'евро': 'евроремонт', 'дизайнерский': 'дизайнерский ремонт' };
 const UNIT_STATUS = { 'свободна': 'free', 'бронь': 'booked', 'продана': 'sold' };
 
 function seed() {
   const D = (id, agentId, stageId, name, phone, last, f) => ({ id, agentId, stageId, name, phone, lastContact: iso(last), notes: [], ...DEFAULTS, ...f });
-  const O = (id, rooms, district, address, area, price, floor, lat, lng, status = 'свободна') => ({ id, rooms, type: 'вторичка', district, address, area, price, floor, lat, lng, status });
+  const docs = [{ kind: 'Выписка из ЕГРН', file: 'egrn.pdf', size: 214000 }, { kind: 'Технический план', file: 'tehplan.pdf', size: 538000 }];
+  const O = (id, agentId, rooms, district, address, area, price, floor, floors, lat, lng, x) => {
+    const o = { id, agentId, rooms, type: 'вторичка', district, address, area, price, floor, floors, lat, lng, status: 'свободна', kitchen: 0, renovation: '', bathroom: '', balcony: false,
+      photos: [], docs, ownerName: '', ownerPhone: '', draft: false, publishedAt: iso(-12), platforms: { avito: true, cian: true, domclick: false, yandex: false }, ...x };
+    o.description = genDescription(o);
+    return o;
+  };
   const units = COMPLEXES.flatMap(genUnits);
   // квартиры под брони из демо-сделок: свободная на 5-м этаже и выше
   const pick = (cid, rooms, status) => { const u = units.find(x => x.complexId === cid && x.rooms === rooms && x.status === 'свободна' && x.floor >= 5); u.status = status; return u; };
@@ -280,13 +320,13 @@ function seed() {
     deals,
     complexes: COMPLEXES,
     objects: [
-      O('o1', 2, 'Приморский', 'Комендантский пр.', 58, 12.2e6, 7, 60.008, 30.258),
-      O('o4', 3, 'Петроградский', 'ул. Ленина', 86, 17.5e6, 4, 59.963, 30.307),
-      O('o7', 1, 'Выборгский', 'пр. Энгельса', 36, 9.6e6, 9, 60.035, 30.330, 'продана'),
-      O('o8', 2, 'Калининский', 'Гражданский пр.', 52, 10.7e6, 5, 60.020, 30.395),
-      O('o10', 2, 'Выборгский', 'пр. Просвещения', 54, 10.3e6, 11, 60.051, 30.360, 'бронь'),
-      O('o12', 3, 'Петроградский', 'Большая Пушкарская ул.', 95, 24.5e6, 3, 59.958, 30.302),
-      O('o14', 2, 'Фрунзенский', 'Бухарестская ул.', 55, 8.9e6, 6, 59.855, 30.390),
+      O('o1', 'u3', 2, 'Приморский', 'Комендантский пр., д. 30', 58, 12.2e6, 7, 12, 60.008, 30.258, { kitchen: 10, renovation: 'евро', bathroom: 'раздельный', balcony: true, ownerName: 'Олег Петров', ownerPhone: '+7 900 000-20-01' }),
+      O('o4', 'u4', 3, 'Петроградский', 'ул. Ленина, д. 18', 86, 17.5e6, 4, 6, 59.963, 30.307, { kitchen: 12, renovation: 'косметический', bathroom: 'раздельный', ownerName: 'Ирина Соловьёва', ownerPhone: '+7 900 000-20-02', platforms: { avito: true, cian: true, domclick: true, yandex: true } }),
+      O('o7', 'u5', 1, 'Выборгский', 'пр. Энгельса, д. 61', 36, 9.6e6, 9, 9, 60.035, 30.330, { status: 'продана', kitchen: 8, renovation: 'косметический', bathroom: 'совмещённый', balcony: true, ownerName: 'Андрей Белов', ownerPhone: '+7 900 000-20-03' }),
+      O('o8', 'u3', 2, 'Калининский', 'Гражданский пр., д. 88', 52, 10.7e6, 5, 9, 60.020, 30.395, { kitchen: 7, renovation: 'без ремонта', bathroom: 'совмещённый', balcony: true, ownerName: 'Галина Козлова', ownerPhone: '+7 900 000-20-04', platforms: { avito: false, cian: true, domclick: false, yandex: false } }),
+      O('o10', 'u5', 2, 'Выборгский', 'пр. Просвещения, д. 46', 54, 10.3e6, 11, 14, 60.051, 30.360, { status: 'бронь', kitchen: 9, renovation: 'евро', bathroom: 'раздельный', balcony: true, ownerName: 'Сергей Фомин', ownerPhone: '+7 900 000-20-05', platforms: { avito: true, cian: true, domclick: true, yandex: false } }),
+      O('o12', 'u4', 3, 'Петроградский', 'Большая Пушкарская ул., д. 7', 95, 24.5e6, 3, 5, 59.958, 30.302, { kitchen: 15, renovation: 'дизайнерский', bathroom: 'раздельный', ownerName: 'Елизавета Орлова', ownerPhone: '+7 900 000-20-06', platforms: { avito: true, cian: true, domclick: true, yandex: true } }),
+      O('o14', 'u3', 2, 'Фрунзенский', 'Бухарестская ул., д. 23', 55, 8.9e6, 6, 9, 59.855, 30.390, { kitchen: 8, renovation: 'косметический', bathroom: 'раздельный', balcony: true, ownerName: 'Николай Ершов', ownerPhone: '+7 900 000-20-07', draft: true, publishedAt: null, docs: [docs[0]], platforms: { avito: false, cian: false, domclick: false, yandex: false } }),
       ...units,
     ],
     bookings: [
@@ -315,7 +355,7 @@ function seed() {
 let S = null;
 try { S = JSON.parse(localStorage.getItem(K)); } catch (e) {}
 if (!S || !S.deals) S = seed();
-const save = () => { try { localStorage.setItem(K, JSON.stringify(S)); } catch (e) {} };
+const save = () => { try { localStorage.setItem(K, JSON.stringify(S)); return true; } catch (e) { return false; } };
 
 const $ = id => document.getElementById(id);
 const user = id => S.users.find(u => u.id === id);
@@ -335,7 +375,11 @@ const taskTitle = kind => kind === 'Звонок' ? 'Позвонить клие
 let tab = location.hash.slice(1) || 'tasks';
 let filterAgent = '';
 let ui = { dealId: null, placeId: null, unitId: null, rooms: null, draft: false, editing: false, preview: null, stageErr: '' };
-let map = null, mapView = null;
+let map = null, mapView = null, pickMap = null;
+const F0 = { q: '', market: '', rooms: [], priceFrom: '', priceTo: '', areaFrom: '', areaTo: '', district: '', notFirst: false, notLast: false, onlyFree: true, sort: 'price' };
+let F = { ...F0, rooms: [] }, objView = 'list';
+// Черновик объявления видят только автор и руководители
+const visible = o => !o.draft || o.agentId === S.me || can().all;
 
 // Агент видит только свои сделки, руководители — все (с фильтром по сотруднику)
 function scoped() {
@@ -345,7 +389,7 @@ function scoped() {
 const scopedIds = () => new Set(scoped().map(d => d.id));
 
 function fits(d, o) {
-  return o.status === 'свободна'
+  return o.status === 'свободна' && (!o.draft || o.agentId === d.agentId)
     && (d.type === 'любая' || o.type === d.type)
     && (d.rooms == null || o.rooms === d.rooms)
     && (!d.budget || o.price <= d.budget * 1.05);
@@ -435,20 +479,27 @@ const views = {
       }).join('')}</div></section>`;
   },
   objects() {
-    const open = scoped().filter(isOpen);
-    const fitN = list => open.filter(d => list.some(o => fits(d, o))).length;
-    const rows = [
-      ...S.complexes.map(c => {
-        const us = S.objects.filter(o => o.complexId === c.id), free = us.filter(o => o.status === 'свободна');
-        return { id: c.id, name: c.name, type: 'новостройка', district: c.district, info: `${free.length} из ${us.length} квартир свободно · сдача: ${c.deadline}`, price: free.length ? 'от ' + mln(Math.min(...free.map(o => o.price))) : pill('muted', 'нет свободных'), n: fitN(us) };
-      }),
-      ...S.objects.filter(o => !o.complexId).map(o => ({ id: o.id, name: `${roomsLabel(o.rooms)}, ${o.area} м² · ${o.address}`, type: 'вторичка', district: o.district, info: `${o.floor} этаж · ${rub(o.price / o.area)} за м²`, price: o.status === 'свободна' ? mln(o.price) : pill(UNIT_STATUS[o.status] === 'sold' ? 'muted' : 'warn', o.status), n: fitN([o]) })),
-    ];
-    return `<section class="section"><div class="section-head"><h2>Объекты</h2><span class="muted small">Нажмите на метку или строку: откроются документы, квартиры и планировки</span></div>
-      <div id="map" role="region" aria-label="Карта объектов"></div>
-      <div class="tbl"><table><thead><tr><th>Объект</th><th>Рынок</th><th>Район</th><th>Наличие</th><th class="num">Цена</th><th class="num">Подходит сделкам</th></tr></thead><tbody>
-      ${rows.map(r => `<tr><td><button class="btn link" data-act="place" data-id="${r.id}">${esc(r.name)}</button></td><td>${r.type}</td><td>${r.district}</td><td class="small">${r.info}</td><td class="num">${r.price}</td><td class="num">${r.n ? pill('accent', r.n) : '<span class="muted">—</span>'}</td></tr>`).join('')}
-      </tbody></table></div></section>`;
+    const n = v => v === '' ? '' : esc(v);
+    const districts = [...new Set(S.objects.map(o => o.district))].sort();
+    const opts = (list, cur) => list.map(([v, t]) => `<option value="${v}"${String(v) === String(cur) ? ' selected' : ''}>${t}</option>`).join('');
+    return `<section class="section"><div class="section-head"><h2>Объекты</h2>
+        <div class="toolbar"><div class="seg" role="group" aria-label="Вид"><button class="btn sm" data-act="objview" data-view="list" aria-pressed="${objView === 'list'}">Список</button><button class="btn sm" data-act="objview" data-view="map" aria-pressed="${objView === 'map'}">Карта</button></div>
+        <button class="btn primary sm" data-act="listing-new">+ Выставить на продажу</button></div></div>
+      <form id="filters" class="filters" role="search">
+        <div class="field wide-field"><label for="f-q">Название ЖК, улица или район</label><input id="f-q" type="search" placeholder="Например: Пулковские или Ленина" value="${n(F.q)}"></div>
+        <div class="field"><label for="f-market">Рынок</label><select id="f-market">${opts([['', 'любой'], ['новостройка', 'новостройки'], ['вторичка', 'вторичка']], F.market)}</select></div>
+        <div class="field"><span class="lbl">Комнаты</span><div class="actions">${[[0, 'Ст'], [1, '1'], [2, '2'], [3, '3']].map(([r, t]) => `<button type="button" class="btn sm chip" data-act="f-room" data-rooms="${r}" aria-pressed="${F.rooms.includes(r)}" aria-label="${roomsLabel(r)}">${t}</button>`).join('')}</div></div>
+        <div class="field"><span class="lbl">Цена, млн ₽</span><div class="range"><input id="f-pf" type="number" min="0" step="0.1" placeholder="от" aria-label="Цена от, млн" value="${n(F.priceFrom)}"><input id="f-pt" type="number" min="0" step="0.1" placeholder="до" aria-label="Цена до, млн" value="${n(F.priceTo)}"></div></div>
+        <div class="field"><span class="lbl">Площадь, м²</span><div class="range"><input id="f-af" type="number" min="0" placeholder="от" aria-label="Площадь от" value="${n(F.areaFrom)}"><input id="f-at" type="number" min="0" placeholder="до" aria-label="Площадь до" value="${n(F.areaTo)}"></div></div>
+        <div class="field"><label for="f-district">Район</label><select id="f-district">${opts([['', 'любой'], ...districts.map(d => [d, d])], F.district)}</select></div>
+        <div class="field"><span class="lbl">Этаж</span><label class="check"><input type="checkbox" id="f-nf"${F.notFirst ? ' checked' : ''}> не первый</label><label class="check"><input type="checkbox" id="f-nl"${F.notLast ? ' checked' : ''}> не последний</label></div>
+        <div class="field"><label for="f-sort">Сортировка</label><select id="f-sort">${opts([['price', 'сначала дешевле'], ['priceDesc', 'сначала дороже'], ['area', 'больше площадь'], ['m2', 'дешевле за м²']], F.sort)}</select>
+          <label class="check"><input type="checkbox" id="f-free"${F.onlyFree ? ' checked' : ''}> только свободные</label></div>
+        <div class="field"><label for="f-deal">Подставить запрос из сделки</label><select id="f-deal"><option value="">выберите сделку</option>${scoped().filter(isOpen).map(d => `<option value="${d.id}">${esc(d.name)}</option>`).join('')}</select></div>
+        <div class="field" style="align-content:end"><button type="button" class="btn sm" data-act="f-reset">Сбросить фильтры</button></div>
+      </form>
+      <p class="small muted" id="found" style="margin:0" aria-live="polite"></p>
+      <div id="results"></div></section>`;
   },
   bookings() {
     const ids = scopedIds(), bs = S.bookings.filter(b => ids.has(b.dealId)), all = can().all;
@@ -508,7 +559,7 @@ function render() {
   $('me').innerHTML = S.users.map(u => `<option value="${u.id}"${u.id === S.me ? ' selected' : ''}>${esc(u.name)} · ${ROLES[u.role].toLowerCase()}</option>`).join('');
   if (map) { map.remove(); map = null; }
   $('view').innerHTML = views[tab]();
-  if (tab === 'objects') initMap();
+  if (tab === 'objects') fillResults();
   if ($('drawer').open) ui.placeId ? renderPlace() : ui.dealId && renderDeal();
 }
 
@@ -553,7 +604,7 @@ function renderDeal() {
       ${ui.draft ? `<textarea id="draft-box" rows="6" aria-label="Черновик сообщения">${esc(draftText(d))}</textarea><div class="actions"><button class="btn sm primary" data-act="copy">Копировать</button><span class="small muted" id="copy-status"></span></div>` : ''}
     </div>
 
-    <div class="block"><h3>Подходящие объекты</h3>
+    <div class="block"><h3><span>Подходящие объекты</span><button class="btn sm" data-act="deal-search" data-id="${d.id}">Подобрать в поиске</button></h3>
       ${m.length ? m.map(x => `<div class="match"><button class="btn link" style="color:var(--ink);font-weight:600" data-act="place" data-id="${x.o.complexId || x.o.id}" data-unit="${x.o.id}">${esc(objTitle(x.o))}</button><span>${mln(x.o.price)} · ${x.o.type}</span><span class="row">${x.why.map(([cls, t]) => pill(cls, t)).join('')}</span></div>`).join('') : '<span class="muted">В базе нет объектов под этот запрос.</span>'}
     </div>
     ${bs.length ? `<div class="block"><h3>Брони</h3>${bs.map(b => { const [cls, t] = bookingState(b); return `<div class="actions">${pill(cls, t)}<span>${b.kind}, ${rub(b.amount)}, до ${fmtDate(b.expires)}</span></div>`; }).join('')}</div>` : ''}
@@ -610,20 +661,109 @@ function previewNote(text) {
   return { text, changes, fields, stage: st && st.id !== d.stageId ? st : null, task };
 }
 
-function initMap() {
+function passes(o) {
+  const num = v => v === '' ? null : Number(v);
+  if (!visible(o)) return false;
+  if (F.onlyFree && o.status !== 'свободна') return false;
+  if (F.market && o.type !== F.market) return false;
+  if (F.rooms.length && !F.rooms.includes(o.rooms)) return false;
+  if (num(F.priceFrom) != null && o.price < num(F.priceFrom) * 1e6) return false;
+  if (num(F.priceTo) != null && o.price > num(F.priceTo) * 1e6) return false;
+  if (num(F.areaFrom) != null && o.area < num(F.areaFrom)) return false;
+  if (num(F.areaTo) != null && o.area > num(F.areaTo)) return false;
+  if (F.district && o.district !== F.district) return false;
+  if (F.notFirst && o.floor <= 1) return false;
+  if (F.notLast && o.floor >= o.floors) return false;
+  const q = F.q.trim().toLowerCase();
+  return !q || `${o.address} ${o.district}`.toLowerCase().includes(q);
+}
+const sortKey = o => ({ price: o.price, priceDesc: -o.price, area: -o.area, m2: o.price / o.area }[F.sort]);
+function search() {
+  const found = S.objects.filter(passes);
+  const items = [
+    ...S.complexes.map(c => ({ c, units: found.filter(o => o.complexId === c.id).sort((a, b) => sortKey(a) - sortKey(b)) })).filter(g => g.units.length).map(g => ({ ...g, key: sortKey(g.units[0]) })),
+    ...found.filter(o => !o.complexId).map(o => ({ o, key: sortKey(o) })),
+  ].sort((a, b) => a.key - b.key);
+  return { items, count: found.length };
+}
+function fromDeal(d) {
+  return { ...F0, rooms: d.rooms == null ? [] : [d.rooms], market: d.type === 'любая' ? '' : d.type, district: d.district, priceTo: d.budget ? Math.round(d.budget * 1.05 / 1e5) / 10 : '' };
+}
+function readFilters() {
+  F = { ...F, q: $('f-q').value, market: $('f-market').value, priceFrom: $('f-pf').value, priceTo: $('f-pt').value, areaFrom: $('f-af').value, areaTo: $('f-at').value,
+    district: $('f-district').value, notFirst: $('f-nf').checked, notLast: $('f-nl').checked, onlyFree: $('f-free').checked, sort: $('f-sort').value };
+}
+
+// Иллюстрация фасада вместо фото дома. shortcut: рисунок, не фото; заменить фотографиями от застройщика и агента
+function facadeSvg(key, floors, old) {
+  const h = [...key].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7);
+  const walls = old ? ['#B86B4B', '#C9A27E', '#9A938A', '#D3C2A4'] : ['#E7E1D6', '#C8D4DC', '#D8CAB6', '#C2CCC1', '#E2D2C4'];
+  const wall = walls[h % walls.length], fl = Math.min(floors, old ? 7 : 16);
+  const W = 480, H = 300, bw = old ? 320 : 230 + (h % 3) * 30, bx = (W - bw) / 2, fh = Math.min(old ? 30 : 18, 230 / fl), top = H - 26 - fl * fh;
+  const cols = Math.floor(bw / (old ? 40 : 28)), cw = (bw - 20) / cols;
+  let win = '';
+  for (let f = 0; f < fl; f++) for (let c = 0; c < cols; c++) {
+    const lit = (h >> ((f * cols + c) % 24)) & 1 && (f + c + h) % 5 === 0;
+    win += `<rect x="${(bx + 10 + c * cw + cw * 0.22).toFixed(1)}" y="${(top + f * fh + fh * 0.22).toFixed(1)}" width="${(cw * 0.56).toFixed(1)}" height="${(fh * 0.56).toFixed(1)}" rx="1.5" fill="${lit ? '#F3DFA2' : '#8FA8BA'}"/>`;
+  }
+  const tree = x => `<rect x="${x - 3}" y="${H - 52}" width="6" height="28" fill="#6B5642"/><circle cx="${x}" cy="${H - 62}" r="22" fill="#7E9B6A"/><circle cx="${x + 12}" cy="${H - 52}" r="14" fill="#6E8C5C"/>`;
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Иллюстрация дома">
+    <rect width="${W}" height="${H}" fill="#D8E7F0"/><circle cx="${60 + h % 300}" cy="56" r="26" fill="#F5F0E1" opacity=".7"/>
+    <rect x="${bx}" y="${top}" width="${bw}" height="${H - 26 - top}" fill="${wall}"/><rect x="${bx - 6}" y="${top - 8}" width="${bw + 12}" height="8" fill="#5E6560"/>
+    ${win}<rect x="${W / 2 - 16}" y="${H - 26 - fh * 0.9}" width="32" height="${fh * 0.9}" fill="#4C5752"/>
+    <rect y="${H - 26}" width="${W}" height="26" fill="#A3B48F"/>${tree(40)}${tree(W - 52)}</svg>`;
+}
+const facadeOf = x => x.complexId || x.layout ? facadeSvg(x.complexId || x.id, x.floors, false) : facadeSvg(x.id, x.floors || 9, true);
+
+function resultCard(it) {
+  if (it.c) {
+    const c = it.c, us = it.units, min = Math.min(...us.map(o => o.price));
+    return `<article class="rcard"><button class="rphoto" data-act="place" data-id="${c.id}" aria-label="Открыть ${esc(c.name)}">${facadeOf(c)}<span class="badge">иллюстрация</span></button>
+      <div class="rbody"><div class="rtitle"><button class="btn link" data-act="place" data-id="${c.id}">${esc(c.name)}</button>${pill('accent', 'новостройка')}</div>
+        <span class="small muted">${c.district} район · сдача: ${c.deadline}</span>
+        <span class="price">от ${mln(min)}</span>
+        <span class="small">${us.length} ${plural(us.length, ['квартира подходит', 'квартиры подходят', 'квартир подходит'])}</span>
+        <ul class="ulist">${us.slice(0, 3).map(o => `<li><button class="btn link" data-act="place" data-id="${c.id}" data-unit="${o.id}">${roomsLabel(o.rooms)}, ${o.area} м², ${o.floor} эт.</button><span>${mln(o.price)}</span></li>`).join('')}</ul>
+      </div></article>`;
+  }
+  const o = it.o, pubs = PLATFORMS.filter(([k]) => o.platforms?.[k]).map(([, t]) => t);
+  return `<article class="rcard"><button class="rphoto" data-act="place" data-id="${o.id}" aria-label="Открыть объект">${o.photos.length ? `<img src="${o.photos[0]}" alt="Фото квартиры">` : facadeOf(o)}<span class="badge">${o.photos.length ? `${o.photos.length} фото` : 'иллюстрация'}</span></button>
+    <div class="rbody"><div class="rtitle"><button class="btn link" data-act="place" data-id="${o.id}">${roomsLabel(o.rooms)}, ${o.area} м² · ${esc(o.address)}</button>${o.draft ? pill('muted', 'черновик') : pill('ok', 'вторичка')}</div>
+      <span class="small muted">${o.district} район · ${o.floor} из ${o.floors} эт.${o.renovation ? ' · ' + RENO_TEXT[o.renovation] : ''}</span>
+      <span class="price">${mln(o.price)}</span>
+      <span class="small muted">${rub(o.price / o.area)} за м²${o.status !== 'свободна' ? ' · ' + o.status : ''}</span>
+      ${pubs.length ? `<span class="small muted">Опубликовано: ${pubs.join(', ')}</span>` : ''}
+    </div></article>`;
+}
+
+function fillResults() {
+  const box = $('results');
+  if (!box) return;
+  if (map) { map.remove(); map = null; }
+  const { items, count } = search();
+  $('found').textContent = `Найдено ${count} ${plural(count, ['квартира', 'квартиры', 'квартир'])} в ${items.length} ${plural(items.length, ['объекте', 'объектах', 'объектах'])}`;
+  if (objView === 'map') { box.innerHTML = '<div id="map" role="region" aria-label="Карта объектов"></div>'; initMap(items); return; }
+  box.innerHTML = items.length ? `<div class="results">${items.map(resultCard).join('')}</div>`
+    : '<div class="list"><div class="empty">Ничего не нашлось. Расширьте цену или площадь, уберите район или сбросьте фильтры.</div></div>';
+}
+
+function tiles(m) {
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(m);
+}
+function initMap(items) {
   const el = $('map');
-  if (!window.L) { el.classList.add('map-empty'); el.textContent = 'Карта не загрузилась. Проверьте интернет и обновите страницу; список объектов ниже работает.'; return; }
+  if (!window.L) { el.classList.add('map-empty'); el.textContent = 'Карта не загрузилась. Проверьте интернет и обновите страницу; режим «Список» работает.'; return; }
   map = L.map(el, { zoomSnap: 0.25, wheelPxPerZoomLevel: 90 });
+  const pts = items.map(it => it.c ? [it.c.lat, it.c.lng] : [it.o.lat, it.o.lng]);
   if (mapView) map.setView(mapView.c, mapView.z);
-  else map.fitBounds(S.objects.map(o => [o.lat, o.lng]), { padding: [60, 60] });
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(map);
+  else if (pts.length) map.fitBounds(pts, { padding: [60, 60], maxZoom: 15 });
+  else map.setView([59.93, 30.33], 11);
+  tiles(map);
   const pin = (lat, lng, label, cls, id) => L.marker([lat, lng], { icon: L.divIcon({ className: 'pin ' + cls, html: `<span>${esc(label)}</span>`, iconSize: [0, 0] }), title: label })
     .on('click', () => openPlace(id)).addTo(map);
-  S.complexes.forEach(c => {
-    const free = S.objects.filter(o => o.complexId === c.id && o.status === 'свободна');
-    pin(c.lat, c.lng, `${c.name.replace('ЖК ', '')} · ${free.length ? 'от ' + mlnShort(Math.min(...free.map(o => o.price))) : 'продано'}`, 'new', c.id);
-  });
-  S.objects.filter(o => !o.complexId).forEach(o => pin(o.lat, o.lng, `${roomsLabel(o.rooms)} · ${o.status === 'свободна' ? mlnShort(o.price) : o.status}`, o.status === 'свободна' ? '' : 'off', o.id));
+  items.forEach(it => it.c
+    ? pin(it.c.lat, it.c.lng, `${it.c.name.replace('ЖК ', '')} · ${it.units.length} кв. от ${mlnShort(it.units[0].price)}`, 'new', it.c.id)
+    : pin(it.o.lat, it.o.lng, `${roomsLabel(it.o.rooms)} · ${it.o.status === 'свободна' ? mlnShort(it.o.price) : it.o.status}`, it.o.status === 'свободна' ? '' : 'off', it.o.id));
   map.on('moveend', () => { mapView = { c: map.getCenter(), z: map.getZoom() }; });
 }
 
@@ -652,10 +792,12 @@ function unitDetail(u) {
   const b = S.bookings.find(x => x.objectId === u.id && !x.closed);
   const options = [...fitting, ...open.filter(d => !fitting.includes(d))];
   return `<div class="block"><h3>${u.complexId ? `Квартира № ${u.number}` : 'Квартира'}</h3>
-    <div class="actions">${pill(UNIT_STATUS[u.status] === 'free' ? 'ok' : UNIT_STATUS[u.status] === 'booked' ? 'warn' : 'muted', u.status)}<span class="small muted">схема, не в масштабе</span></div>
-    ${planSvg(u.rooms, u.area)}
-    <dl><dt>Комнаты</dt><dd>${roomsLabel(u.rooms)}</dd><dt>Площадь</dt><dd>${u.area} м²</dd><dt>Этаж</dt><dd>${u.floor}</dd>
+    <div class="actions">${pill(UNIT_STATUS[u.status] === 'free' ? 'ok' : UNIT_STATUS[u.status] === 'booked' ? 'warn' : 'muted', u.status)}${u.complexId ? '<span class="small muted">схема, не в масштабе</span>' : ''}</div>
+    ${u.complexId ? planSvg(u.rooms, u.area) : ''}
+    <dl><dt>Комнаты</dt><dd>${roomsLabel(u.rooms)}</dd><dt>Площадь</dt><dd>${u.area} м²${u.kitchen ? `, кухня ${u.kitchen} м²` : ''}</dd><dt>Этаж</dt><dd>${u.floor} из ${u.floors}</dd>
+      ${u.complexId ? '' : `<dt>Ремонт</dt><dd>${u.renovation ? RENO_TEXT[u.renovation] : '—'}</dd><dt>Санузел</dt><dd>${u.bathroom || '—'}</dd><dt>Балкон</dt><dd>${yesNo(u.balcony)}</dd>`}
       <dt>Цена</dt><dd>${rub(u.price)}</dd><dt>За м²</dt><dd>${rub(u.price / u.area)}</dd></dl>
+    ${u.description ? `<p style="margin:0">${esc(u.description)}</p>` : ''}
     ${u.status === 'свободна' ? `<div class="actions"><span class="small muted">Подходит сделкам:</span>${fitting.length ? fitting.map(dealLink).join(', ') : '<span class="small muted">нет</span>'}</div>
       ${options.length ? `<form id="book-form" class="fields">
         <div class="field"><label for="b-deal">Забронировать для сделки</label><select id="b-deal">${options.map(d => `<option value="${d.id}">${esc(d.name)}${fitting.includes(d) ? ' · подходит' : ''}</option>`).join('')}</select></div>
@@ -681,15 +823,168 @@ function renderPlace() {
           `<button class="unit ${UNIT_STATUS[o.status]}${ui.rooms != null && o.rooms !== ui.rooms ? ' dim' : ''}" data-act="unit" data-id="${o.id}" aria-pressed="${o.id === ui.unitId}" aria-label="Квартира ${o.number}, ${roomsLabel(o.rooms)}, ${o.area} м², ${mln(o.price)}, ${o.status}">${o.number}<small>${roomsShort(o.rooms)} · ${(o.price / 1e6).toLocaleString('ru-RU', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</small></button>`).join('')).join('')}
       </div><p class="small muted" style="margin:0">Этаж слева, в ячейке номер квартиры, комнаты и цена в млн ₽. Нажмите на квартиру, чтобы увидеть планировку.</p></div>`;
   }
-  const docs = c ? COMPLEX_DOCS.map(n => [n, true]) : SECONDARY_DOCS;
+  const docs = c ? COMPLEX_DOCS.map(n => [n, 'загружен']) : REQUIRED_DOCS.map(n => [n, u.docs.find(d => d.kind === n)?.file]);
+  const slides = c ? [[facadeOf(c), 'иллюстрация дома'], ...[...new Set(c.layout)].sort().map(r => [planSvg(r, AREA[r]), `типовая планировка: ${roomsLabel(r)}, ${AREA[r]} м²`])]
+    : [...u.photos.map((src, i) => [`<img src="${src}" alt="Фото квартиры ${i + 1}">`, `фото ${i + 1} из ${u.photos.length}`]), ...(u.photos.length ? [] : [[facadeOf(u), 'иллюстрация: фото ещё не загружены']]), [planSvg(u.rooms, u.area), 'схема планировки']];
+  const canEdit = u && !c && (u.agentId === S.me || can().all);
+  const pubs = u && !c ? PLATFORMS.filter(([k]) => u.platforms[k]) : [];
   $('drawer').innerHTML = `<div class="dlg">
     <div class="dlg-head"><div><h2>${esc(c ? c.name : objTitle(u))}</h2><span class="muted">${c ? `${c.district} район · ${esc(c.developer)} · сдача: ${c.deadline}` : `${u.district} район · ${u.floor} этаж · вторичка`}</span></div><button class="x" data-act="close" aria-label="Закрыть">×</button></div>
+    <div class="gallery" tabindex="0" aria-label="Фото и планировки, листайте">${slides.map(([html, cap]) => `<figure>${html}<figcaption>${cap}</figcaption></figure>`).join('')}</div>
+    ${slides.length > 1 ? '<span class="small muted" style="margin-top:-14px">Листайте фото вбок</span>' : ''}
     ${chess}
     ${u ? unitDetail(u) : ''}
+    ${u && !c ? `<div class="block"><h3><span>Публикация</span>${canEdit ? `<button class="btn sm" data-act="listing-edit" data-id="${u.id}">Редактировать объявление</button>` : ''}</h3>
+      ${u.draft ? `<div class="actions">${pill('muted', 'черновик')}<span class="small muted">видят только автор и руководители</span></div>`
+        : `<div class="actions">${pill('ok', 'Realtika: видят все агенты')}${pubs.map(([, t]) => pill('ok', t)).join('')}</div><span class="small muted">Опубликовано ${fmtDate(u.publishedAt)} · агент ${esc(user(u.agentId)?.name)}</span>`}
+      ${u.ownerName ? `<span class="small">Собственник: ${esc(u.ownerName)}, ${esc(u.ownerPhone)}</span>` : ''}</div>` : ''}
     <div class="block"><h3>Документы</h3>
-      ${docs.map(([n, ok]) => `<div class="doc"><span>${n}</span>${ok ? pill('ok', 'загружен') : pill('warn', 'запросить')}</div>`).join('')}
-      <span class="small muted">В демо файлы не прикладываются.</span></div>
+      ${docs.map(([n, file]) => `<div class="doc"><span>${n}${file && file !== 'загружен' ? `<br><span class="small muted">${esc(file)}</span>` : ''}</span>${file ? pill('ok', 'загружен') : pill('warn', 'запросить')}</div>`).join('')}
+      ${c ? '<span class="small muted">В демо файлы застройщика не прикладываются.</span>' : ''}</div>
   </div>`;
+}
+
+function genDescription(o) {
+  const kind = o.rooms === 0 ? 'квартира-студия' : o.rooms ? `${o.rooms}-комнатная квартира` : 'квартира';
+  const parts = [`Продаётся ${kind}${o.area ? ` площадью ${o.area} м²` : ''}${o.floor ? ` на ${o.floor}${o.floors ? ` из ${o.floors}` : ''} этаже` : ''}${o.address ? `, ${o.address}` : ''}${o.district ? `, ${o.district} район` : ''}.`];
+  const det = [];
+  if (o.kitchen) det.push(`кухня ${o.kitchen} м²`);
+  if (o.renovation) det.push(RENO_TEXT[o.renovation]);
+  if (o.bathroom) det.push(`санузел ${o.bathroom}`);
+  if (o.balcony) det.push('есть балкон');
+  if (det.length) parts.push(det.join(', ').replace(/^./, ch => ch.toUpperCase()) + '.');
+  if (o.price) parts.push(`Цена ${mln(o.price)}${o.area ? ` (${rub(o.price / o.area)} за м²)` : ''}.`);
+  parts.push('Покажем в удобное для вас время.');
+  return parts.join(' ');
+}
+
+const SAMPLE_LISTING = 'Двушка 54 кв.м, кухня 9 м², 7/12 эт., ул. Савушкина, д. 12, Приморский район. Евроремонт, санузел раздельный, есть лоджия. Цена 11,9 млн.';
+function blankListing() {
+  return { rooms: null, district: '', address: '', area: 0, kitchen: 0, floor: 0, floors: 0, price: 0, renovation: '', bathroom: '', balcony: false, description: '',
+    photos: [], docs: [], ownerName: '', ownerPhone: '', lat: null, lng: null, platforms: { avito: true, cian: true, domclick: false, yandex: false } };
+}
+function openListing(id) {
+  ui.listing = id ? JSON.parse(JSON.stringify(ob(id))) : blankListing();
+  ui.listingMsg = '';
+  $('drawer').close();
+  $('modal').classList.add('wide');
+  renderListing();
+  if (!$('modal').open) $('modal').showModal();
+  initPickMap();
+}
+function renderListing() {
+  const l = ui.listing, val = v => v ? esc(v) : '';
+  const opt = (list, cur) => list.map(([v, t]) => `<option value="${v}"${String(v) === String(cur ?? '') ? ' selected' : ''}>${t}</option>`).join('');
+  $('modal').innerHTML = `<form id="listing-form" class="dlg">
+    <div class="dlg-head"><div><h2>${l.id ? 'Объявление о продаже' : 'Выставить на продажу'}</h2><span class="muted small">Вторичка. ИИ заполнит поля из описания, вы проверяете и публикуете.</span></div><button type="button" class="x" data-act="close" aria-label="Закрыть">×</button></div>
+
+    <div class="block"><h3>Опишите квартиру своими словами</h3>
+      <textarea id="l-ai" rows="3" placeholder="Например: двушка 54 кв.м, 7/12 эт., ул. Савушкина, д. 12, евроремонт, цена 11,9 млн"></textarea>
+      <div class="actions"><button type="button" class="btn primary sm" data-act="l-ai">Заполнить через ИИ</button><button type="button" class="btn sm" data-act="l-ai-example">Вставить пример</button>${pill('muted', 'ИИ-заглушка')}</div>
+      ${ui.listingMsg ? `<p class="${ui.listingMsg.startsWith('!') ? 'err' : 'info'}">${esc(ui.listingMsg.replace(/^!/, ''))}</p>` : ''}
+    </div>
+
+    <div class="block"><h3>Квартира</h3><div class="fields">
+      <div class="field" style="grid-column:1/-1"><label for="l-address">Адрес</label><input id="l-address" value="${val(l.address)}" placeholder="ул. Савушкина, д. 12"></div>
+      <div class="field"><label for="l-district">Район</label><select id="l-district">${opt([['', '—'], ...[...new Set(Object.values(DISTRICTS))].map(x => [x, x])], l.district)}</select></div>
+      <div class="field"><label for="l-rooms">Комнаты</label><select id="l-rooms">${opt([['', '—'], [0, 'студия'], [1, '1'], [2, '2'], [3, '3'], [4, '4']], l.rooms)}</select></div>
+      <div class="field"><label for="l-area">Площадь, м²</label><input id="l-area" type="number" min="0" step="0.1" value="${val(l.area)}"></div>
+      <div class="field"><label for="l-kitchen">Кухня, м²</label><input id="l-kitchen" type="number" min="0" step="0.1" value="${val(l.kitchen)}"></div>
+      <div class="field"><label for="l-floor">Этаж</label><input id="l-floor" type="number" min="1" value="${val(l.floor)}"></div>
+      <div class="field"><label for="l-floors">Этажей в доме</label><input id="l-floors" type="number" min="1" value="${val(l.floors)}"></div>
+      <div class="field"><label for="l-price">Цена, млн ₽</label><input id="l-price" type="number" min="0" step="0.1" value="${l.price ? l.price / 1e6 : ''}"></div>
+      <div class="field"><label for="l-reno">Ремонт</label><select id="l-reno">${opt(RENOVATIONS.map(r => [r, r || '—']), l.renovation)}</select></div>
+      <div class="field"><label for="l-bath">Санузел</label><select id="l-bath">${opt([['', '—'], ['раздельный', 'раздельный'], ['совмещённый', 'совмещённый']], l.bathroom)}</select></div>
+      <div class="field" style="align-content:end"><label class="check"><input type="checkbox" id="l-balcony"${l.balcony ? ' checked' : ''}> Балкон или лоджия</label></div>
+    </div></div>
+
+    <div class="block"><h3>Дом на карте</h3><div id="pickmap" role="region" aria-label="Нажмите на карту, чтобы отметить дом"></div>
+      <span class="small muted">${l.lat ? 'Точка отмечена. Нажмите в другое место, чтобы перенести.' : 'Нажмите на карту в месте дома. Без отметки объект встанет в центр района.'}</span></div>
+
+    <div class="block"><h3><span>Фото квартиры</span><span>${l.photos.length} из 12</span></h3>
+      ${l.photos.length ? `<div class="thumbs">${l.photos.map((src, i) => `<figure><img src="${src}" alt="Фото ${i + 1}"><button type="button" class="x" data-act="l-photo-del" data-i="${i}" aria-label="Удалить фото ${i + 1}">×</button></figure>`).join('')}</div>` : ''}
+      <label class="btn sm" style="justify-self:start;color:var(--ink)">Добавить фото<input id="l-photos" type="file" accept="image/*" multiple hidden></label>
+      <span class="small muted">Первое фото станет обложкой. Фото уменьшаются до 1000 px, чтобы поместиться в браузере.</span></div>
+
+    <div class="block"><h3>Документы</h3>
+      ${REQUIRED_DOCS.map((n, i) => { const d = l.docs.find(x => x.kind === n); return `<div class="doc"><span>${n}${d ? `<br><span class="small muted">${esc(d.file)}</span>` : ''}</span>
+        <label class="btn sm" style="color:var(--ink)">${d ? 'Заменить' : 'Загрузить'}<input type="file" data-doc="${i}" accept=".pdf,image/*" hidden></label></div>`; }).join('')}
+      <span class="small muted">В демо сохраняется только имя файла. В рабочей версии файлы хранятся на сервере.</span></div>
+
+    <div class="block"><h3><span>Текст объявления</span><button type="button" class="btn sm" data-act="l-desc">Сгенерировать</button></h3>
+      <textarea id="l-desc" rows="4">${esc(l.description)}</textarea></div>
+
+    <div class="block"><h3>Собственник</h3><div class="fields">
+      <div class="field"><label for="l-owner">Имя</label><input id="l-owner" value="${val(l.ownerName)}"></div>
+      <div class="field"><label for="l-owner-phone">Телефон</label><input id="l-owner-phone" value="${val(l.ownerPhone)}"></div></div></div>
+
+    <div class="block"><h3>Где опубликовать</h3>
+      <label class="check"><input type="checkbox" checked disabled> Сайт Realtika: объект увидят все агенты агентства</label>
+      ${PLATFORMS.map(([k, t]) => `<label class="check"><input type="checkbox" id="l-p-${k}"${l.platforms[k] ? ' checked' : ''}> ${t}</label>`).join('')}
+      <span class="small muted">Демо: отправка на площадки имитируется. В рабочей версии объявления уходят через XML-фиды площадок.</span></div>
+
+    <div class="actions"><button class="btn primary" type="submit" value="publish">Опубликовать</button><button class="btn" type="submit" value="draft">Сохранить черновик</button></div>
+  </form>`;
+}
+function syncListing() {
+  const l = ui.listing, num = id => Number($(id).value) || 0;
+  Object.assign(l, {
+    address: $('l-address').value.trim(), district: $('l-district').value, rooms: $('l-rooms').value === '' ? null : Number($('l-rooms').value),
+    area: num('l-area'), kitchen: num('l-kitchen'), floor: num('l-floor'), floors: num('l-floors'), price: Math.round(num('l-price') * 1e6),
+    renovation: $('l-reno').value, bathroom: $('l-bath').value, balcony: $('l-balcony').checked, description: $('l-desc').value.trim(),
+    ownerName: $('l-owner').value.trim(), ownerPhone: $('l-owner-phone').value.trim(),
+    platforms: Object.fromEntries(PLATFORMS.map(([k]) => [k, $('l-p-' + k).checked])),
+  });
+}
+function rerenderListing() { syncListing(); renderListing(); initPickMap(); }
+function initPickMap() {
+  if (pickMap) { pickMap.remove(); pickMap = null; }
+  const el = $('pickmap');
+  if (!el || !window.L) return;
+  const l = ui.listing;
+  pickMap = L.map(el, { zoomSnap: 0.25, wheelPxPerZoomLevel: 90 }).setView(l.lat ? [l.lat, l.lng] : [59.93, 30.33], l.lat ? 15 : 10);
+  tiles(pickMap);
+  let mk = l.lat ? L.marker([l.lat, l.lng], { icon: L.divIcon({ className: 'pin', html: '<span>Дом</span>', iconSize: [0, 0] }) }).addTo(pickMap) : null;
+  pickMap.on('click', e => {
+    l.lat = +e.latlng.lat.toFixed(5); l.lng = +e.latlng.lng.toFixed(5);
+    if (mk) mk.setLatLng(e.latlng); else mk = L.marker(e.latlng, { icon: L.divIcon({ className: 'pin', html: '<span>Дом</span>', iconSize: [0, 0] }) }).addTo(pickMap);
+  });
+}
+// Фото уменьшаем на клиенте: localStorage вмещает всего несколько мегабайт
+function readPhoto(file) {
+  return new Promise((ok, fail) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, 1000 / Math.max(img.width, img.height)), cv = document.createElement('canvas');
+      cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k);
+      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+      URL.revokeObjectURL(url); ok(cv.toDataURL('image/jpeg', 0.72));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); fail(new Error(file.name)); };
+    img.src = url;
+  });
+}
+function saveListing(mode) {
+  syncListing();
+  const l = ui.listing, ext = PLATFORMS.some(([k]) => l.platforms[k]);
+  const missing = [!l.address && 'адрес', l.rooms == null && 'комнаты', !l.area && 'площадь', !l.floor && 'этаж', !l.price && 'цена'].filter(Boolean);
+  if (mode === 'publish' && missing.length) { ui.listingMsg = `!Для публикации заполните: ${missing.join(', ')}.`; return rerenderListing(); }
+  if (mode === 'publish' && ext && !l.photos.length) { ui.listingMsg = '!Авито, Циан и другие площадки не принимают объявления без фото. Добавьте хотя бы одно.'; return rerenderListing(); }
+  if (!l.lat) {
+    const near = S.objects.filter(o => o.district === l.district);
+    [l.lat, l.lng] = near.length ? [near[0].lat, near[0].lng] : [59.93, 30.33];
+  }
+  const o = { ...l, floors: l.floors || l.floor, draft: mode === 'draft', publishedAt: mode === 'publish' ? (l.draft === false && l.publishedAt) || iso(0) : null };
+  if (!o.id) Object.assign(o, { id: 'o' + (++S.seq), type: 'вторичка', status: 'свободна', agentId: S.me });
+  if (!o.description) o.description = genDescription(o);
+  const i = S.objects.findIndex(x => x.id === o.id), prev = S.objects[i];
+  if (i >= 0) S.objects[i] = o; else S.objects.push(o);
+  if (!save()) {
+    if (i >= 0) S.objects[i] = prev; else S.objects.pop();
+    ui.listingMsg = '!Не хватает места в браузере для фото. Удалите часть фото и попробуйте снова.';
+    return rerenderListing();
+  }
+  $('modal').close(); tab = 'objects'; render(); openPlace(o.id);
 }
 
 const SAMPLE_CHAT = 'Добрый день! Меня зовут Ксения Романова, нам посоветовали ваше агентство. Ищем однушку в новостройке, лучше Московский район, бюджет до 8,2 млн, берём ипотеку. Звоните: +7 900 000-00-15';
@@ -793,6 +1088,25 @@ document.addEventListener('click', e => {
     case 'place': openPlace(id, el.dataset.unit); return;
     case 'unit': ui.unitId = id; renderPlace(); return;
     case 'rooms': ui.rooms = el.dataset.rooms === '' ? null : Number(el.dataset.rooms); renderPlace(); return;
+    case 'objview': objView = el.dataset.view; break;
+    case 'f-room': { const r = Number(el.dataset.rooms); F.rooms = F.rooms.includes(r) ? F.rooms.filter(x => x !== r) : [...F.rooms, r]; el.setAttribute('aria-pressed', F.rooms.includes(r)); fillResults(); return; }
+    case 'f-reset': F = { ...F0, rooms: [] }; mapView = null; break;
+    case 'deal-search': F = fromDeal(deal(id)); objView = 'list'; tab = 'objects'; mapView = null; $('drawer').close(); try { history.replaceState(null, '', '#objects'); } catch (err) {} break;
+    case 'listing-new': openListing(); return;
+    case 'listing-edit': openListing(id); return;
+    case 'l-ai-example': $('l-ai').value = SAMPLE_LISTING; return;
+    case 'l-ai': {
+      const text = $('l-ai').value.trim();
+      if (!text) { $('l-ai').focus(); return; }
+      syncListing();
+      const r = parseListing(text), names = { rooms: 'комнаты', district: 'район', price: 'цена', area: 'площадь', kitchen: 'кухня', floor: 'этаж', floors: 'этажность', address: 'адрес', renovation: 'ремонт', bathroom: 'санузел', balcony: 'балкон' };
+      Object.assign(ui.listing, r);
+      if (!ui.listing.description) ui.listing.description = genDescription(ui.listing);
+      ui.listingMsg = Object.keys(r).length ? `ИИ заполнил: ${Object.keys(r).map(k => names[k]).join(', ')}. Проверьте поля ниже.` : '!ИИ не нашёл в тексте данных о квартире. Добавьте площадь, этаж, цену или адрес.';
+      renderListing(); initPickMap(); $('l-ai').value = text; return;
+    }
+    case 'l-desc': syncListing(); ui.listing.description = genDescription(ui.listing); renderListing(); initPickMap(); return;
+    case 'l-photo-del': syncListing(); ui.listing.photos.splice(Number(el.dataset.i), 1); renderListing(); initPickMap(); return;
     case 'invoice': openInvoice(id); return;
     case 'issue': S.commissions.find(x => x.id === id).status = 'счёт выставлен'; $('modal').close(); break;
     case 'paid': S.commissions.find(x => x.id === id).status = 'получена'; break;
@@ -815,8 +1129,29 @@ document.addEventListener('click', e => {
   save(); render();
 });
 
-document.addEventListener('change', e => {
+document.addEventListener('input', e => {
+  if (e.target.closest?.('#filters') && e.target.id !== 'f-deal') { readFilters(); fillResults(); }
+});
+
+document.addEventListener('change', async e => {
   const t = e.target;
+  if (t.id === 'f-deal') { if (t.value) { F = fromDeal(deal(t.value)); mapView = null; render(); } return; }
+  if (t.id === 'l-photos') {
+    const files = [...t.files].slice(0, 12 - ui.listing.photos.length);
+    syncListing();
+    ui.listingMsg = '';
+    for (const f of files) { try { ui.listing.photos.push(await readPhoto(f)); } catch (err) { ui.listingMsg = `!Не удалось прочитать файл ${f.name}: это не изображение.`; } }
+    renderListing(); initPickMap(); return;
+  }
+  if (t.dataset.doc) {
+    const f = t.files[0], kind = REQUIRED_DOCS[Number(t.dataset.doc)];
+    if (!f) return;
+    syncListing();
+    // shortcut: храним только имя и размер файла, содержимое не сохраняется; с бэкендом — загрузка в файловое хранилище
+    ui.listing.docs = [...ui.listing.docs.filter(d => d.kind !== kind), { kind, file: f.name, size: f.size }];
+    renderListing(); initPickMap(); return;
+  }
+  if (t.closest?.('#filters') || t.closest?.('#listing-form')) return;
   if (t.id === 'me') { S.me = t.value; filterAgent = ''; $('drawer').close(); $('modal').close(); ui.dealId = null; }
   else if (t.id === 'filter-agent') filterAgent = t.value;
   else if (t.id === 'deal-stage') deal(ui.dealId).stageId = t.value;
@@ -830,6 +1165,8 @@ document.addEventListener('change', e => {
 document.addEventListener('submit', e => {
   const f = e.target;
   e.preventDefault();
+  if (f.id === 'listing-form') return saveListing(e.submitter?.value || 'draft');
+  if (f.id === 'filters') return;
   if (f.id === 'edit-deal') { Object.assign(deal(ui.dealId), readForm()); ui.editing = false; }
   else if (f.id === 'add-task') S.tasks.push({ id: 't' + (++S.seq), dealId: ui.dealId, title: $('nt-title').value.trim(), due: $('nt-due').value, done: false });
   else if (f.id === 'book-form') {
@@ -873,6 +1210,8 @@ document.addEventListener('drop', e => {
   const d = deal(e.dataTransfer.getData('text/plain'));
   if (d) { d.stageId = col.dataset.stage; save(); render(); }
 });
+
+$('modal').addEventListener('close', () => { $('modal').classList.remove('wide'); if (pickMap) { pickMap.remove(); pickMap = null; } });
 
 render();
 </script>
