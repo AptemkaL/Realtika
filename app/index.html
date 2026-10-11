@@ -269,12 +269,12 @@ dialog.modal.wide { width: min(860px, calc(100% - 32px)); }
 .seg .btn { border: 0; border-radius: 0; }
 .seg .btn[aria-pressed="true"] { background: var(--hover); color: var(--ink); font-weight: 600; }
 .results { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 16px; }
-.rcard { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; display: grid; grid-template-rows: auto 1fr; }
+.rcard { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; display: grid; grid-template-rows: auto 1fr; grid-template-columns: minmax(0, 1fr); }
 .rphoto { display: block; position: relative; padding: 0; border: 0; background: var(--sunken); cursor: pointer; aspect-ratio: 16 / 10; width: 100%; }
 .rphoto img, .rphoto svg, .gallery img, .gallery svg { width: 100%; height: 100%; object-fit: cover; display: block; }
 .badge { position: absolute; left: 8px; bottom: 8px; font: 600 11px/1 var(--f-body); padding: 4px 7px; border-radius: 6px; background: rgb(20 24 22 / .72); color: #fff; }
 .rbody { padding: 12px 14px 14px; display: grid; gap: 6px; align-content: start; }
-.rtitle { display: flex; justify-content: space-between; gap: 8px; align-items: start; }
+.rtitle { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 8px; align-items: start; }
 .rtitle .btn.link { color: var(--ink); font-weight: 600; text-decoration: none; }
 .price { font: 600 17px/1.25 var(--f-body); font-variant-numeric: tabular-nums; }
 .ulist { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font-size: 13px; }
@@ -623,7 +623,7 @@ let tab = location.hash.slice(1) || 'tasks';
 let filterAgent = '';
 let ui = { dealId: null, placeId: null, unitId: null, rooms: null, draft: false, editing: false, preview: null, stageErr: '' };
 let map = null, mapView = null, pickMap = null;
-const F0 = { q: '', market: '', rooms: [], priceFrom: '', priceTo: '', areaFrom: '', areaTo: '', district: '', notFirst: false, notLast: false, onlyFree: true, sort: 'price' };
+const F0 = { q: '', market: '', rooms: [], priceFrom: '', priceTo: '', areaFrom: '', areaTo: '', district: [], notFirst: false, notLast: false, onlyFree: true, sort: 'price' };
 let F = { ...F0, rooms: [] }, objView = 'list';
 // Черновик объявления видят только автор и руководители
 const visible = o => !o.draft || o.agentId === S.me || can().all;
@@ -786,7 +786,7 @@ const views = {
         <div class="field"><span class="lbl">Комнаты</span><div class="actions">${[[0, 'Ст'], [1, '1'], [2, '2'], [3, '3']].map(([r, t]) => `<button type="button" class="btn sm chip" data-act="f-room" data-rooms="${r}" aria-pressed="${F.rooms.includes(r)}" aria-label="${roomsLabel(r)}">${t}</button>`).join('')}</div></div>
         <div class="field"><span class="lbl">Цена, млн ₽</span><div class="range"><input id="f-pf" type="number" min="0" step="0.1" placeholder="от" aria-label="Цена от, млн" value="${n(F.priceFrom)}"><input id="f-pt" type="number" min="0" step="0.1" placeholder="до" aria-label="Цена до, млн" value="${n(F.priceTo)}"></div></div>
         <div class="field"><span class="lbl">Площадь, м²</span><div class="range"><input id="f-af" type="number" min="0" placeholder="от" aria-label="Площадь от" value="${n(F.areaFrom)}"><input id="f-at" type="number" min="0" placeholder="до" aria-label="Площадь до" value="${n(F.areaTo)}"></div></div>
-        <div class="field"><label for="f-district">Район</label><select id="f-district">${opts([['', 'любой'], ...districts.map(d => [d, d])], F.district)}</select></div>
+        <div class="field" style="grid-column: 1 / -1"><span class="lbl">Район · можно несколько</span><div class="actions">${districts.map(d => `<button type="button" class="btn sm chip" data-act="f-district" data-district="${esc(d)}" aria-pressed="${F.district.includes(d)}">${esc(d)}</button>`).join('')}</div></div>
         <div class="field"><span class="lbl">Этаж</span><label class="check"><input type="checkbox" id="f-nf"${F.notFirst ? ' checked' : ''}> не первый</label><label class="check"><input type="checkbox" id="f-nl"${F.notLast ? ' checked' : ''}> не последний</label></div>
         <div class="field"><label for="f-sort">Сортировка</label><select id="f-sort">${opts([['price', 'сначала дешевле'], ['priceDesc', 'сначала дороже'], ['area', 'больше площадь'], ['m2', 'дешевле за м²']], F.sort)}</select>
           <label class="check"><input type="checkbox" id="f-free"${F.onlyFree ? ' checked' : ''}> только свободные</label></div>
@@ -1197,7 +1197,7 @@ function previewNote(text) {
   return { text, changes, fields, stage: null, task };
 }
 
-const activeFilters = () => [F.market, F.rooms.length, F.priceFrom, F.priceTo, F.areaFrom, F.areaTo, F.district, F.notFirst, F.notLast, !F.onlyFree].filter(Boolean).length;
+const activeFilters = () => [F.market, F.rooms.length, F.priceFrom, F.priceTo, F.areaFrom, F.areaTo, F.district.length, F.notFirst, F.notLast, !F.onlyFree].filter(Boolean).length;
 function passes(o) {
   const num = v => v === '' ? null : Number(v);
   if (!visible(o)) return false;
@@ -1208,7 +1208,7 @@ function passes(o) {
   if (num(F.priceTo) != null && o.price > num(F.priceTo) * 1e6) return false;
   if (num(F.areaFrom) != null && o.area < num(F.areaFrom)) return false;
   if (num(F.areaTo) != null && o.area > num(F.areaTo)) return false;
-  if (F.district && o.district !== F.district) return false;
+  if (F.district.length && !F.district.includes(o.district)) return false;
   if (F.notFirst && o.floor <= 1) return false;
   if (F.notLast && o.floor >= o.floors) return false;
   const q = F.q.trim().toLowerCase();
@@ -1224,11 +1224,11 @@ function search() {
   return { items, count: found.length };
 }
 function fromDeal(d) {
-  return { ...F0, rooms: d.rooms == null ? [] : [d.rooms], market: d.type === 'любая' ? '' : d.type, district: d.district, priceTo: d.budget ? Math.round(d.budget * 1.05 / 1e5) / 10 : '' };
+  return { ...F0, rooms: d.rooms == null ? [] : [d.rooms], market: d.type === 'любая' ? '' : d.type, district: d.district ? [d.district] : [], priceTo: d.budget ? Math.round(d.budget * 1.05 / 1e5) / 10 : '' };
 }
 function readFilters() {
   F = { ...F, q: $('f-q').value, market: $('f-market').value, priceFrom: $('f-pf').value, priceTo: $('f-pt').value, areaFrom: $('f-af').value, areaTo: $('f-at').value,
-    district: $('f-district').value, notFirst: $('f-nf').checked, notLast: $('f-nl').checked, onlyFree: $('f-free').checked, sort: $('f-sort').value };
+    notFirst: $('f-nf').checked, notLast: $('f-nl').checked, onlyFree: $('f-free').checked, sort: $('f-sort').value };
 }
 
 // Иллюстрация фасада вместо фото дома. shortcut: рисунок, не фото; заменить фотографиями от застройщика и агента
@@ -1646,6 +1646,7 @@ document.addEventListener('click', e => {
     case 'objview': objView = el.dataset.view; break;
     case 'toggle-filters': ui.filtersOpen = !ui.filtersOpen; break;
     case 'f-room': { const r = Number(el.dataset.rooms); F.rooms = F.rooms.includes(r) ? F.rooms.filter(x => x !== r) : [...F.rooms, r]; el.setAttribute('aria-pressed', F.rooms.includes(r)); fillResults(); return; }
+    case 'f-district': { const v = el.dataset.district; F.district = F.district.includes(v) ? F.district.filter(x => x !== v) : [...F.district, v]; el.setAttribute('aria-pressed', F.district.includes(v)); fillResults(); return; }
     case 'f-reset': F = { ...F0, rooms: [] }; mapView = null; break;
     case 'deal-search': F = fromDeal(deal(id)); objView = 'list'; tab = 'objects'; mapView = null; $('drawer').close(); try { history.replaceState(null, '', '#objects'); } catch (err) {} break;
     case 'listing-new': openListing(); return;
