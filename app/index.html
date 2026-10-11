@@ -49,6 +49,8 @@ header.top .btn { white-space: normal; text-align: left; }
 .btn:disabled { opacity: .4; cursor: default; }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .btn.sm { padding: 4px 10px; font-size: 13px; }
+a.btn { text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+.btn.call svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; }
 .btn.link { border: 0; background: none; padding: 0; color: var(--muted); font-weight: 500; text-decoration: underline; text-align: left; }
 td .btn.link, .trow .btn.link, .alert .btn.link { color: var(--ink); text-decoration-color: var(--line); }
 
@@ -457,6 +459,9 @@ const isOpen = d => !d.lost && d.stageId !== lastStageId();
 const objTitle = o => o ? `${roomsLabel(o.rooms)}, ${o.area} м² · ${o.address}${o.complexId ? `, кв. ${o.number}` : ''}` : '—';
 const mlnShort = n => (n / 1e6).toLocaleString('ru-RU', { maximumFractionDigits: 1 }) + ' млн';
 const pill = (cls, text) => `<span class="pill ${cls}">${esc(text)}</span>`;
+// Номер для ссылки tel: — только цифры, 8XXXXXXXXXX → +7XXXXXXXXXX. Телефон сам покажет «Позвонить» или откроет звонилку
+const telHref = phone => { const n = phone.replace(/[^\d+]/g, ''); return 'tel:' + (/^8\d{10}$/.test(n) ? '+7' + n.slice(1) : n); };
+const callBtn = phone => phone ? `<a class="btn sm primary call" href="${telHref(phone)}" aria-label="Позвонить ${esc(phone)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>Позвонить</a>` : '';
 const dealLink = d => `<button class="btn link" data-act="deal" data-id="${d.id}">${esc(d.name)}</button>`;
 const taskTitle = kind => kind === 'Звонок' ? 'Позвонить клиенту' : kind;
 
@@ -805,7 +810,7 @@ function renderDeal() {
   const bs = S.bookings.filter(b => b.dealId === d.id), ks = S.commissions.filter(k => k.dealId === d.id);
   const p = ui.preview, any = p && (p.changes.length || p.task || p.stage);
   $('drawer').innerHTML = `<div class="dlg">
-    <div class="dlg-head"><div><h2>${esc(d.name)}</h2><span class="muted">${esc(d.phone || 'телефон не указан')}</span></div><button class="x" data-act="close" aria-label="Закрыть">×</button></div>
+    <div class="dlg-head"><div><h2>${esc(d.name)}</h2><div class="actions">${d.phone ? `<a class="muted" href="${telHref(d.phone)}">${esc(d.phone)}</a>` : '<span class="muted">телефон не указан</span>'}${callBtn(d.phone)}</div></div><button class="x" data-act="close" aria-label="Закрыть">×</button></div>
     ${ui.flash ? `<p class="info">${esc(ui.flash)}</p>` : ''}
     ${stageBlock(d)}
     <div class="fields">
@@ -1074,7 +1079,7 @@ function renderPlace() {
     ${u && !c ? `<div class="block"><h3><span>Публикация</span>${canEdit ? `<button class="btn sm" data-act="listing-edit" data-id="${u.id}">Редактировать объявление</button>` : ''}</h3>
       ${u.draft ? `<div class="actions">${pill('muted', 'черновик')}<span class="small muted">видят только автор и руководители</span></div>`
         : `<div class="actions">${pill('ok', 'Realtika: видят все агенты')}${pubs.map(([, t]) => pill('ok', t)).join('')}</div><span class="small muted">Опубликовано ${fmtDate(u.publishedAt)} · агент ${esc(user(u.agentId)?.name)}</span>`}
-      ${u.ownerName ? `<span class="small">Собственник: ${esc(u.ownerName)}, ${esc(u.ownerPhone)}</span>` : ''}</div>` : ''}
+      ${u.ownerName ? `<div class="actions"><span class="small">Собственник: ${esc(u.ownerName)}, ${esc(u.ownerPhone)}</span>${callBtn(u.ownerPhone)}</div>` : ''}</div>` : ''}
     <div class="block"><h3>Документы</h3>
       ${docs.map(([n, file]) => `<div class="doc"><span>${n}${file && file !== 'загружен' ? `<br><span class="small muted">${esc(file)}</span>` : ''}</span>${file ? pill('ok', 'загружен') : pill('warn', 'запросить')}</div>`).join('')}
       ${c ? '<span class="small muted">В демо файлы застройщика не прикладываются.</span>' : ''}</div>
