@@ -1,6 +1,6 @@
 // Запуск: node app/parse.test.js
 const assert = require('assert');
-const { parseChat, parseListing } = require('./parse.js');
+const { parseChat, parseListing, answerToFields } = require('./parse.js');
 const SUNDAY = new Date(2026, 9, 11); // 11.10.2026, воскресенье
 
 assert.deepStrictEqual(
@@ -36,5 +36,19 @@ assert.deepStrictEqual(
   { rooms: 1, area: 36, floor: 3, floors: 5, renovation: 'без ремонта', bathroom: 'совмещённый', balcony: false },
 );
 assert.deepStrictEqual(parseListing('просто текст'), {});
+
+// ответы на вопросы ИИ после встречи
+assert.deepStrictEqual(answerToFields('budget', 'до 14,5 млн'), { budget: 14500000 });
+assert.deepStrictEqual(answerToFields('budget', '12'), { budget: 12000000 });
+assert.deepStrictEqual(answerToFields('rooms', '2'), { rooms: 2 });
+assert.deepStrictEqual(answerToFields('rooms', 'студия или однушка'), { rooms: 0 });
+assert.deepStrictEqual(answerToFields('district', 'Московский, можно Фрунзенский'), { district: 'Московский' });
+assert.deepStrictEqual(answerToFields('type', 'без разницы'), { type: 'любая' });
+assert.deepStrictEqual(answerToFields('payment', 'ипотека'), { payment: 'ипотека' });
+assert.deepStrictEqual(answerToFields('mortgage', 'да, первоначальный взнос 3 млн'), { mortgageApproved: true, downPayment: 3000000 });
+assert.deepStrictEqual(answerToFields('mortgage', 'нет, подаём заявку, взнос 2,5 млн'), { mortgageApproved: false, downPayment: 2500000 });
+assert.deepStrictEqual(answerToFields('alternative', 'да, двушку на Ленина'), { alternative: true });
+assert.deepStrictEqual(answerToFields('alternative', 'нет'), { alternative: false });
+assert.deepStrictEqual(answerToFields('budget', ''), {});
 
 console.log('parse.test.js: ok');

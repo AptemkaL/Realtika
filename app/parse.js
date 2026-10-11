@@ -123,4 +123,30 @@ function parseListing(text) {
   return r;
 }
 
-if (typeof module !== 'undefined') module.exports = { parseChat, parseListing, DISTRICTS };
+// Ответ агента на вопрос ИИ после встречи → поля сделки. key — о чём был вопрос
+function answerToFields(key, text) {
+  const t = text.toLowerCase().replace(/ё/g, 'е').trim();
+  if (!t) return {};
+  const yes = /^(да|ага|конечно|есть)(?![а-я])/.test(t), no = /^(нет|не)(?![а-я])/.test(t);
+  const p = parseChat(text);
+  const mlnIn = () => { const m = t.match(/(\d+(?:[.,]\d+)?)\s*(?:млн|миллион)?/); return m ? Math.round(parseFloat(m[1].replace(',', '.')) * 1e6) : 0; };
+  switch (key) {
+    case 'budget': return p.budget ? { budget: p.budget } : mlnIn() && mlnIn() < 1e9 ? { budget: mlnIn() } : {};
+    case 'rooms': { const r = roomsOf(t) ?? (/^\d\b/.test(t) ? Number(t[0]) : undefined); return r === undefined ? {} : { rooms: r }; }
+    case 'district': return p.district ? { district: p.district } : {};
+    case 'type': return p.type ? { type: p.type } : /любая|любой|без разницы|все равно/.test(t) ? { type: 'любая' } : {};
+    case 'payment': return p.payment ? { payment: p.payment } : /рассроч/.test(t) ? { payment: 'рассрочка' } : {};
+    case 'mortgage': {
+      const r = {};
+      if (no || /не одобрен/.test(t)) r.mortgageApproved = false;
+      else if (yes || /одобрен/.test(t)) r.mortgageApproved = true;
+      const dp = p.downPayment || (/млн|миллион/.test(t) ? mlnIn() : 0);
+      if (dp) r.downPayment = dp;
+      return r;
+    }
+    case 'alternative': return no ? { alternative: false } : yes || /прода/.test(t) ? { alternative: true } : {};
+    default: return {};
+  }
+}
+
+if (typeof module !== 'undefined') module.exports = { parseChat, parseListing, answerToFields, DISTRICTS };
