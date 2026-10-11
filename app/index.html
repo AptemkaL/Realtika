@@ -1,0 +1,460 @@
+<meta charset="utf-8">
+<title>Realtika</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@600&display=swap">
+<style>
+/* Layout: рабочий стол агента — шапка с вкладками, один рабочий вид под ней, карточка клиента выезжает справа */
+:root {
+  --bg: #F2F3F1; --surface: #FFFFFF; --sunken: #E8EBE8; --ink: #1B2220; --muted: #5B6560; --line: #D9DEDA;
+  --accent: #8F611A; --accent-ink: #FFFFFF;
+  --ok: #2B7549; --warn: #965F00; --crit: #AE352C;
+  --f-display: "Unbounded", "Golos Text", system-ui, sans-serif;
+  --f-body: "Golos Text", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121715; --surface: #1A201E; --sunken: #161B19; --ink: #E6EAE8; --muted: #97A19C; --line: #2B3431;
+    --accent: #D6A24A; --accent-ink: #1A1206; --ok: #5CBB83; --warn: #E2A43C; --crit: #F07A6F; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121715; --surface: #1A201E; --sunken: #161B19; --ink: #E6EAE8; --muted: #97A19C; --line: #2B3431;
+  --accent: #D6A24A; --accent-ink: #1A1206; --ok: #5CBB83; --warn: #E2A43C; --crit: #F07A6F; color-scheme: dark;
+}
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--f-body); padding-inline: 16px; }
+.wrap { max-width: 1200px; margin: 0 auto; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+h2 { font-size: 20px; font-weight: 700; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+header.top { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; padding-block: 16px; border-bottom: 1px solid var(--line); }
+.brand { font: 600 20px/1 var(--f-display); letter-spacing: -.01em; display: flex; align-items: baseline; gap: 8px; }
+.brand span { font: 600 11px/1 var(--f-body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+nav.tabs { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; }
+.tab { font: 500 14px var(--f-body); color: var(--muted); background: none; border: 0; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+.tab:hover { color: var(--ink); background: var(--sunken); }
+.tab[aria-current="page"] { color: var(--ink); background: var(--sunken); font-weight: 600; }
+header.top .btn { white-space: normal; text-align: left; }
+.tab b { font-weight: 600; color: var(--crit); margin-left: 4px; font-variant-numeric: tabular-nums; }
+
+.btn { font: 600 14px var(--f-body); padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; white-space: nowrap; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.sm { padding: 4px 10px; font-size: 13px; }
+.btn.link { border: 0; background: none; padding: 0; color: var(--muted); font-weight: 500; text-decoration: underline; }
+
+main { padding-block: 24px 40px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; }
+.section { display: grid; gap: 12px; min-width: 0; }
+.section-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; }
+
+.pill { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; background: color-mix(in srgb, currentColor 13%, transparent); }
+.pill.ok { color: var(--ok); } .pill.warn { color: var(--warn); } .pill.crit { color: var(--crit); } .pill.muted { color: var(--muted); } .pill.accent { color: var(--accent); }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; display: grid; gap: 2px; }
+.stat b { font: 600 22px/1.2 var(--f-display); font-variant-numeric: tabular-nums; }
+
+.alerts { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+.alert { display: grid; grid-template-columns: 130px 1fr auto; gap: 8px 16px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.alert:last-child { border-bottom: 0; }
+.alert p { margin: 0; min-width: 0; }
+.empty { padding: 20px 16px; color: var(--muted); }
+
+.board { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; align-items: start; }
+.col { background: var(--sunken); border-radius: var(--r); padding: 10px; display: grid; gap: 8px; }
+.col h3 { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; padding: 2px 4px; }
+.card { display: grid; gap: 4px; width: 100%; text-align: left; font: inherit; color: inherit; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; cursor: pointer; }
+.card:hover { border-color: var(--accent); }
+.card strong { font-weight: 600; }
+.card .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+
+.tbl { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th { text-align: left; font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+.num { text-align: right; white-space: nowrap; }
+td .btn.link { text-align: left; color: var(--ink); text-decoration-color: var(--line); }
+
+dialog { border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 0; }
+dialog::backdrop { background: rgb(10 14 12 / .45); }
+dialog.drawer { margin: 0 0 0 auto; width: min(480px, 100%); height: 100%; max-height: 100%; border-width: 0 0 0 1px; }
+dialog.modal { width: min(580px, calc(100% - 32px)); border-radius: var(--r); }
+.dlg { padding: 20px; display: grid; gap: 18px; align-content: start; box-sizing: border-box; min-height: 100%; }
+.dlg-head { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+.x { font: 24px/1 var(--f-body); background: none; border: 0; color: var(--muted); cursor: pointer; padding: 0 4px; }
+dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; }
+dt { color: var(--muted); } dd { margin: 0; }
+.block { display: grid; gap: 8px; }
+.block h3 { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.match { display: grid; gap: 4px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; }
+.match .row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+label { font-size: 13px; font-weight: 600; color: var(--muted); }
+input, select, textarea { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); width: 100%; box-sizing: border-box; }
+textarea { resize: vertical; }
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.field { display: grid; gap: 4px; }
+.check { display: flex; gap: 8px; align-items: center; color: var(--ink); font-weight: 500; }
+.check input { width: auto; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+.invoice { border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: grid; gap: 12px; background: var(--bg); }
+.invoice .total { display: flex; justify-content: space-between; font-weight: 700; border-top: 1px solid var(--line); padding-top: 10px; font-variant-numeric: tabular-nums; }
+
+footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+
+@media (max-width: 640px) {
+  .alert { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .card, .btn { transition: border-color .15s; }
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">Realtika <span>демо</span></div>
+    <nav class="tabs" id="tabs" aria-label="Разделы"></nav>
+    <button class="btn primary" data-act="import-open">+ Карточка из переписки</button>
+  </header>
+  <main id="view"></main>
+  <footer class="small muted">
+    <span>Вымышленные данные. ИИ работает в режиме заглушки: правила вместо модели.</span>
+    <button class="btn link small" data-act="reset">Сбросить демо-данные</button>
+  </footer>
+</div>
+
+<dialog id="drawer" class="drawer" aria-label="Карточка клиента"></dialog>
+<dialog id="modal" class="modal"></dialog>
+
+<script src="parse.js"></script>
+<script>
+const K = 'realtika-demo-v1';
+const STAGES = ['Новый', 'Подбор', 'Показ', 'Бронь', 'Сделка'];
+const TABS = { today: 'Сегодня', funnel: 'Воронка', objects: 'Объекты', bookings: 'Брони', commissions: 'Комиссии' };
+const DAY = 864e5;
+
+const pad = n => String(n).padStart(2, '0');
+const today = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
+const iso = off => { const d = new Date(today().getTime() + off * DAY + DAY / 2); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+const days = s => { const [y, m, d] = s.split('-').map(Number); return Math.round((new Date(y, m - 1, d) - today()) / DAY); };
+const fmtDate = s => s.split('-').reverse().join('.');
+const rub = n => new Intl.NumberFormat('ru-RU').format(Math.round(n)) + ' ₽';
+const mln = n => (n / 1e6).toLocaleString('ru-RU', { maximumFractionDigits: 1 }) + ' млн ₽';
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const plural = (n, f) => f[n % 10 === 1 && n % 100 !== 11 ? 0 : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 1 : 2];
+const dayWord = n => `${n} ${plural(n, ['день', 'дня', 'дней'])}`;
+const roomsLabel = r => r == null ? 'любая' : r === 0 ? 'студия' : `${r}-к`;
+
+function seed() {
+  const C = (id, name, phone, stage, budget, rooms, district, type, mortgage, last) => ({ id, name, phone, stage, budget, rooms, district, type, mortgage, lastContact: iso(last) });
+  const O = (id, rooms, type, district, address, area, price) => ({ id, rooms, type, district, address, area, price });
+  return {
+    seq: 100,
+    clients: [
+      C('c1', 'Анна Смирнова', '+7 900 000-00-01', 'Подбор', 12.5e6, 2, 'Приморский', 'вторичка', true, -6),
+      C('c2', 'Игорь Ковалёв', '+7 900 000-00-02', 'Новый', 8e6, 1, 'Московский', 'новостройка', true, -1),
+      C('c3', 'Мария Лебедева', '+7 900 000-00-03', 'Показ', 18e6, 3, 'Петроградский', 'вторичка', false, -2),
+      C('c4', 'Дмитрий Орлов', '+7 900 000-00-04', 'Подбор', 6.5e6, 0, 'Невский', 'новостройка', true, -9),
+      C('c5', 'Елена Васильева', '+7 900 000-00-05', 'Бронь', 14e6, 2, 'Московский', 'новостройка', true, -1),
+      C('c6', 'Сергей Никитин', '+7 900 000-00-06', 'Сделка', 9.8e6, 1, 'Выборгский', 'вторичка', false, -3),
+      C('c7', 'Ольга Кузнецова', '+7 900 000-00-07', 'Показ', 11e6, 2, 'Калининский', 'любая', true, -4),
+      C('c8', 'Павел Морозов', '+7 900 000-00-08', 'Новый', 25e6, 3, 'Петроградский', 'вторичка', false, 0),
+      C('c9', 'Наталья Соколова', '+7 900 000-00-09', 'Подбор', 7.2e6, 1, 'Красногвардейский', 'новостройка', true, -7),
+      C('c10', 'Артём Фёдоров', '+7 900 000-00-10', 'Бронь', 10.5e6, 2, 'Выборгский', 'вторичка', true, -2),
+      C('c11', 'Виктория Попова', '+7 900 000-00-11', 'Сделка', 16e6, 3, 'Московский', 'новостройка', true, -5),
+      C('c12', 'Михаил Волков', '+7 900 000-00-12', 'Бронь', 13e6, 2, 'Приморский', 'новостройка', true, -8),
+    ],
+    objects: [
+      O('o1', 2, 'вторичка', 'Приморский', 'Комендантский пр.', 58, 12.2e6),
+      O('o2', 2, 'новостройка', 'Приморский', 'ЖК «Северная гавань»', 61, 13.4e6),
+      O('o3', 1, 'новостройка', 'Московский', 'ЖК «Пулковские высоты»', 38, 7.9e6),
+      O('o4', 3, 'вторичка', 'Петроградский', 'ул. Ленина', 86, 17.5e6),
+      O('o5', 0, 'новостройка', 'Невский', 'ЖК «Невская волна»', 26, 6.3e6),
+      O('o6', 2, 'новостройка', 'Московский', 'ЖК «Пулковские высоты»', 59, 13.8e6),
+      O('o7', 1, 'вторичка', 'Выборгский', 'пр. Энгельса', 36, 9.6e6),
+      O('o8', 2, 'вторичка', 'Калининский', 'Гражданский пр.', 52, 10.7e6),
+      O('o9', 1, 'новостройка', 'Красногвардейский', 'ЖК «Охта-парк»', 35, 7.1e6),
+      O('o10', 2, 'вторичка', 'Выборгский', 'пр. Просвещения', 54, 10.3e6),
+      O('o11', 3, 'новостройка', 'Московский', 'ЖК «Пулковские высоты»', 82, 15.9e6),
+      O('o12', 3, 'вторичка', 'Петроградский', 'Большая Пушкарская ул.', 95, 24.5e6),
+      O('o13', 0, 'новостройка', 'Невский', 'ЖК «Невская волна»', 24, 5.9e6),
+    ],
+    bookings: [
+      { id: 'b1', clientId: 'c5', objectId: 'o6', kind: 'Бронь у застройщика', amount: 50000, holder: 'Застройщик', expires: iso(2), closed: false },
+      { id: 'b2', clientId: 'c10', objectId: 'o10', kind: 'Аванс', amount: 100000, holder: 'Агентство', expires: iso(6), closed: false },
+      { id: 'b3', clientId: 'c12', objectId: 'o2', kind: 'Бронь у застройщика', amount: 30000, holder: 'Застройщик', expires: iso(-1), closed: false },
+      { id: 'b4', clientId: 'c6', objectId: 'o7', kind: 'Задаток', amount: 150000, holder: 'Собственник', expires: iso(-10), closed: true },
+      { id: 'b5', clientId: 'c11', objectId: 'o11', kind: 'Бронь у застройщика', amount: 50000, holder: 'Застройщик', expires: iso(-14), closed: true },
+    ],
+    commissions: [
+      { id: 'k1', clientId: 'c6', objectId: 'o7', payer: 'Продавец', amount: 290000, dealDate: iso(-5), status: 'ожидается' },
+      { id: 'k2', clientId: 'c11', objectId: 'o11', payer: 'Застройщик', amount: 477000, dealDate: iso(-12), status: 'счёт выставлен' },
+    ],
+  };
+}
+
+let S = null;
+try { S = JSON.parse(localStorage.getItem(K)); } catch (e) {}
+if (!S || !S.clients) S = seed();
+const save = () => { try { localStorage.setItem(K, JSON.stringify(S)); } catch (e) {} };
+
+let tab = TABS[location.hash.slice(1)] ? location.hash.slice(1) : 'today';
+let openClientId = null;
+const $ = id => document.getElementById(id);
+const cl = id => S.clients.find(c => c.id === id);
+const ob = id => S.objects.find(o => o.id === id);
+const objTitle = o => o ? `${roomsLabel(o.rooms)}, ${o.area} м² · ${o.address}` : '—';
+
+function fits(c, o) {
+  return (c.type === 'любая' || o.type === c.type)
+    && (c.rooms == null || o.rooms === c.rooms)
+    && (!c.budget || o.price <= c.budget * 1.05);
+}
+function matches(c) {
+  return S.objects.filter(o => fits(c, o)).map(o => {
+    const why = [];
+    const sameDistrict = c.district && o.district === c.district;
+    if (sameDistrict) why.push(['ok', `район ${o.district}`]);
+    else if (c.district) why.push(['muted', `другой район: ${o.district}`]);
+    if (c.budget) why.push(o.price <= c.budget ? ['ok', 'в бюджете'] : ['warn', `на ${Math.round((o.price / c.budget - 1) * 100)}% выше бюджета`]);
+    if (c.rooms != null) why.push(['ok', roomsLabel(o.rooms)]);
+    return { o, why, score: (sameDistrict ? 2 : 0) + (c.budget && o.price <= c.budget ? 1 : 0) };
+  }).sort((a, b) => b.score - a.score || a.o.price - b.o.price).slice(0, 3);
+}
+function draftText(c) {
+  const first = c.name.split(' ')[0];
+  const m = matches(c).filter(x => x.score > 0);
+  const req = `${roomsLabel(c.rooms)}, ${c.district || 'любой район'}${c.budget ? ', до ' + mln(c.budget) : ''}`;
+  if (!m.length) return `${first}, добрый день! Продолжаем подбор под ваш запрос (${req}). Новых подходящих вариантов пока нет. Бюджет и район ещё актуальны?`;
+  return `${first}, добрый день! Подобрали для вас ${m.length} ${plural(m.length, ['вариант', 'варианта', 'вариантов'])}:\n`
+    + m.map(x => `— ${objTitle(x.o)}, ${mln(x.o.price)}`).join('\n')
+    + `\nКогда вам удобно посмотреть?`;
+}
+function bookingState(b) {
+  if (b.closed) return ['muted', 'закрыта'];
+  const d = days(b.expires);
+  if (d < 0) return ['crit', 'истекла'];
+  if (d === 0) return ['warn', 'истекает сегодня'];
+  if (d <= 3) return ['warn', `осталось ${dayWord(d)}`];
+  return ['ok', `осталось ${dayWord(d)}`];
+}
+const commState = s => ({ 'ожидается': 'warn', 'счёт выставлен': 'accent', 'получена': 'ok' }[s]);
+const pill = (cls, text) => `<span class="pill ${cls}">${esc(text)}</span>`;
+const clientLink = c => `<button class="btn link" data-act="client" data-id="${c.id}">${esc(c.name)}</button>`;
+
+function alerts() {
+  const out = [];
+  S.bookings.filter(b => !b.closed).forEach(b => {
+    const d = days(b.expires), c = cl(b.clientId), what = `${b.kind.toLowerCase()} на ${objTitle(ob(b.objectId))}`;
+    if (d < 0) out.push({ w: 0, p: pill('crit', 'Бронь истекла'), text: `${esc(c.name)}: ${esc(what)} истекла ${fmtDate(b.expires)}. Продлите или закройте.`, act: `<button class="btn sm" data-act="tab" data-tab="bookings">К броням</button>` });
+    else if (d <= 3) out.push({ w: 1, p: pill('warn', d === 0 ? 'Бронь: сегодня' : `Бронь: ${dayWord(d)}`), text: `${esc(c.name)}: ${esc(what)} до ${fmtDate(b.expires)}.`, act: `<button class="btn sm" data-act="client" data-id="${c.id}">Открыть</button>` });
+  });
+  S.commissions.filter(k => k.status === 'ожидается' && days(k.dealDate) <= -3).forEach(k => {
+    const c = cl(k.clientId);
+    out.push({ w: 1, p: pill('warn', 'Нет счёта'), text: `Комиссия ${rub(k.amount)} от ${k.payer === 'Застройщик' ? 'застройщика' : 'продавца'} по сделке ${esc(c.name)}: сделка ${dayWord(-days(k.dealDate))} назад, счёт не выставлен.`, act: `<button class="btn sm" data-act="invoice" data-id="${k.id}">Выставить счёт</button>` });
+  });
+  S.clients.filter(c => c.stage !== 'Сделка' && days(c.lastContact) <= -5).forEach(c => {
+    out.push({ w: 2, p: pill('warn', 'Давно не писали'), text: `${esc(c.name)}: ${dayWord(-days(c.lastContact))} без касания, этап «${c.stage}».`, act: `<button class="btn sm" data-act="draft" data-id="${c.id}">Черновик сообщения</button>` });
+  });
+  return out.sort((a, b) => a.w - b.w);
+}
+
+const views = {
+  today() {
+    const a = alerts();
+    const inWork = S.clients.filter(c => c.stage !== 'Сделка').length;
+    const activeB = S.bookings.filter(b => !b.closed && days(b.expires) >= 0);
+    const due = S.commissions.filter(k => k.status !== 'получена').reduce((s, k) => s + k.amount, 0);
+    return `
+      <div class="stats">
+        <div class="stat"><span class="muted small">Клиентов в работе</span><b>${inWork}</b></div>
+        <div class="stat"><span class="muted small">Активных броней</span><b>${activeB.length}</b><span class="muted small">на ${rub(activeB.reduce((s, b) => s + b.amount, 0))}</span></div>
+        <div class="stat"><span class="muted small">Комиссии к получению</span><b>${rub(due)}</b></div>
+      </div>
+      <section class="section">
+        <div class="section-head"><h2>Требует внимания</h2><span class="muted small">${a.length} ${plural(a.length, ['задача', 'задачи', 'задач'])}</span></div>
+        <div class="alerts">${a.map(x => `<div class="alert"><div>${x.p}</div><p>${x.text}</p><div>${x.act}</div></div>`).join('') || '<div class="empty">Всё под контролем: истекающих броней, забытых клиентов и комиссий без счёта нет.</div>'}</div>
+      </section>`;
+  },
+  funnel() {
+    return `<section class="section"><div class="section-head"><h2>Воронка</h2><span class="muted small">Нажмите на клиента, чтобы открыть карточку</span></div>
+      <div class="board">${STAGES.map(st => {
+        const cs = S.clients.filter(c => c.stage === st);
+        return `<div class="col"><h3><span>${st}</span><span>${cs.length}</span></h3>${cs.map(c => {
+          const d = -days(c.lastContact);
+          const contact = st === 'Сделка' ? '' : d >= 5 ? pill('warn', `${dayWord(d)} без касания`) : pill('muted', d === 0 ? 'контакт сегодня' : `контакт ${dayWord(d)} назад`);
+          return `<button class="card" data-act="client" data-id="${c.id}"><strong>${esc(c.name)}</strong>
+            <span class="small muted">${roomsLabel(c.rooms)} · ${esc(c.district || 'любой район')}${c.budget ? ' · до ' + mln(c.budget) : ''}</span>
+            <span class="row">${contact}</span></button>`;
+        }).join('')}</div>`;
+      }).join('')}</div></section>`;
+  },
+  objects() {
+    const active = S.clients.filter(c => c.stage !== 'Сделка');
+    return `<section class="section"><div class="section-head"><h2>Объекты</h2><span class="muted small">${S.objects.length} в базе агентства</span></div>
+      <div class="tbl"><table><thead><tr><th>Объект</th><th>Тип</th><th>Район</th><th class="num">Площадь</th><th class="num">Цена</th><th class="num">₽ за м²</th><th class="num">Подходит клиентам</th></tr></thead><tbody>
+      ${S.objects.map(o => { const n = active.filter(c => fits(c, o)).length; return `<tr><td>${roomsLabel(o.rooms)}, ${esc(o.address)}</td><td>${o.type}</td><td>${o.district}</td><td class="num">${o.area} м²</td><td class="num">${mln(o.price)}</td><td class="num">${rub(o.price / o.area)}</td><td class="num">${n ? pill('accent', n) : '<span class="muted">—</span>'}</td></tr>`; }).join('')}
+      </tbody></table></div></section>`;
+  },
+  bookings() {
+    return `<section class="section"><div class="section-head"><h2>Брони</h2><span class="muted small">Только учёт: деньги держит указанная сторона, Realtika их не принимает</span></div>
+      <div class="tbl"><table><thead><tr><th>Клиент</th><th>Объект</th><th>Тип</th><th class="num">Сумма</th><th>Деньги у</th><th>Срок</th><th>Статус</th><th></th></tr></thead><tbody>
+      ${S.bookings.map(b => { const [cls, txt] = bookingState(b); return `<tr><td>${clientLink(cl(b.clientId))}</td><td>${esc(objTitle(ob(b.objectId)))}</td><td>${b.kind}</td><td class="num">${rub(b.amount)}</td><td>${b.holder}</td><td>${fmtDate(b.expires)}</td><td>${pill(cls, txt)}</td>
+        <td>${b.closed ? '' : `<div class="actions"><button class="btn sm" data-act="extend" data-id="${b.id}">+7 дней</button><button class="btn sm" data-act="close-booking" data-id="${b.id}">Закрыть</button></div>`}</td></tr>`; }).join('')}
+      </tbody></table></div></section>`;
+  },
+  commissions() {
+    const sum = s => S.commissions.filter(k => k.status === s).reduce((t, k) => t + k.amount, 0);
+    return `<div class="stats">
+        <div class="stat"><span class="muted small">Ожидается, счёт не выставлен</span><b>${rub(sum('ожидается'))}</b></div>
+        <div class="stat"><span class="muted small">Счёт выставлен</span><b>${rub(sum('счёт выставлен'))}</b></div>
+        <div class="stat"><span class="muted small">Получено</span><b>${rub(sum('получена'))}</b></div>
+      </div>
+      <section class="section"><div class="section-head"><h2>Комиссии</h2><span class="muted small">Новостройки: платит застройщик после сделки. Вторичка: платит продавец</span></div>
+      <div class="tbl"><table><thead><tr><th>Клиент</th><th>Объект</th><th>Платит</th><th class="num">Сумма</th><th>Сделка</th><th>Статус</th><th></th></tr></thead><tbody>
+      ${S.commissions.map(k => `<tr><td>${clientLink(cl(k.clientId))}</td><td>${esc(objTitle(ob(k.objectId)))}</td><td>${k.payer}</td><td class="num">${rub(k.amount)}</td><td>${fmtDate(k.dealDate)}</td><td>${pill(commState(k.status), k.status)}</td>
+        <td>${k.status === 'ожидается' ? `<button class="btn sm" data-act="invoice" data-id="${k.id}">Выставить счёт</button>` : k.status === 'счёт выставлен' ? `<div class="actions"><button class="btn sm" data-act="invoice" data-id="${k.id}">Счёт</button><button class="btn sm" data-act="paid" data-id="${k.id}">Оплачено</button></div>` : ''}</td></tr>`).join('')}
+      </tbody></table></div></section>`;
+  },
+};
+
+function render() {
+  const n = alerts().length;
+  $('tabs').innerHTML = Object.entries(TABS).map(([k, v]) => `<button class="tab" data-act="tab" data-tab="${k}"${k === tab ? ' aria-current="page"' : ''}>${v}${k === 'today' && n ? `<b>${n}</b>` : ''}</button>`).join('');
+  $('view').innerHTML = views[tab]();
+  if (openClientId && $('drawer').open) renderClient(openClientId, $('draft-box') ? true : false);
+}
+
+function renderClient(id, showDraft) {
+  const c = cl(id), m = matches(c), d = -days(c.lastContact);
+  const bs = S.bookings.filter(b => b.clientId === id), ks = S.commissions.filter(k => k.clientId === id);
+  $('drawer').innerHTML = `<div class="dlg">
+    <div class="dlg-head"><div><h2>${esc(c.name)}</h2><span class="muted">${esc(c.phone || 'телефон не указан')}</span></div><button class="x" data-act="close" aria-label="Закрыть">×</button></div>
+    <div class="field"><label for="stage">Этап</label><select id="stage" data-id="${c.id}">${STAGES.map(s => `<option${s === c.stage ? ' selected' : ''}>${s}</option>`).join('')}</select></div>
+    <div class="block"><h3>Запрос</h3><dl>
+      <dt>Бюджет</dt><dd>${c.budget ? 'до ' + mln(c.budget) : '—'}</dd>
+      <dt>Комнаты</dt><dd>${roomsLabel(c.rooms)}</dd>
+      <dt>Район</dt><dd>${esc(c.district || 'любой')}</dd>
+      <dt>Рынок</dt><dd>${c.type}</dd>
+      <dt>Ипотека</dt><dd>${c.mortgage ? 'да' : 'нет'}</dd>
+    </dl></div>
+    <div class="block"><h3>Контакт</h3>
+      <div class="actions"><span>${d === 0 ? 'Сегодня' : `${fmtDate(c.lastContact)}, ${dayWord(d)} назад`}</span>${d >= 5 && c.stage !== 'Сделка' ? pill('warn', 'пора написать') : ''}</div>
+      <div class="actions"><button class="btn sm" data-act="contact" data-id="${c.id}">Связался сегодня</button><button class="btn sm" data-act="draft" data-id="${c.id}">Черновик сообщения</button></div>
+      ${showDraft ? `<textarea id="draft-box" rows="6">${esc(draftText(c))}</textarea><div class="actions"><button class="btn sm primary" data-act="copy">Копировать</button><span class="small muted" id="copy-status"></span></div>` : ''}
+    </div>
+    <div class="block"><h3>Подходящие объекты</h3>
+      ${m.length ? m.map(x => `<div class="match"><strong>${esc(objTitle(x.o))}</strong><span>${mln(x.o.price)} · ${x.o.type}</span><span class="row">${x.why.map(([cls, t]) => pill(cls, t)).join('')}</span></div>`).join('') : '<span class="muted">В базе нет объектов под этот запрос.</span>'}
+    </div>
+    ${bs.length ? `<div class="block"><h3>Брони</h3>${bs.map(b => { const [cls, t] = bookingState(b); return `<div class="actions">${pill(cls, t)}<span>${b.kind}, ${rub(b.amount)}, до ${fmtDate(b.expires)}</span></div>`; }).join('')}</div>` : ''}
+    ${ks.length ? `<div class="block"><h3>Комиссии</h3>${ks.map(k => `<div class="actions">${pill(commState(k.status), k.status)}<span>${rub(k.amount)} от ${k.payer === 'Застройщик' ? 'застройщика' : 'продавца'}</span></div>`).join('')}</div>` : ''}
+  </div>`;
+}
+function openClient(id, showDraft = false) {
+  openClientId = id;
+  renderClient(id, showDraft);
+  if (!$('drawer').open) $('drawer').showModal();
+}
+
+const SAMPLE = 'Добрый день! Меня зовут Ксения Романова, нам посоветовали ваше агентство. Ищем однушку в новостройке, лучше Московский район, бюджет до 8,2 млн, берём ипотеку. Звоните: +7 900 000-00-15';
+function openImport() {
+  $('modal').innerHTML = `<div class="dlg">
+    <div class="dlg-head"><div><h2>Карточка из переписки</h2><span class="muted small">Вставьте сообщение клиента или заметку после звонка. Пример уже вставлен.</span></div><button class="x" data-act="close" aria-label="Закрыть">×</button></div>
+    <div class="field"><label for="chat">Переписка</label><textarea id="chat" rows="5">${esc(SAMPLE)}</textarea></div>
+    <div class="actions"><button class="btn primary" data-act="parse">Разобрать</button>${pill('muted', 'ИИ-заглушка: правила вместо модели')}</div>
+    <form id="parsed" hidden></form></div>`;
+  $('modal').showModal();
+}
+function showParsed(r) {
+  const f = $('parsed');
+  const opt = (vals, cur) => vals.map(([v, t]) => `<option value="${v}"${String(v) === String(cur) ? ' selected' : ''}>${t}</option>`).join('');
+  f.innerHTML = `<div class="block"><h3>Проверьте и сохраните</h3>
+    <div class="fields">
+      <div class="field"><label for="f-name">Имя</label><input id="f-name" required value="${esc(r.name)}"></div>
+      <div class="field"><label for="f-phone">Телефон</label><input id="f-phone" value="${esc(r.phone)}"></div>
+      <div class="field"><label for="f-budget">Бюджет, млн ₽</label><input id="f-budget" type="number" step="0.1" min="0" value="${r.budget ? r.budget / 1e6 : ''}"></div>
+      <div class="field"><label for="f-rooms">Комнаты</label><select id="f-rooms">${opt([['', 'любая'], [0, 'студия'], [1, '1-к'], [2, '2-к'], [3, '3-к'], [4, '4-к']], r.rooms ?? '')}</select></div>
+      <div class="field"><label for="f-district">Район</label><select id="f-district">${opt([['', 'любой'], ...[...new Set(Object.values(DISTRICTS))].map(d => [d, d])], r.district)}</select></div>
+      <div class="field"><label for="f-type">Рынок</label><select id="f-type">${opt([['любая', 'любой'], ['новостройка', 'новостройка'], ['вторичка', 'вторичка']], r.type)}</select></div>
+    </div>
+    <label class="check"><input type="checkbox" id="f-mortgage"${r.mortgage ? ' checked' : ''}> Ипотека</label>
+    <div class="actions"><button class="btn primary" type="submit">Создать карточку</button></div></div>`;
+  f.hidden = false;
+}
+
+document.addEventListener('click', e => {
+  const dlg = e.target.closest('dialog');
+  if (e.target === dlg) { dlg.close(); return; }
+  const el = e.target.closest('[data-act]');
+  if (!el) return;
+  const id = el.dataset.id;
+  switch (el.dataset.act) {
+    case 'tab': tab = el.dataset.tab; try { history.replaceState(null, '', '#' + tab); } catch (err) {} $('modal').close(); $('drawer').close(); window.scrollTo(0, 0); break;
+    case 'client': openClient(id); return;
+    case 'draft': openClient(id, true); return;
+    case 'close': el.closest('dialog').close(); return;
+    case 'contact': cl(id).lastContact = iso(0); break;
+    case 'copy': {
+      const box = $('draft-box'), st = $('copy-status');
+      navigator.clipboard.writeText(box.value).then(() => { st.textContent = 'Скопировано'; }, () => { box.select(); st.textContent = 'Выделено, нажмите Cmd+C'; });
+      return;
+    }
+    case 'extend': { const b = S.bookings.find(x => x.id === id); b.expires = iso(Math.max(days(b.expires), 0) + 7); break; }
+    case 'close-booking': S.bookings.find(x => x.id === id).closed = true; break;
+    case 'invoice': openInvoice(id); return;
+    case 'issue': S.commissions.find(x => x.id === id).status = 'счёт выставлен'; $('modal').close(); break;
+    case 'paid': S.commissions.find(x => x.id === id).status = 'получена'; break;
+    case 'import-open': openImport(); return;
+    case 'parse': showParsed(parseChat($('chat').value)); return;
+    case 'reset': S = seed(); openClientId = null; $('drawer').close(); break;
+    default: return;
+  }
+  save(); render();
+});
+
+document.addEventListener('change', e => {
+  if (e.target.id !== 'stage') return;
+  cl(e.target.dataset.id).stage = e.target.value;
+  save(); render();
+});
+
+document.addEventListener('submit', e => {
+  if (e.target.id !== 'parsed') return;
+  e.preventDefault();
+  const rooms = $('f-rooms').value, budget = parseFloat($('f-budget').value);
+  const c = {
+    id: 'c' + (++S.seq), name: $('f-name').value.trim(), phone: $('f-phone').value.trim(), stage: 'Новый',
+    budget: budget > 0 ? Math.round(budget * 1e6) : 0, rooms: rooms === '' ? null : Number(rooms),
+    district: $('f-district').value, type: $('f-type').value, mortgage: $('f-mortgage').checked, lastContact: iso(0),
+  };
+  S.clients.push(c);
+  save(); $('modal').close(); tab = 'funnel'; render(); openClient(c.id);
+});
+
+function openInvoice(id) {
+  const k = S.commissions.find(x => x.id === id), c = cl(k.clientId), o = ob(k.objectId);
+  const no = `R-${k.dealDate.slice(0, 4)}-${k.id.toUpperCase()}`;
+  $('modal').innerHTML = `<div class="dlg">
+    <div class="dlg-head"><div><h2>Счёт № ${no}</h2><span class="muted small">от ${fmtDate(iso(0))}</span></div><button class="x" data-act="close" aria-label="Закрыть">×</button></div>
+    <div class="invoice">
+      <dl>
+        <dt>Исполнитель</dt><dd>АН «Демо-Недвижимость», ИНН 0000000000<br><span class="small muted">реквизиты берутся из настроек агентства</span></dd>
+        <dt>Плательщик</dt><dd>${k.payer === 'Застройщик' ? `Застройщик, ${esc(o.address)}` : `Продавец объекта: ${esc(o.address)}`}</dd>
+        <dt>Услуга</dt><dd>Агентское вознаграждение по сделке: ${esc(objTitle(o))}, покупатель ${esc(c.name)}, сделка ${fmtDate(k.dealDate)}</dd>
+      </dl>
+      <div class="total"><span>Итого к оплате</span><span>${rub(k.amount)}</span></div>
+    </div>
+    <p class="small muted" style="margin:0">Оплата поступает напрямую на счёт агентства. Realtika платежи не принимает.</p>
+    <div class="actions">${k.status === 'ожидается' ? `<button class="btn primary" data-act="issue" data-id="${k.id}">Отметить: счёт выставлен</button>` : pill(commState(k.status), k.status)}</div>
+  </div>`;
+  if (!$('modal').open) $('modal').showModal();
+}
+
+render();
+</script>

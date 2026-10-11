@@ -4,7 +4,10 @@
 
 ## Статус
 
-Product discovery. Код ещё не начат.
+Product discovery + кликабельный прототип на вымышленных данных.
+
+- [`app/`](app) — прототип: одна страница без бэкенда, данные в браузере. Открыть локально: `cd app && python3 -m http.server`, затем http://localhost:8000
+- Тест парсера переписки: `node app/parse.test.js`
 
 - [`docs/one-pager.md`](docs/one-pager.md) — проблема, сегмент, MVP, метрики, риски
 - [`docs/interview-script.md`](docs/interview-script.md) — скрипт интервью с агентствами
