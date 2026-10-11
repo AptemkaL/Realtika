@@ -1,6 +1,6 @@
-# AI-CRM для агентств недвижимости — one-pager
+# Риэлтика — one-pager
 
-> Рабочее название не выбрано. Статус: черновик до customer discovery (см. `interview-script.md`).
+> Рабочее название: Риэлтика (латиницей — Realtika, не финал). Статус: черновик до customer discovery (см. `interview-script.md`).
 
 ## Проблема
 
