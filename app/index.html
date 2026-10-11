@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@600&display=swap">
 <style>
-/* Layout: рабочий стол агента — шапка с вкладками, один рабочий вид под ней, карточка клиента выезжает справа */
+/* Layout: рабочий стол агента — шапка с вкладками и входом, один рабочий вид под ней, сделка выезжает справа */
 :root {
   --bg: #F2F3F1; --surface: #FFFFFF; --sunken: #E8EBE8; --ink: #1B2220; --muted: #5B6560; --line: #D9DEDA;
   --accent: #8F611A; --accent-ink: #FFFFFF;
@@ -24,32 +24,39 @@
   --accent: #D6A24A; --accent-ink: #1A1206; --ok: #5CBB83; --warn: #E2A43C; --crit: #F07A6F; color-scheme: dark;
 }
 body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--f-body); padding-inline: 16px; }
-.wrap { max-width: 1200px; margin: 0 auto; }
+.wrap { max-width: 1440px; margin: 0 auto; }
 h1, h2, h3 { margin: 0; text-wrap: balance; }
 h2 { font-size: 20px; font-weight: 700; }
 .muted { color: var(--muted); }
 .small { font-size: 13px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-header.top { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; padding-block: 16px; border-bottom: 1px solid var(--line); }
+header.top { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; padding-block: 16px; border-bottom: 1px solid var(--line); }
 .brand { font: 600 20px/1 var(--f-display); letter-spacing: -.01em; display: flex; align-items: baseline; gap: 8px; }
 .brand span { font: 600 11px/1 var(--f-body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 nav.tabs { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; }
 .tab { font: 500 14px var(--f-body); color: var(--muted); background: none; border: 0; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
 .tab:hover { color: var(--ink); background: var(--sunken); }
 .tab[aria-current="page"] { color: var(--ink); background: var(--sunken); font-weight: 600; }
-header.top .btn { white-space: normal; text-align: left; }
 .tab b { font-weight: 600; color: var(--crit); margin-left: 4px; font-variant-numeric: tabular-nums; }
+.me { display: flex; align-items: center; gap: 8px; }
+.me select { width: auto; max-width: 260px; }
+header.top .btn { white-space: normal; text-align: left; }
 
 .btn { font: 600 14px var(--f-body); padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; white-space: nowrap; }
 .btn:hover { border-color: var(--accent); }
+.btn:disabled { opacity: .4; cursor: default; }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .btn.sm { padding: 4px 10px; font-size: 13px; }
-.btn.link { border: 0; background: none; padding: 0; color: var(--muted); font-weight: 500; text-decoration: underline; }
+.btn.link { border: 0; background: none; padding: 0; color: var(--muted); font-weight: 500; text-decoration: underline; text-align: left; }
+td .btn.link, .trow .btn.link, .alert .btn.link { color: var(--ink); text-decoration-color: var(--line); }
 
-main { padding-block: 24px 40px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; }
+main { padding-block: 24px 40px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; }
 .section { display: grid; gap: 12px; min-width: 0; }
-.section-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; }
+.section-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 16px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.toolbar select { width: auto; }
+.group-title { font-size: 13px; font-weight: 600; color: var(--muted); margin: 0; }
 
 .pill { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; background: color-mix(in srgb, currentColor 13%, transparent); }
 .pill.ok { color: var(--ok); } .pill.warn { color: var(--warn); } .pill.crit { color: var(--crit); } .pill.muted { color: var(--muted); } .pill.accent { color: var(--accent); }
@@ -58,19 +65,27 @@ main { padding-block: 24px 40px; display: grid; grid-template-columns: minmax(0,
 .stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; display: grid; gap: 2px; }
 .stat b { font: 600 22px/1.2 var(--f-display); font-variant-numeric: tabular-nums; }
 
-.alerts { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
-.alert { display: grid; grid-template-columns: 130px 1fr auto; gap: 8px 16px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line); }
-.alert:last-child { border-bottom: 0; }
+.list { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+.list > * { border-bottom: 1px solid var(--line); }
+.list > *:last-child { border-bottom: 0; }
+.alert { display: grid; grid-template-columns: 150px 1fr auto; gap: 8px 16px; align-items: center; padding: 12px 16px; }
 .alert p { margin: 0; min-width: 0; }
-.empty { padding: 20px 16px; color: var(--muted); }
+.trow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; padding: 10px 16px; }
+.trow input { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
+.trow > label, .trow .title { color: var(--ink); font-size: 15px; font-weight: 500; }
+.trow .meta { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 13px; color: var(--muted); }
+.empty { padding: 18px 16px; color: var(--muted); }
 
-.board { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; align-items: start; }
-.col { background: var(--sunken); border-radius: var(--r); padding: 10px; display: grid; gap: 8px; }
-.col h3 { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; padding: 2px 4px; }
-.card { display: grid; gap: 4px; width: 100%; text-align: left; font: inherit; color: inherit; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; cursor: pointer; }
+.kanban { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(180px, 1fr); gap: 12px; overflow-x: auto; padding-bottom: 8px; align-items: start; }
+.col { background: var(--sunken); border-radius: var(--r); padding: 10px; display: grid; gap: 8px; align-content: start; min-height: 120px; }
+.col.over { outline: 2px dashed var(--accent); outline-offset: -2px; }
+.col h3 { font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; padding: 2px 4px; }
+.card { display: grid; gap: 4px; width: 100%; text-align: left; font: inherit; color: inherit; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; cursor: grab; }
 .card:hover { border-color: var(--accent); }
+.card.dragging { opacity: .45; }
 .card strong { font-weight: 600; }
 .card .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.who { font-size: 12px; color: var(--muted); }
 
 .tbl { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
 table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
@@ -78,30 +93,37 @@ th { text-align: left; font-size: 12px; font-weight: 600; letter-spacing: .05em;
 td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
 tr:last-child td { border-bottom: 0; }
 .num { text-align: right; white-space: nowrap; }
-td .btn.link { text-align: left; color: var(--ink); text-decoration-color: var(--line); }
+td select { width: auto; }
 
 dialog { border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 0; }
 dialog::backdrop { background: rgb(10 14 12 / .45); }
-dialog.drawer { margin: 0 0 0 auto; width: min(480px, 100%); height: 100%; max-height: 100%; border-width: 0 0 0 1px; }
-dialog.modal { width: min(580px, calc(100% - 32px)); border-radius: var(--r); }
-.dlg { padding: 20px; display: grid; gap: 18px; align-content: start; box-sizing: border-box; min-height: 100%; }
+dialog.drawer { margin: 0 0 0 auto; width: min(520px, 100%); height: 100%; max-height: 100%; border-width: 0 0 0 1px; }
+dialog.modal { width: min(600px, calc(100% - 32px)); border-radius: var(--r); }
+.dlg { padding: 20px; display: grid; gap: 22px; align-content: start; box-sizing: border-box; min-height: 100%; }
 .dlg-head { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
 .x { font: 24px/1 var(--f-body); background: none; border: 0; color: var(--muted); cursor: pointer; padding: 0 4px; }
 dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; }
 dt { color: var(--muted); } dd { margin: 0; }
 .block { display: grid; gap: 8px; }
-.block h3 { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.block > h3 { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.ai { border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line)); background: color-mix(in srgb, var(--accent) 6%, var(--surface)); border-radius: 8px; padding: 12px 14px; display: grid; gap: 8px; }
+.ai ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.ai s { color: var(--muted); }
 .match { display: grid; gap: 4px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; }
 .match .row { display: flex; flex-wrap: wrap; gap: 6px; }
+.note { display: grid; gap: 2px; padding-left: 12px; border-left: 2px solid var(--line); }
+.note p { margin: 0; }
+.err { color: var(--crit); font-size: 13px; margin: 0; }
 
 label { font-size: 13px; font-weight: 600; color: var(--muted); }
 input, select, textarea { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); width: 100%; box-sizing: border-box; }
+input[type="checkbox"] { width: auto; }
 textarea { resize: vertical; }
-.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
-.field { display: grid; gap: 4px; }
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.field { display: grid; gap: 4px; align-content: start; }
 .check { display: flex; gap: 8px; align-items: center; color: var(--ink); font-weight: 500; }
-.check input { width: auto; }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.stage-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 6px; align-items: center; }
 
 .invoice { border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: grid; gap: 12px; background: var(--bg); }
 .invoice .total { display: flex; justify-content: space-between; font-weight: 700; border-top: 1px solid var(--line); padding-top: 10px; font-variant-numeric: tabular-nums; }
@@ -110,6 +132,8 @@ footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: f
 
 @media (max-width: 640px) {
   .alert { grid-template-columns: 1fr; }
+  .trow { grid-template-columns: auto minmax(0, 1fr); }
+  .trow > :last-child { grid-column: 2; justify-self: start; }
 }
 @media (prefers-reduced-motion: no-preference) {
   .card, .btn { transition: border-color .15s; }
@@ -120,23 +144,25 @@ footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: f
   <header class="top">
     <div class="brand">Realtika <span>демо</span></div>
     <nav class="tabs" id="tabs" aria-label="Разделы"></nav>
-    <button class="btn primary" data-act="import-open">+ Карточка из переписки</button>
+    <button class="btn primary" data-act="import-open">+ Сделка из переписки</button>
+    <div class="me"><label for="me">Вы</label><select id="me"></select></div>
   </header>
   <main id="view"></main>
   <footer class="small muted">
-    <span>Вымышленные данные. ИИ работает в режиме заглушки: правила вместо модели.</span>
+    <span>Вымышленные данные. Вход демонстрационный: выберите сотрудника вверху справа. ИИ работает в режиме заглушки: правила вместо модели.</span>
     <button class="btn link small" data-act="reset">Сбросить демо-данные</button>
   </footer>
 </div>
 
-<dialog id="drawer" class="drawer" aria-label="Карточка клиента"></dialog>
+<dialog id="drawer" class="drawer" aria-label="Сделка"></dialog>
 <dialog id="modal" class="modal"></dialog>
 
 <script src="parse.js"></script>
 <script>
-const K = 'realtika-demo-v1';
-const STAGES = ['Новый', 'Подбор', 'Показ', 'Бронь', 'Сделка'];
-const TABS = { today: 'Сегодня', funnel: 'Воронка', objects: 'Объекты', bookings: 'Брони', commissions: 'Комиссии' };
+const K = 'realtika-demo-v2';
+const ROLES = { agent: 'Агент', head: 'Руководитель отдела продаж', director: 'Директор' };
+const TABS = [['tasks', 'Задачи'], ['deals', 'Сделки'], ['objects', 'Объекты'], ['bookings', 'Брони'], ['commissions', 'Комиссии'], ['team', 'Команда']];
+const PAYMENTS = ['', 'ипотека', 'наличные', 'рассрочка'];
 const DAY = 864e5;
 
 const pad = n => String(n).padStart(2, '0');
@@ -150,26 +176,54 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 const plural = (n, f) => f[n % 10 === 1 && n % 100 !== 11 ? 0 : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 1 : 2];
 const dayWord = n => `${n} ${plural(n, ['день', 'дня', 'дней'])}`;
 const roomsLabel = r => r == null ? 'любая' : r === 0 ? 'студия' : `${r}-к`;
+const yesNo = v => v ? 'да' : 'нет';
+const dueLabel = s => { const d = days(s); return d === 0 ? 'сегодня' : d === 1 ? 'завтра' : d === -1 ? 'вчера' : fmtDate(s); };
+const dueCls = s => { const d = days(s); return d < 0 ? 'crit' : d === 0 ? 'warn' : 'muted'; };
+
+// Поля сделки, которые заполняет ИИ или агент вручную
+const FIELDS = [
+  ['budget', 'Бюджет', v => v ? 'до ' + mln(v) : '—'],
+  ['rooms', 'Комнаты', roomsLabel],
+  ['district', 'Район', v => v || 'любой'],
+  ['type', 'Рынок', v => v === 'любая' ? 'любой' : v],
+  ['payment', 'Оплата', v => v || '—'],
+  ['downPayment', 'Первый взнос', v => v ? mln(v) : '—'],
+  ['mortgageApproved', 'Ипотека одобрена', yesNo],
+  ['alternative', 'Продаёт своё жильё', yesNo],
+  ['source', 'Источник', v => v || '—'],
+];
+const DEFAULTS = { budget: 0, rooms: null, district: '', type: 'любая', payment: '', downPayment: 0, mortgageApproved: false, alternative: false, source: '' };
 
 function seed() {
-  const C = (id, name, phone, stage, budget, rooms, district, type, mortgage, last) => ({ id, name, phone, stage, budget, rooms, district, type, mortgage, lastContact: iso(last) });
+  const D = (id, agentId, stageId, name, phone, last, f) => ({ id, agentId, stageId, name, phone, lastContact: iso(last), notes: [], ...DEFAULTS, ...f });
   const O = (id, rooms, type, district, address, area, price) => ({ id, rooms, type, district, address, area, price });
+  const deals = [
+    D('d1', 'u3', 's5', 'Анна Смирнова', '+7 900 000-00-01', -6, { budget: 12.5e6, rooms: 2, district: 'Приморский', type: 'вторичка', payment: 'ипотека', downPayment: 2.5e6, mortgageApproved: true, source: 'Авито' }),
+    D('d2', 'u3', 's1', 'Игорь Ковалёв', '+7 900 000-00-02', -1, { budget: 8e6, rooms: 1, district: 'Московский', type: 'новостройка', payment: 'ипотека', source: 'Циан' }),
+    D('d3', 'u4', 's5', 'Мария Лебедева', '+7 900 000-00-03', -2, { budget: 18e6, rooms: 3, district: 'Петроградский', type: 'вторичка', payment: 'наличные', alternative: true, source: 'Рекомендация' }),
+    D('d4', 'u3', 's2', 'Дмитрий Орлов', '+7 900 000-00-04', -9, { budget: 6.5e6, rooms: 0, district: 'Невский', type: 'новостройка', payment: 'ипотека' }),
+    D('d5', 'u4', 's6', 'Елена Васильева', '+7 900 000-00-05', -1, { budget: 14e6, rooms: 2, district: 'Московский', type: 'новостройка', payment: 'ипотека', downPayment: 4e6, mortgageApproved: true }),
+    D('d6', 'u5', 's7', 'Сергей Никитин', '+7 900 000-00-06', -3, { budget: 9.8e6, rooms: 1, district: 'Выборгский', type: 'вторичка', payment: 'наличные' }),
+    D('d7', 'u5', 's4', 'Ольга Кузнецова', '+7 900 000-00-07', -4, { budget: 11e6, rooms: 2, district: 'Калининский', payment: 'ипотека' }),
+    D('d8', 'u4', 's1', 'Павел Морозов', '+7 900 000-00-08', 0, { budget: 25e6, rooms: 3, district: 'Петроградский', type: 'вторичка', payment: 'наличные', source: 'Сайт' }),
+    D('d9', 'u3', 's3', 'Наталья Соколова', '+7 900 000-00-09', -7, { budget: 7.2e6, rooms: 1, district: 'Красногвардейский', type: 'новостройка', payment: 'ипотека' }),
+    D('d10', 'u5', 's6', 'Артём Фёдоров', '+7 900 000-00-10', -2, { budget: 10.5e6, rooms: 2, district: 'Выборгский', type: 'вторичка', payment: 'ипотека', mortgageApproved: true }),
+    D('d11', 'u4', 's7', 'Виктория Попова', '+7 900 000-00-11', -5, { budget: 16e6, rooms: 3, district: 'Московский', type: 'новостройка', payment: 'ипотека' }),
+    D('d12', 'u3', 's6', 'Михаил Волков', '+7 900 000-00-12', -8, { budget: 13e6, rooms: 2, district: 'Приморский', type: 'новостройка', payment: 'ипотека' }),
+    D('d13', 'u5', 's2', 'Глеб Зайцев', '+7 900 000-00-13', -3, { budget: 9e6, rooms: 2, district: 'Фрунзенский', type: 'вторичка', payment: 'ипотека' }),
+  ];
+  deals[0].notes.push({ date: iso(-6), author: 'u3', text: 'Показ на Комендантском: квартира понравилась, смущает 2-й этаж. Ипотека одобрена, взнос 2,5 млн.' });
   return {
-    seq: 100,
-    clients: [
-      C('c1', 'Анна Смирнова', '+7 900 000-00-01', 'Подбор', 12.5e6, 2, 'Приморский', 'вторичка', true, -6),
-      C('c2', 'Игорь Ковалёв', '+7 900 000-00-02', 'Новый', 8e6, 1, 'Московский', 'новостройка', true, -1),
-      C('c3', 'Мария Лебедева', '+7 900 000-00-03', 'Показ', 18e6, 3, 'Петроградский', 'вторичка', false, -2),
-      C('c4', 'Дмитрий Орлов', '+7 900 000-00-04', 'Подбор', 6.5e6, 0, 'Невский', 'новостройка', true, -9),
-      C('c5', 'Елена Васильева', '+7 900 000-00-05', 'Бронь', 14e6, 2, 'Московский', 'новостройка', true, -1),
-      C('c6', 'Сергей Никитин', '+7 900 000-00-06', 'Сделка', 9.8e6, 1, 'Выборгский', 'вторичка', false, -3),
-      C('c7', 'Ольга Кузнецова', '+7 900 000-00-07', 'Показ', 11e6, 2, 'Калининский', 'любая', true, -4),
-      C('c8', 'Павел Морозов', '+7 900 000-00-08', 'Новый', 25e6, 3, 'Петроградский', 'вторичка', false, 0),
-      C('c9', 'Наталья Соколова', '+7 900 000-00-09', 'Подбор', 7.2e6, 1, 'Красногвардейский', 'новостройка', true, -7),
-      C('c10', 'Артём Фёдоров', '+7 900 000-00-10', 'Бронь', 10.5e6, 2, 'Выборгский', 'вторичка', true, -2),
-      C('c11', 'Виктория Попова', '+7 900 000-00-11', 'Сделка', 16e6, 3, 'Московский', 'новостройка', true, -5),
-      C('c12', 'Михаил Волков', '+7 900 000-00-12', 'Бронь', 13e6, 2, 'Приморский', 'новостройка', true, -8),
+    seq: 100, me: 'u3',
+    users: [
+      { id: 'u1', name: 'Ирина Белова', role: 'director' },
+      { id: 'u2', name: 'Олег Савин', role: 'head' },
+      { id: 'u3', name: 'Анна Ким', role: 'agent' },
+      { id: 'u4', name: 'Максим Егоров', role: 'agent' },
+      { id: 'u5', name: 'Дарья Лис', role: 'agent' },
     ],
+    stages: ['Лид', 'Связались', 'Встреча назначена', 'Встреча прошла', 'Показ', 'Бронь', 'Сделка закрыта'].map((name, i) => ({ id: 's' + (i + 1), name })),
+    deals,
     objects: [
       O('o1', 2, 'вторичка', 'Приморский', 'Комендантский пр.', 58, 12.2e6),
       O('o2', 2, 'новостройка', 'Приморский', 'ЖК «Северная гавань»', 61, 13.4e6),
@@ -184,227 +238,405 @@ function seed() {
       O('o11', 3, 'новостройка', 'Московский', 'ЖК «Пулковские высоты»', 82, 15.9e6),
       O('o12', 3, 'вторичка', 'Петроградский', 'Большая Пушкарская ул.', 95, 24.5e6),
       O('o13', 0, 'новостройка', 'Невский', 'ЖК «Невская волна»', 24, 5.9e6),
+      O('o14', 2, 'вторичка', 'Фрунзенский', 'Бухарестская ул.', 55, 8.9e6),
     ],
     bookings: [
-      { id: 'b1', clientId: 'c5', objectId: 'o6', kind: 'Бронь у застройщика', amount: 50000, holder: 'Застройщик', expires: iso(2), closed: false },
-      { id: 'b2', clientId: 'c10', objectId: 'o10', kind: 'Аванс', amount: 100000, holder: 'Агентство', expires: iso(6), closed: false },
-      { id: 'b3', clientId: 'c12', objectId: 'o2', kind: 'Бронь у застройщика', amount: 30000, holder: 'Застройщик', expires: iso(-1), closed: false },
-      { id: 'b4', clientId: 'c6', objectId: 'o7', kind: 'Задаток', amount: 150000, holder: 'Собственник', expires: iso(-10), closed: true },
-      { id: 'b5', clientId: 'c11', objectId: 'o11', kind: 'Бронь у застройщика', amount: 50000, holder: 'Застройщик', expires: iso(-14), closed: true },
+      { id: 'b1', dealId: 'd5', objectId: 'o6', kind: 'Бронь у застройщика', amount: 50000, holder: 'Застройщик', expires: iso(2), closed: false },
+      { id: 'b2', dealId: 'd10', objectId: 'o10', kind: 'Аванс', amount: 100000, holder: 'Агентство', expires: iso(6), closed: false },
+      { id: 'b3', dealId: 'd12', objectId: 'o2', kind: 'Бронь у застройщика', amount: 30000, holder: 'Застройщик', expires: iso(-1), closed: false },
+      { id: 'b4', dealId: 'd6', objectId: 'o7', kind: 'Задаток', amount: 150000, holder: 'Собственник', expires: iso(-10), closed: true },
+      { id: 'b5', dealId: 'd11', objectId: 'o11', kind: 'Бронь у застройщика', amount: 50000, holder: 'Застройщик', expires: iso(-14), closed: true },
     ],
     commissions: [
-      { id: 'k1', clientId: 'c6', objectId: 'o7', payer: 'Продавец', amount: 290000, dealDate: iso(-5), status: 'ожидается' },
-      { id: 'k2', clientId: 'c11', objectId: 'o11', payer: 'Застройщик', amount: 477000, dealDate: iso(-12), status: 'счёт выставлен' },
+      { id: 'k1', dealId: 'd6', objectId: 'o7', payer: 'Продавец', amount: 290000, dealDate: iso(-5), status: 'ожидается' },
+      { id: 'k2', dealId: 'd11', objectId: 'o11', payer: 'Застройщик', amount: 477000, dealDate: iso(-12), status: 'счёт выставлен' },
+    ],
+    tasks: [
+      { id: 't1', dealId: 'd1', title: 'Отправить подборку на Приморском, не ниже 3-го этажа', due: iso(0), done: false },
+      { id: 't2', dealId: 'd9', title: 'Встреча в офисе', due: iso(1), done: false },
+      { id: 't3', dealId: 'd4', title: 'Перезвонить по студиям в «Невской волне»', due: iso(-2), done: false },
+      { id: 't4', dealId: 'd3', title: 'Показ на Большой Пушкарской', due: iso(0), done: false },
+      { id: 't5', dealId: 'd7', title: 'Подготовить договор аванса', due: iso(2), done: false },
+      { id: 't6', dealId: 'd13', title: 'Назначить встречу', due: iso(-1), done: false },
+      { id: 't7', dealId: 'd2', title: 'Первый звонок', due: iso(0), done: false },
     ],
   };
 }
 
 let S = null;
 try { S = JSON.parse(localStorage.getItem(K)); } catch (e) {}
-if (!S || !S.clients) S = seed();
+if (!S || !S.deals) S = seed();
 const save = () => { try { localStorage.setItem(K, JSON.stringify(S)); } catch (e) {} };
 
-let tab = TABS[location.hash.slice(1)] ? location.hash.slice(1) : 'today';
-let openClientId = null;
 const $ = id => document.getElementById(id);
-const cl = id => S.clients.find(c => c.id === id);
+const user = id => S.users.find(u => u.id === id);
+const deal = id => S.deals.find(d => d.id === id);
 const ob = id => S.objects.find(o => o.id === id);
+const stage = id => S.stages.find(s => s.id === id);
+const me = () => user(S.me);
+const can = () => ({ all: me().role !== 'agent', users: me().role === 'director' });
+const lastStageId = () => S.stages[S.stages.length - 1].id;
+const isOpen = d => d.stageId !== lastStageId();
 const objTitle = o => o ? `${roomsLabel(o.rooms)}, ${o.area} м² · ${o.address}` : '—';
+const pill = (cls, text) => `<span class="pill ${cls}">${esc(text)}</span>`;
+const dealLink = d => `<button class="btn link" data-act="deal" data-id="${d.id}">${esc(d.name)}</button>`;
+const taskTitle = kind => kind === 'Звонок' ? 'Позвонить клиенту' : kind;
 
-function fits(c, o) {
-  return (c.type === 'любая' || o.type === c.type)
-    && (c.rooms == null || o.rooms === c.rooms)
-    && (!c.budget || o.price <= c.budget * 1.05);
+let tab = location.hash.slice(1) || 'tasks';
+let filterAgent = '';
+let ui = { dealId: null, draft: false, editing: false, preview: null, stageErr: '' };
+
+// Агент видит только свои сделки, руководители — все (с фильтром по сотруднику)
+function scoped() {
+  if (!can().all) return S.deals.filter(d => d.agentId === S.me);
+  return filterAgent ? S.deals.filter(d => d.agentId === filterAgent) : S.deals;
 }
-function matches(c) {
-  return S.objects.filter(o => fits(c, o)).map(o => {
+const scopedIds = () => new Set(scoped().map(d => d.id));
+
+function fits(d, o) {
+  return (d.type === 'любая' || o.type === d.type)
+    && (d.rooms == null || o.rooms === d.rooms)
+    && (!d.budget || o.price <= d.budget * 1.05);
+}
+function matches(d) {
+  return S.objects.filter(o => fits(d, o)).map(o => {
     const why = [];
-    const sameDistrict = c.district && o.district === c.district;
-    if (sameDistrict) why.push(['ok', `район ${o.district}`]);
-    else if (c.district) why.push(['muted', `другой район: ${o.district}`]);
-    if (c.budget) why.push(o.price <= c.budget ? ['ok', 'в бюджете'] : ['warn', `на ${Math.round((o.price / c.budget - 1) * 100)}% выше бюджета`]);
-    if (c.rooms != null) why.push(['ok', roomsLabel(o.rooms)]);
-    return { o, why, score: (sameDistrict ? 2 : 0) + (c.budget && o.price <= c.budget ? 1 : 0) };
+    const same = d.district && o.district === d.district;
+    if (same) why.push(['ok', `район ${o.district}`]);
+    else if (d.district) why.push(['muted', `другой район: ${o.district}`]);
+    if (d.budget) why.push(o.price <= d.budget ? ['ok', 'в бюджете'] : ['warn', `на ${Math.round((o.price / d.budget - 1) * 100)}% выше бюджета`]);
+    if (d.rooms != null) why.push(['ok', roomsLabel(o.rooms)]);
+    return { o, why, score: (same ? 2 : 0) + (d.budget && o.price <= d.budget ? 1 : 0) };
   }).sort((a, b) => b.score - a.score || a.o.price - b.o.price).slice(0, 3);
 }
-function draftText(c) {
-  const first = c.name.split(' ')[0];
-  const m = matches(c).filter(x => x.score > 0);
-  const req = `${roomsLabel(c.rooms)}, ${c.district || 'любой район'}${c.budget ? ', до ' + mln(c.budget) : ''}`;
+function draftText(d) {
+  const first = d.name.split(' ')[0];
+  const m = matches(d).filter(x => x.score > 0);
+  const req = `${roomsLabel(d.rooms)}, ${d.district || 'любой район'}${d.budget ? ', до ' + mln(d.budget) : ''}`;
   if (!m.length) return `${first}, добрый день! Продолжаем подбор под ваш запрос (${req}). Новых подходящих вариантов пока нет. Бюджет и район ещё актуальны?`;
   return `${first}, добрый день! Подобрали для вас ${m.length} ${plural(m.length, ['вариант', 'варианта', 'вариантов'])}:\n`
-    + m.map(x => `— ${objTitle(x.o)}, ${mln(x.o.price)}`).join('\n')
-    + `\nКогда вам удобно посмотреть?`;
+    + m.map(x => `— ${objTitle(x.o)}, ${mln(x.o.price)}`).join('\n') + `\nКогда вам удобно посмотреть?`;
 }
 function bookingState(b) {
   if (b.closed) return ['muted', 'закрыта'];
   const d = days(b.expires);
   if (d < 0) return ['crit', 'истекла'];
   if (d === 0) return ['warn', 'истекает сегодня'];
-  if (d <= 3) return ['warn', `осталось ${dayWord(d)}`];
-  return ['ok', `осталось ${dayWord(d)}`];
+  return [d <= 3 ? 'warn' : 'ok', `осталось ${dayWord(d)}`];
 }
 const commState = s => ({ 'ожидается': 'warn', 'счёт выставлен': 'accent', 'получена': 'ok' }[s]);
-const pill = (cls, text) => `<span class="pill ${cls}">${esc(text)}</span>`;
-const clientLink = c => `<button class="btn link" data-act="client" data-id="${c.id}">${esc(c.name)}</button>`;
 
-function alerts() {
-  const out = [];
-  S.bookings.filter(b => !b.closed).forEach(b => {
-    const d = days(b.expires), c = cl(b.clientId), what = `${b.kind.toLowerCase()} на ${objTitle(ob(b.objectId))}`;
-    if (d < 0) out.push({ w: 0, p: pill('crit', 'Бронь истекла'), text: `${esc(c.name)}: ${esc(what)} истекла ${fmtDate(b.expires)}. Продлите или закройте.`, act: `<button class="btn sm" data-act="tab" data-tab="bookings">К броням</button>` });
-    else if (d <= 3) out.push({ w: 1, p: pill('warn', d === 0 ? 'Бронь: сегодня' : `Бронь: ${dayWord(d)}`), text: `${esc(c.name)}: ${esc(what)} до ${fmtDate(b.expires)}.`, act: `<button class="btn sm" data-act="client" data-id="${c.id}">Открыть</button>` });
+// Подсказки ИИ: то, что агент забыл бы без CRM
+function hints() {
+  const ids = scopedIds(), out = [];
+  S.bookings.filter(b => !b.closed && ids.has(b.dealId)).forEach(b => {
+    const d = days(b.expires), dl = deal(b.dealId), what = `${b.kind.toLowerCase()} на ${objTitle(ob(b.objectId))}`;
+    if (d < 0) out.push({ w: 0, p: pill('crit', 'Бронь истекла'), dl, text: `${esc(what)} истекла ${fmtDate(b.expires)}. Продлите или закройте.`, act: `<button class="btn sm" data-act="tab" data-tab="bookings">К броням</button>` });
+    else if (d <= 3) out.push({ w: 1, p: pill('warn', d === 0 ? 'Бронь: сегодня' : `Бронь: ${dayWord(d)}`), dl, text: `${esc(what)} до ${fmtDate(b.expires)}.`, act: `<button class="btn sm" data-act="deal" data-id="${dl.id}">Открыть</button>` });
   });
-  S.commissions.filter(k => k.status === 'ожидается' && days(k.dealDate) <= -3).forEach(k => {
-    const c = cl(k.clientId);
-    out.push({ w: 1, p: pill('warn', 'Нет счёта'), text: `Комиссия ${rub(k.amount)} от ${k.payer === 'Застройщик' ? 'застройщика' : 'продавца'} по сделке ${esc(c.name)}: сделка ${dayWord(-days(k.dealDate))} назад, счёт не выставлен.`, act: `<button class="btn sm" data-act="invoice" data-id="${k.id}">Выставить счёт</button>` });
+  S.commissions.filter(k => ids.has(k.dealId) && k.status === 'ожидается' && days(k.dealDate) <= -3).forEach(k => {
+    out.push({ w: 1, p: pill('warn', 'Нет счёта'), dl: deal(k.dealId), text: `комиссия ${rub(k.amount)} от ${k.payer === 'Застройщик' ? 'застройщика' : 'продавца'}: сделка ${dayWord(-days(k.dealDate))} назад, счёт не выставлен.`, act: `<button class="btn sm" data-act="invoice" data-id="${k.id}">Выставить счёт</button>` });
   });
-  S.clients.filter(c => c.stage !== 'Сделка' && days(c.lastContact) <= -5).forEach(c => {
-    out.push({ w: 2, p: pill('warn', 'Давно не писали'), text: `${esc(c.name)}: ${dayWord(-days(c.lastContact))} без касания, этап «${c.stage}».`, act: `<button class="btn sm" data-act="draft" data-id="${c.id}">Черновик сообщения</button>` });
+  scoped().filter(d => isOpen(d) && days(d.lastContact) <= -5).forEach(d => {
+    out.push({ w: 2, p: pill('warn', 'Давно не писали'), dl: d, text: `${dayWord(-days(d.lastContact))} без касания, этап «${esc(stage(d.stageId)?.name)}».`, act: `<button class="btn sm" data-act="draft" data-id="${d.id}">Черновик сообщения</button>` });
   });
   return out.sort((a, b) => a.w - b.w);
 }
+const openTasks = () => { const ids = scopedIds(); return S.tasks.filter(t => !t.done && ids.has(t.dealId)).sort((a, b) => a.due.localeCompare(b.due)); };
+
+function agentFilter() {
+  if (!can().all) return '';
+  return `<select id="filter-agent" aria-label="Фильтр по сотруднику"><option value="">Все сотрудники</option>${S.users.filter(u => S.deals.some(d => d.agentId === u.id)).map(u => `<option value="${u.id}"${u.id === filterAgent ? ' selected' : ''}>${esc(u.name)}</option>`).join('')}</select>`;
+}
+function taskRow(t) {
+  const d = deal(t.dealId);
+  return `<div class="trow"><input type="checkbox" id="task-${t.id}" data-act="done" data-id="${t.id}">
+    <div><label for="task-${t.id}" class="title">${esc(t.title)}</label>
+      <div class="meta">${dealLink(d)}${can().all ? `<span>${esc(user(d.agentId)?.name)}</span>` : ''}</div></div>
+    ${pill(dueCls(t.due), dueLabel(t.due))}</div>`;
+}
 
 const views = {
-  today() {
-    const a = alerts();
-    const inWork = S.clients.filter(c => c.stage !== 'Сделка').length;
-    const activeB = S.bookings.filter(b => !b.closed && days(b.expires) >= 0);
-    const due = S.commissions.filter(k => k.status !== 'получена').reduce((s, k) => s + k.amount, 0);
-    return `
-      <div class="stats">
-        <div class="stat"><span class="muted small">Клиентов в работе</span><b>${inWork}</b></div>
-        <div class="stat"><span class="muted small">Активных броней</span><b>${activeB.length}</b><span class="muted small">на ${rub(activeB.reduce((s, b) => s + b.amount, 0))}</span></div>
-        <div class="stat"><span class="muted small">Комиссии к получению</span><b>${rub(due)}</b></div>
-      </div>
-      <section class="section">
-        <div class="section-head"><h2>Требует внимания</h2><span class="muted small">${a.length} ${plural(a.length, ['задача', 'задачи', 'задач'])}</span></div>
-        <div class="alerts">${a.map(x => `<div class="alert"><div>${x.p}</div><p>${x.text}</p><div>${x.act}</div></div>`).join('') || '<div class="empty">Всё под контролем: истекающих броней, забытых клиентов и комиссий без счёта нет.</div>'}</div>
-      </section>`;
+  tasks() {
+    const ts = openTasks(), h = hints();
+    const groups = [['Просрочено', ts.filter(t => days(t.due) < 0)], ['Сегодня', ts.filter(t => days(t.due) === 0)], ['Дальше', ts.filter(t => days(t.due) > 0)]];
+    return `<section class="section"><div class="section-head"><h2>Задачи</h2><div class="toolbar">${agentFilter()}</div></div>
+      ${groups.map(([name, list]) => list.length ? `<div class="block"><h3 class="group-title">${name} · ${list.length}</h3><div class="list">${list.map(taskRow).join('')}</div></div>` : '').join('') || '<div class="list"><div class="empty">Открытых задач нет. Задачи создаются в карточке сделки или из заметки агента.</div></div>'}
+    </section>
+    <section class="section"><div class="section-head"><h2>Подсказки ИИ</h2><span class="muted small">${h.length} ${plural(h.length, ['подсказка', 'подсказки', 'подсказок'])}</span></div>
+      <div class="list">${h.map(x => `<div class="alert"><div>${x.p}</div><p>${dealLink(x.dl)}: ${x.text}</p><div>${x.act}</div></div>`).join('') || '<div class="empty">Истекающих броней, забытых клиентов и комиссий без счёта нет.</div>'}</div>
+    </section>`;
   },
-  funnel() {
-    return `<section class="section"><div class="section-head"><h2>Воронка</h2><span class="muted small">Нажмите на клиента, чтобы открыть карточку</span></div>
-      <div class="board">${STAGES.map(st => {
-        const cs = S.clients.filter(c => c.stage === st);
-        return `<div class="col"><h3><span>${st}</span><span>${cs.length}</span></h3>${cs.map(c => {
-          const d = -days(c.lastContact);
-          const contact = st === 'Сделка' ? '' : d >= 5 ? pill('warn', `${dayWord(d)} без касания`) : pill('muted', d === 0 ? 'контакт сегодня' : `контакт ${dayWord(d)} назад`);
-          return `<button class="card" data-act="client" data-id="${c.id}"><strong>${esc(c.name)}</strong>
-            <span class="small muted">${roomsLabel(c.rooms)} · ${esc(c.district || 'любой район')}${c.budget ? ' · до ' + mln(c.budget) : ''}</span>
-            <span class="row">${contact}</span></button>`;
+  deals() {
+    const ds = scoped(), c = can();
+    return `<section class="section"><div class="section-head"><h2>Сделки</h2><div class="toolbar">${agentFilter()}${c.all ? '<button class="btn sm" data-act="stages">Настроить этапы</button>' : ''}</div></div>
+      <p class="small muted" style="margin:0">Перетащите карточку в другой этап или откройте сделку и смените этап там.</p>
+      <div class="kanban">${S.stages.map(st => {
+        const cs = ds.filter(d => d.stageId === st.id);
+        return `<div class="col" data-stage="${st.id}"><h3><span>${esc(st.name)}</span><span>${cs.length}</span></h3>${cs.map(d => {
+          const n = -days(d.lastContact);
+          const contact = !isOpen(d) ? '' : n >= 5 ? pill('warn', `${dayWord(n)} без касания`) : pill('muted', n === 0 ? 'контакт сегодня' : `контакт ${dayWord(n)} назад`);
+          return `<button class="card" draggable="true" data-act="deal" data-id="${d.id}"><strong>${esc(d.name)}</strong>
+            <span class="small muted">${roomsLabel(d.rooms)} · ${esc(d.district || 'любой район')}${d.budget ? ' · до ' + mln(d.budget) : ''}</span>
+            <span class="row">${contact}${c.all ? `<span class="who">${esc(user(d.agentId)?.name)}</span>` : ''}</span></button>`;
         }).join('')}</div>`;
       }).join('')}</div></section>`;
   },
   objects() {
-    const active = S.clients.filter(c => c.stage !== 'Сделка');
+    const open = scoped().filter(isOpen);
     return `<section class="section"><div class="section-head"><h2>Объекты</h2><span class="muted small">${S.objects.length} в базе агентства</span></div>
-      <div class="tbl"><table><thead><tr><th>Объект</th><th>Тип</th><th>Район</th><th class="num">Площадь</th><th class="num">Цена</th><th class="num">₽ за м²</th><th class="num">Подходит клиентам</th></tr></thead><tbody>
-      ${S.objects.map(o => { const n = active.filter(c => fits(c, o)).length; return `<tr><td>${roomsLabel(o.rooms)}, ${esc(o.address)}</td><td>${o.type}</td><td>${o.district}</td><td class="num">${o.area} м²</td><td class="num">${mln(o.price)}</td><td class="num">${rub(o.price / o.area)}</td><td class="num">${n ? pill('accent', n) : '<span class="muted">—</span>'}</td></tr>`; }).join('')}
+      <div class="tbl"><table><thead><tr><th>Объект</th><th>Тип</th><th>Район</th><th class="num">Площадь</th><th class="num">Цена</th><th class="num">₽ за м²</th><th class="num">Подходит сделкам</th></tr></thead><tbody>
+      ${S.objects.map(o => { const n = open.filter(d => fits(d, o)).length; return `<tr><td>${roomsLabel(o.rooms)}, ${esc(o.address)}</td><td>${o.type}</td><td>${o.district}</td><td class="num">${o.area} м²</td><td class="num">${mln(o.price)}</td><td class="num">${rub(o.price / o.area)}</td><td class="num">${n ? pill('accent', n) : '<span class="muted">—</span>'}</td></tr>`; }).join('')}
       </tbody></table></div></section>`;
   },
   bookings() {
+    const ids = scopedIds(), bs = S.bookings.filter(b => ids.has(b.dealId)), all = can().all;
     return `<section class="section"><div class="section-head"><h2>Брони</h2><span class="muted small">Только учёт: деньги держит указанная сторона, Realtika их не принимает</span></div>
-      <div class="tbl"><table><thead><tr><th>Клиент</th><th>Объект</th><th>Тип</th><th class="num">Сумма</th><th>Деньги у</th><th>Срок</th><th>Статус</th><th></th></tr></thead><tbody>
-      ${S.bookings.map(b => { const [cls, txt] = bookingState(b); return `<tr><td>${clientLink(cl(b.clientId))}</td><td>${esc(objTitle(ob(b.objectId)))}</td><td>${b.kind}</td><td class="num">${rub(b.amount)}</td><td>${b.holder}</td><td>${fmtDate(b.expires)}</td><td>${pill(cls, txt)}</td>
-        <td>${b.closed ? '' : `<div class="actions"><button class="btn sm" data-act="extend" data-id="${b.id}">+7 дней</button><button class="btn sm" data-act="close-booking" data-id="${b.id}">Закрыть</button></div>`}</td></tr>`; }).join('')}
+      <div class="tbl"><table><thead><tr><th>Сделка</th>${all ? '<th>Агент</th>' : ''}<th>Объект</th><th>Тип</th><th class="num">Сумма</th><th>Деньги у</th><th>Срок</th><th>Статус</th><th></th></tr></thead><tbody>
+      ${bs.map(b => { const d = deal(b.dealId), [cls, txt] = bookingState(b); return `<tr><td>${dealLink(d)}</td>${all ? `<td>${esc(user(d.agentId)?.name)}</td>` : ''}<td>${esc(objTitle(ob(b.objectId)))}</td><td>${b.kind}</td><td class="num">${rub(b.amount)}</td><td>${b.holder}</td><td>${fmtDate(b.expires)}</td><td>${pill(cls, txt)}</td>
+        <td>${b.closed ? '' : `<div class="actions"><button class="btn sm" data-act="extend" data-id="${b.id}">+7 дней</button><button class="btn sm" data-act="close-booking" data-id="${b.id}">Закрыть</button></div>`}</td></tr>`; }).join('') || `<tr><td colspan="9" class="muted">Броней нет.</td></tr>`}
       </tbody></table></div></section>`;
   },
   commissions() {
-    const sum = s => S.commissions.filter(k => k.status === s).reduce((t, k) => t + k.amount, 0);
+    const ids = scopedIds(), ks = S.commissions.filter(k => ids.has(k.dealId)), all = can().all;
+    const sum = s => ks.filter(k => k.status === s).reduce((t, k) => t + k.amount, 0);
     return `<div class="stats">
         <div class="stat"><span class="muted small">Ожидается, счёт не выставлен</span><b>${rub(sum('ожидается'))}</b></div>
         <div class="stat"><span class="muted small">Счёт выставлен</span><b>${rub(sum('счёт выставлен'))}</b></div>
         <div class="stat"><span class="muted small">Получено</span><b>${rub(sum('получена'))}</b></div>
       </div>
       <section class="section"><div class="section-head"><h2>Комиссии</h2><span class="muted small">Новостройки: платит застройщик после сделки. Вторичка: платит продавец</span></div>
-      <div class="tbl"><table><thead><tr><th>Клиент</th><th>Объект</th><th>Платит</th><th class="num">Сумма</th><th>Сделка</th><th>Статус</th><th></th></tr></thead><tbody>
-      ${S.commissions.map(k => `<tr><td>${clientLink(cl(k.clientId))}</td><td>${esc(objTitle(ob(k.objectId)))}</td><td>${k.payer}</td><td class="num">${rub(k.amount)}</td><td>${fmtDate(k.dealDate)}</td><td>${pill(commState(k.status), k.status)}</td>
-        <td>${k.status === 'ожидается' ? `<button class="btn sm" data-act="invoice" data-id="${k.id}">Выставить счёт</button>` : k.status === 'счёт выставлен' ? `<div class="actions"><button class="btn sm" data-act="invoice" data-id="${k.id}">Счёт</button><button class="btn sm" data-act="paid" data-id="${k.id}">Оплачено</button></div>` : ''}</td></tr>`).join('')}
+      <div class="tbl"><table><thead><tr><th>Сделка</th>${all ? '<th>Агент</th>' : ''}<th>Объект</th><th>Платит</th><th class="num">Сумма</th><th>Дата сделки</th><th>Статус</th><th></th></tr></thead><tbody>
+      ${ks.map(k => { const d = deal(k.dealId); return `<tr><td>${dealLink(d)}</td>${all ? `<td>${esc(user(d.agentId)?.name)}</td>` : ''}<td>${esc(objTitle(ob(k.objectId)))}</td><td>${k.payer}</td><td class="num">${rub(k.amount)}</td><td>${fmtDate(k.dealDate)}</td><td>${pill(commState(k.status), k.status)}</td>
+        <td>${k.status === 'ожидается' ? `<button class="btn sm" data-act="invoice" data-id="${k.id}">Выставить счёт</button>` : k.status === 'счёт выставлен' ? `<div class="actions"><button class="btn sm" data-act="invoice" data-id="${k.id}">Счёт</button><button class="btn sm" data-act="paid" data-id="${k.id}">Оплачено</button></div>` : ''}</td></tr>`; }).join('') || `<tr><td colspan="8" class="muted">Комиссий пока нет: они появляются после закрытия сделки.</td></tr>`}
+      </tbody></table></div></section>`;
+  },
+  team() {
+    const c = can();
+    const row = u => {
+      const ds = S.deals.filter(d => d.agentId === u.id), ids = new Set(ds.map(d => d.id)), open = ds.filter(isOpen).length;
+      const overdue = S.tasks.filter(t => !t.done && ids.has(t.dealId) && days(t.due) < 0).length;
+      const cold = ds.filter(d => isOpen(d) && days(d.lastContact) <= -5).length;
+      const due = S.commissions.filter(k => ids.has(k.dealId) && k.status !== 'получена').reduce((s, k) => s + k.amount, 0);
+      const roleCell = c.users && u.id !== S.me
+        ? `<select data-role="${u.id}" aria-label="Роль: ${esc(u.name)}">${Object.entries(ROLES).map(([k, v]) => `<option value="${k}"${k === u.role ? ' selected' : ''}>${v}</option>`).join('')}</select>`
+        : ROLES[u.role];
+      return `<tr><td>${esc(u.name)}${u.id === S.me ? ' <span class="muted small">(вы)</span>' : ''}</td><td>${roleCell}</td><td class="num">${open}</td>
+        <td class="num">${overdue ? pill('crit', overdue) : '0'}</td><td class="num">${cold ? pill('warn', cold) : '0'}</td><td class="num">${ds.length - open}</td><td class="num">${due ? rub(due) : '—'}</td></tr>`;
+    };
+    return `<section class="section"><div class="section-head"><h2>Команда</h2><span class="muted small">${c.users ? 'Вы назначаете роли и добавляете сотрудников' : 'Роли назначает директор'}</span></div>
+      <div class="tbl"><table><thead><tr><th>Сотрудник</th><th>Роль</th><th class="num">Сделок в работе</th><th class="num">Просрочено задач</th><th class="num">Без касания 5+ дней</th><th class="num">Закрыто</th><th class="num">Комиссии к получению</th></tr></thead>
+      <tbody>${S.users.map(row).join('')}</tbody></table></div>
+      ${c.users ? `<form id="add-user" class="actions"><input id="nu-name" required placeholder="Имя и фамилия" aria-label="Имя нового сотрудника" style="max-width:260px"><select id="nu-role" aria-label="Роль нового сотрудника" style="width:auto">${Object.entries(ROLES).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select><button class="btn" type="submit">Добавить сотрудника</button></form>` : ''}
+    </section>
+    <section class="section"><h2>Права доступа</h2>
+      <div class="tbl"><table><thead><tr><th>Что можно</th><th>Агент</th><th>Руководитель отдела продаж</th><th>Директор</th></tr></thead><tbody>
+        <tr><td>Свои сделки, задачи, брони, комиссии</td><td>✓</td><td>✓</td><td>✓</td></tr>
+        <tr><td>Сделки всех агентов, переназначение</td><td>—</td><td>✓</td><td>✓</td></tr>
+        <tr><td>Настройка этапов воронки</td><td>—</td><td>✓</td><td>✓</td></tr>
+        <tr><td>Сотрудники и роли</td><td>—</td><td>—</td><td>✓</td></tr>
       </tbody></table></div></section>`;
   },
 };
 
 function render() {
-  const n = alerts().length;
-  $('tabs').innerHTML = Object.entries(TABS).map(([k, v]) => `<button class="tab" data-act="tab" data-tab="${k}"${k === tab ? ' aria-current="page"' : ''}>${v}${k === 'today' && n ? `<b>${n}</b>` : ''}</button>`).join('');
+  const c = can();
+  if ((tab === 'team' && !c.all) || !views[tab]) tab = 'tasks';
+  const urgent = openTasks().filter(t => days(t.due) <= 0).length;
+  $('tabs').innerHTML = TABS.filter(([k]) => k !== 'team' || c.all).map(([k, v]) => `<button class="tab" data-act="tab" data-tab="${k}"${k === tab ? ' aria-current="page"' : ''}>${v}${k === 'tasks' && urgent ? `<b>${urgent}</b>` : ''}</button>`).join('');
+  $('me').innerHTML = S.users.map(u => `<option value="${u.id}"${u.id === S.me ? ' selected' : ''}>${esc(u.name)} · ${ROLES[u.role].toLowerCase()}</option>`).join('');
   $('view').innerHTML = views[tab]();
-  if (openClientId && $('drawer').open) renderClient(openClientId, $('draft-box') ? true : false);
+  if (ui.dealId && $('drawer').open) renderDeal();
 }
 
-function renderClient(id, showDraft) {
-  const c = cl(id), m = matches(c), d = -days(c.lastContact);
-  const bs = S.bookings.filter(b => b.clientId === id), ks = S.commissions.filter(k => k.clientId === id);
+function renderDeal() {
+  const d = deal(ui.dealId), c = can(), n = -days(d.lastContact), m = matches(d);
+  const keepNote = $('note')?.value ?? '';
+  const ts = S.tasks.filter(t => t.dealId === d.id && !t.done).sort((a, b) => a.due.localeCompare(b.due));
+  const bs = S.bookings.filter(b => b.dealId === d.id), ks = S.commissions.filter(k => k.dealId === d.id);
+  const p = ui.preview, any = p && (p.changes.length || p.task || p.stage);
   $('drawer').innerHTML = `<div class="dlg">
-    <div class="dlg-head"><div><h2>${esc(c.name)}</h2><span class="muted">${esc(c.phone || 'телефон не указан')}</span></div><button class="x" data-act="close" aria-label="Закрыть">×</button></div>
-    <div class="field"><label for="stage">Этап</label><select id="stage" data-id="${c.id}">${STAGES.map(s => `<option${s === c.stage ? ' selected' : ''}>${s}</option>`).join('')}</select></div>
-    <div class="block"><h3>Запрос</h3><dl>
-      <dt>Бюджет</dt><dd>${c.budget ? 'до ' + mln(c.budget) : '—'}</dd>
-      <dt>Комнаты</dt><dd>${roomsLabel(c.rooms)}</dd>
-      <dt>Район</dt><dd>${esc(c.district || 'любой')}</dd>
-      <dt>Рынок</dt><dd>${c.type}</dd>
-      <dt>Ипотека</dt><dd>${c.mortgage ? 'да' : 'нет'}</dd>
-    </dl></div>
-    <div class="block"><h3>Контакт</h3>
-      <div class="actions"><span>${d === 0 ? 'Сегодня' : `${fmtDate(c.lastContact)}, ${dayWord(d)} назад`}</span>${d >= 5 && c.stage !== 'Сделка' ? pill('warn', 'пора написать') : ''}</div>
-      <div class="actions"><button class="btn sm" data-act="contact" data-id="${c.id}">Связался сегодня</button><button class="btn sm" data-act="draft" data-id="${c.id}">Черновик сообщения</button></div>
-      ${showDraft ? `<textarea id="draft-box" rows="6">${esc(draftText(c))}</textarea><div class="actions"><button class="btn sm primary" data-act="copy">Копировать</button><span class="small muted" id="copy-status"></span></div>` : ''}
+    <div class="dlg-head"><div><h2>${esc(d.name)}</h2><span class="muted">${esc(d.phone || 'телефон не указан')}</span></div><button class="x" data-act="close" aria-label="Закрыть">×</button></div>
+    <div class="fields">
+      <div class="field"><label for="deal-stage">Этап</label><select id="deal-stage">${S.stages.map(s => `<option value="${s.id}"${s.id === d.stageId ? ' selected' : ''}>${esc(s.name)}</option>`).join('')}</select></div>
+      <div class="field"><label for="deal-agent">Агент</label>${c.all ? `<select id="deal-agent">${S.users.map(u => `<option value="${u.id}"${u.id === d.agentId ? ' selected' : ''}>${esc(u.name)}</option>`).join('')}</select>` : `<span id="deal-agent" style="padding-block:8px">${esc(user(d.agentId)?.name)}</span>`}</div>
     </div>
+
+    <div class="block"><h3>Что нового по сделке</h3>
+      <textarea id="note" rows="3" placeholder="Своими словами: «Созвонился, ипотека одобрена, взнос 3 млн. Встреча в четверг»">${esc(keepNote)}</textarea>
+      <div class="actions"><button class="btn primary sm" data-act="ai-note">Разобрать через ИИ</button><button class="btn sm" data-act="ai-example">Вставить пример</button>${pill('muted', 'ИИ-заглушка')}</div>
+      ${p ? `<div class="ai"><strong>${any ? 'ИИ предлагает' : 'Новых данных не найдено'}</strong>
+        ${any ? `<ul>
+          ${p.changes.map(([label, from, to]) => `<li>${label}: <s>${esc(from)}</s> → <b>${esc(to)}</b></li>`).join('')}
+          ${p.stage ? `<li>Этап: <s>${esc(stage(d.stageId).name)}</s> → <b>${esc(p.stage.name)}</b></li>` : ''}
+          ${p.task ? `<li>Задача: <b>${esc(p.task.title)}</b>, ${dueLabel(p.task.due)}</li>` : ''}
+        </ul>` : '<span class="small muted">Заметка сохранится в историю сделки.</span>'}
+        <div class="actions"><button class="btn primary sm" data-act="ai-apply">${any ? 'Применить' : 'Сохранить заметку'}</button><button class="btn sm" data-act="ai-cancel">Отмена</button></div></div>` : ''}
+    </div>
+
+    <div class="block"><h3><span>Параметры</span>${ui.editing ? '' : '<button class="btn sm" data-act="edit">Изменить</button>'}</h3>
+      ${ui.editing ? `<form id="edit-deal" class="block">${dealFields(d)}<div class="actions"><button class="btn primary sm" type="submit">Сохранить</button><button class="btn sm" type="button" data-act="edit-cancel">Отмена</button></div></form>`
+        : `<dl>${FIELDS.map(([k, label, f]) => `<dt>${label}</dt><dd>${esc(f(d[k]))}</dd>`).join('')}</dl>`}
+    </div>
+
+    <div class="block"><h3>Задачи по сделке</h3>
+      ${ts.length ? `<div class="list">${ts.map(t => `<div class="trow"><input type="checkbox" id="dtask-${t.id}" data-act="done" data-id="${t.id}"><label for="dtask-${t.id}" class="title">${esc(t.title)}</label>${pill(dueCls(t.due), dueLabel(t.due))}</div>`).join('')}</div>` : '<span class="muted small">Открытых задач нет.</span>'}
+      <form id="add-task" class="actions"><input id="nt-title" required placeholder="Новая задача" aria-label="Новая задача" style="flex:1;min-width:160px"><input id="nt-due" type="date" required value="${iso(1)}" aria-label="Срок" style="width:auto"><button class="btn sm" type="submit">Добавить</button></form>
+    </div>
+
+    <div class="block"><h3>Контакт</h3>
+      <div class="actions"><span>${n === 0 ? 'Сегодня' : `${fmtDate(d.lastContact)}, ${dayWord(n)} назад`}</span>${n >= 5 && isOpen(d) ? pill('warn', 'пора написать') : ''}</div>
+      <div class="actions"><button class="btn sm" data-act="contact" data-id="${d.id}">Связался сегодня</button><button class="btn sm" data-act="draft" data-id="${d.id}">Черновик сообщения</button></div>
+      ${ui.draft ? `<textarea id="draft-box" rows="6" aria-label="Черновик сообщения">${esc(draftText(d))}</textarea><div class="actions"><button class="btn sm primary" data-act="copy">Копировать</button><span class="small muted" id="copy-status"></span></div>` : ''}
+    </div>
+
     <div class="block"><h3>Подходящие объекты</h3>
       ${m.length ? m.map(x => `<div class="match"><strong>${esc(objTitle(x.o))}</strong><span>${mln(x.o.price)} · ${x.o.type}</span><span class="row">${x.why.map(([cls, t]) => pill(cls, t)).join('')}</span></div>`).join('') : '<span class="muted">В базе нет объектов под этот запрос.</span>'}
     </div>
     ${bs.length ? `<div class="block"><h3>Брони</h3>${bs.map(b => { const [cls, t] = bookingState(b); return `<div class="actions">${pill(cls, t)}<span>${b.kind}, ${rub(b.amount)}, до ${fmtDate(b.expires)}</span></div>`; }).join('')}</div>` : ''}
     ${ks.length ? `<div class="block"><h3>Комиссии</h3>${ks.map(k => `<div class="actions">${pill(commState(k.status), k.status)}<span>${rub(k.amount)} от ${k.payer === 'Застройщик' ? 'застройщика' : 'продавца'}</span></div>`).join('')}</div>` : ''}
+    <div class="block"><h3>История</h3>
+      ${d.notes.length ? d.notes.slice().reverse().map(x => `<div class="note"><span class="small muted">${fmtDate(x.date)} · ${esc(user(x.author)?.name)}</span><p>${esc(x.text)}</p></div>`).join('') : '<span class="muted small">Заметок пока нет.</span>'}
+    </div>
   </div>`;
 }
-function openClient(id, showDraft = false) {
-  openClientId = id;
-  renderClient(id, showDraft);
-  if (!$('drawer').open) $('drawer').showModal();
+
+function dealFields(d) {
+  const opt = (vals, cur) => vals.map(([v, t]) => `<option value="${v}"${String(v) === String(cur ?? '') ? ' selected' : ''}>${t}</option>`).join('');
+  return `<div class="fields">
+      <div class="field"><label for="e-name">Клиент</label><input id="e-name" required value="${esc(d.name)}"></div>
+      <div class="field"><label for="e-phone">Телефон</label><input id="e-phone" value="${esc(d.phone)}"></div>
+      <div class="field"><label for="e-budget">Бюджет, млн ₽</label><input id="e-budget" type="number" step="0.1" min="0" value="${d.budget ? d.budget / 1e6 : ''}"></div>
+      <div class="field"><label for="e-rooms">Комнаты</label><select id="e-rooms">${opt([['', 'любая'], [0, 'студия'], [1, '1-к'], [2, '2-к'], [3, '3-к'], [4, '4-к']], d.rooms)}</select></div>
+      <div class="field"><label for="e-district">Район</label><select id="e-district">${opt([['', 'любой'], ...[...new Set(Object.values(DISTRICTS))].map(x => [x, x])], d.district)}</select></div>
+      <div class="field"><label for="e-type">Рынок</label><select id="e-type">${opt([['любая', 'любой'], ['новостройка', 'новостройка'], ['вторичка', 'вторичка']], d.type)}</select></div>
+      <div class="field"><label for="e-payment">Оплата</label><select id="e-payment">${opt(PAYMENTS.map(x => [x, x || '—']), d.payment)}</select></div>
+      <div class="field"><label for="e-down">Первый взнос, млн ₽</label><input id="e-down" type="number" step="0.1" min="0" value="${d.downPayment ? d.downPayment / 1e6 : ''}"></div>
+      <div class="field"><label for="e-source">Источник</label><input id="e-source" value="${esc(d.source)}"></div>
+    </div>
+    <label class="check"><input type="checkbox" id="e-approved"${d.mortgageApproved ? ' checked' : ''}> Ипотека одобрена</label>
+    <label class="check"><input type="checkbox" id="e-alt"${d.alternative ? ' checked' : ''}> Продаёт своё жильё</label>`;
+}
+function readForm() {
+  const num = id => { const v = parseFloat($(id).value); return v > 0 ? Math.round(v * 1e6) : 0; };
+  const rooms = $('e-rooms').value;
+  return {
+    name: $('e-name').value.trim(), phone: $('e-phone').value.trim(), budget: num('e-budget'), rooms: rooms === '' ? null : Number(rooms),
+    district: $('e-district').value, type: $('e-type').value, payment: $('e-payment').value, downPayment: num('e-down'),
+    source: $('e-source').value.trim(), mortgageApproved: $('e-approved').checked, alternative: $('e-alt').checked,
+  };
 }
 
-const SAMPLE = 'Добрый день! Меня зовут Ксения Романова, нам посоветовали ваше агентство. Ищем однушку в новостройке, лучше Московский район, бюджет до 8,2 млн, берём ипотеку. Звоните: +7 900 000-00-15';
+function openDeal(id, draft = false) {
+  if (ui.dealId !== id) { ui = { ...ui, dealId: id, editing: false, preview: null }; if ($('note')) $('note').value = ''; }
+  ui.draft = draft;
+  renderDeal();
+  if (!$('drawer').open) { $('drawer').showModal(); $('drawer').scrollTop = 0; }
+}
+
+// Разбор заметки агента: показываем изменения, применяем только после подтверждения
+function previewNote(text) {
+  const d = deal(ui.dealId), r = parseChat(text);
+  const changes = [], fields = {};
+  FIELDS.forEach(([k, label, f]) => {
+    if (r[k] !== undefined && r[k] !== d[k]) { changes.push([label, f(d[k]), f(r[k])]); fields[k] = r[k]; }
+  });
+  const st = r.stage && S.stages.find(s => s.name === r.stage);
+  const task = r.next ? { title: taskTitle(r.next.kind), due: iso(r.next.inDays) } : null;
+  return { text, changes, fields, stage: st && st.id !== d.stageId ? st : null, task };
+}
+
+const SAMPLE_CHAT = 'Добрый день! Меня зовут Ксения Романова, нам посоветовали ваше агентство. Ищем однушку в новостройке, лучше Московский район, бюджет до 8,2 млн, берём ипотеку. Звоните: +7 900 000-00-15';
+const SAMPLE_NOTE = 'Созвонился с клиентом. Ипотека одобрена, первоначальный взнос 3 млн, бюджет вырос до 14 млн. Продают свою однушку. Встреча в четверг в офисе.';
+
 function openImport() {
   $('modal').innerHTML = `<div class="dlg">
-    <div class="dlg-head"><div><h2>Карточка из переписки</h2><span class="muted small">Вставьте сообщение клиента или заметку после звонка. Пример уже вставлен.</span></div><button class="x" data-act="close" aria-label="Закрыть">×</button></div>
-    <div class="field"><label for="chat">Переписка</label><textarea id="chat" rows="5">${esc(SAMPLE)}</textarea></div>
+    <div class="dlg-head"><div><h2>Сделка из переписки</h2><span class="muted small">Вставьте сообщение клиента или заметку после звонка. Пример уже вставлен.</span></div><button class="x" data-act="close" aria-label="Закрыть">×</button></div>
+    <div class="field"><label for="chat">Переписка</label><textarea id="chat" rows="5">${esc(SAMPLE_CHAT)}</textarea></div>
     <div class="actions"><button class="btn primary" data-act="parse">Разобрать</button>${pill('muted', 'ИИ-заглушка: правила вместо модели')}</div>
-    <form id="parsed" hidden></form></div>`;
+    <form id="parsed" class="block" hidden></form></div>`;
   $('modal').showModal();
 }
 function showParsed(r) {
-  const f = $('parsed');
-  const opt = (vals, cur) => vals.map(([v, t]) => `<option value="${v}"${String(v) === String(cur) ? ' selected' : ''}>${t}</option>`).join('');
-  f.innerHTML = `<div class="block"><h3>Проверьте и сохраните</h3>
-    <div class="fields">
-      <div class="field"><label for="f-name">Имя</label><input id="f-name" required value="${esc(r.name)}"></div>
-      <div class="field"><label for="f-phone">Телефон</label><input id="f-phone" value="${esc(r.phone)}"></div>
-      <div class="field"><label for="f-budget">Бюджет, млн ₽</label><input id="f-budget" type="number" step="0.1" min="0" value="${r.budget ? r.budget / 1e6 : ''}"></div>
-      <div class="field"><label for="f-rooms">Комнаты</label><select id="f-rooms">${opt([['', 'любая'], [0, 'студия'], [1, '1-к'], [2, '2-к'], [3, '3-к'], [4, '4-к']], r.rooms ?? '')}</select></div>
-      <div class="field"><label for="f-district">Район</label><select id="f-district">${opt([['', 'любой'], ...[...new Set(Object.values(DISTRICTS))].map(d => [d, d])], r.district)}</select></div>
-      <div class="field"><label for="f-type">Рынок</label><select id="f-type">${opt([['любая', 'любой'], ['новостройка', 'новостройка'], ['вторичка', 'вторичка']], r.type)}</select></div>
-    </div>
-    <label class="check"><input type="checkbox" id="f-mortgage"${r.mortgage ? ' checked' : ''}> Ипотека</label>
-    <div class="actions"><button class="btn primary" type="submit">Создать карточку</button></div></div>`;
-  f.hidden = false;
+  const c = can();
+  $('parsed').innerHTML = `<h3 class="group-title">Проверьте и сохраните</h3>${dealFields({ ...DEFAULTS, name: '', phone: '', ...r })}
+    ${c.all ? `<div class="field"><label for="n-agent">Ответственный</label><select id="n-agent">${S.users.map(u => `<option value="${u.id}"${u.id === S.me ? ' selected' : ''}>${esc(u.name)}</option>`).join('')}</select></div>` : ''}
+    <div class="actions"><button class="btn primary" type="submit">Создать сделку</button></div>`;
+  $('parsed').hidden = false;
 }
+
+function openStages() {
+  const rows = S.stages.map((s, i) => `<div class="stage-row">
+    <input id="st-${s.id}" data-stage-name="${s.id}" value="${esc(s.name)}" aria-label="Название этапа ${i + 1}">
+    <button class="btn sm" data-act="st-up" data-id="${s.id}" aria-label="Выше"${i === 0 ? ' disabled' : ''}>↑</button>
+    <button class="btn sm" data-act="st-down" data-id="${s.id}" aria-label="Ниже"${i === S.stages.length - 1 ? ' disabled' : ''}>↓</button>
+    <button class="btn sm" data-act="st-del" data-id="${s.id}">Удалить</button></div>`).join('');
+  $('modal').innerHTML = `<div class="dlg">
+    <div class="dlg-head"><div><h2>Этапы воронки</h2><span class="muted small">Название меняется прямо в поле. Последний этап считается закрытой сделкой: по нему нет напоминаний.</span></div><button class="x" data-act="close" aria-label="Закрыть">×</button></div>
+    <div class="block">${rows}</div>
+    ${ui.stageErr ? `<p class="err">${esc(ui.stageErr)}</p>` : ''}
+    <div class="actions"><button class="btn sm" data-act="st-add">+ Добавить этап</button><button class="btn primary sm" data-act="close">Готово</button></div></div>`;
+  if (!$('modal').open) $('modal').showModal();
+}
+
+function openInvoice(id) {
+  const k = S.commissions.find(x => x.id === id), d = deal(k.dealId), o = ob(k.objectId);
+  $('modal').innerHTML = `<div class="dlg">
+    <div class="dlg-head"><div><h2>Счёт № R-${k.dealDate.slice(0, 4)}-${k.id.toUpperCase()}</h2><span class="muted small">от ${fmtDate(iso(0))}</span></div><button class="x" data-act="close" aria-label="Закрыть">×</button></div>
+    <div class="invoice"><dl>
+      <dt>Исполнитель</dt><dd>АН «Демо-Недвижимость», ИНН 0000000000<br><span class="small muted">реквизиты берутся из настроек агентства</span></dd>
+      <dt>Плательщик</dt><dd>${k.payer === 'Застройщик' ? `Застройщик, ${esc(o.address)}` : `Продавец объекта: ${esc(o.address)}`}</dd>
+      <dt>Услуга</dt><dd>Агентское вознаграждение по сделке: ${esc(objTitle(o))}, покупатель ${esc(d.name)}, сделка ${fmtDate(k.dealDate)}</dd>
+    </dl><div class="total"><span>Итого к оплате</span><span>${rub(k.amount)}</span></div></div>
+    <p class="small muted" style="margin:0">Оплата поступает напрямую на счёт агентства. Realtika платежи не принимает.</p>
+    <div class="actions">${k.status === 'ожидается' ? `<button class="btn primary" data-act="issue" data-id="${k.id}">Отметить: счёт выставлен</button>` : pill(commState(k.status), k.status)}</div></div>`;
+  if (!$('modal').open) $('modal').showModal();
+}
+
+function moveStage(id, delta) {
+  const i = S.stages.findIndex(s => s.id === id), j = i + delta;
+  if (j < 0 || j >= S.stages.length) return;
+  [S.stages[i], S.stages[j]] = [S.stages[j], S.stages[i]];
+}
+const stagesChanged = () => { ui.stageErr = ''; save(); render(); openStages(); };
 
 document.addEventListener('click', e => {
   const dlg = e.target.closest('dialog');
   if (e.target === dlg) { dlg.close(); return; }
   const el = e.target.closest('[data-act]');
-  if (!el) return;
+  if (!el || el.disabled) return;
   const id = el.dataset.id;
   switch (el.dataset.act) {
     case 'tab': tab = el.dataset.tab; try { history.replaceState(null, '', '#' + tab); } catch (err) {} $('modal').close(); $('drawer').close(); window.scrollTo(0, 0); break;
-    case 'client': openClient(id); return;
-    case 'draft': openClient(id, true); return;
+    case 'deal': openDeal(id); return;
+    case 'draft': openDeal(id, true); return;
     case 'close': el.closest('dialog').close(); return;
-    case 'contact': cl(id).lastContact = iso(0); break;
+    case 'contact': deal(id).lastContact = iso(0); break;
+    case 'done': S.tasks.find(t => t.id === id).done = true; break;
     case 'copy': {
       const box = $('draft-box'), st = $('copy-status');
       navigator.clipboard.writeText(box.value).then(() => { st.textContent = 'Скопировано'; }, () => { box.select(); st.textContent = 'Выделено, нажмите Cmd+C'; });
       return;
     }
+    case 'ai-example': $('note').value = SAMPLE_NOTE; return;
+    case 'ai-note': {
+      const text = $('note').value.trim();
+      if (!text) { $('note').focus(); return; }
+      ui.preview = previewNote(text); renderDeal(); return;
+    }
+    case 'ai-cancel': ui.preview = null; renderDeal(); return;
+    case 'ai-apply': {
+      const d = deal(ui.dealId), p = ui.preview;
+      Object.assign(d, p.fields);
+      if (p.stage) d.stageId = p.stage.id;
+      if (p.task) S.tasks.push({ id: 't' + (++S.seq), dealId: d.id, title: p.task.title, due: p.task.due, done: false });
+      d.notes.push({ date: iso(0), author: S.me, text: p.text });
+      d.lastContact = iso(0);
+      ui.preview = null; $('note').value = '';
+      break;
+    }
+    case 'edit': ui.editing = true; renderDeal(); return;
+    case 'edit-cancel': ui.editing = false; renderDeal(); return;
     case 'extend': { const b = S.bookings.find(x => x.id === id); b.expires = iso(Math.max(days(b.expires), 0) + 7); break; }
     case 'close-booking': S.bookings.find(x => x.id === id).closed = true; break;
     case 'invoice': openInvoice(id); return;
@@ -412,49 +644,75 @@ document.addEventListener('click', e => {
     case 'paid': S.commissions.find(x => x.id === id).status = 'получена'; break;
     case 'import-open': openImport(); return;
     case 'parse': showParsed(parseChat($('chat').value)); return;
-    case 'reset': S = seed(); openClientId = null; $('drawer').close(); break;
+    case 'stages': ui.stageErr = ''; openStages(); return;
+    case 'st-up': moveStage(id, -1); stagesChanged(); return;
+    case 'st-down': moveStage(id, 1); stagesChanged(); return;
+    case 'st-add': S.stages.splice(S.stages.length - 1, 0, { id: 's' + (++S.seq), name: 'Новый этап' }); stagesChanged(); return;
+    case 'st-del': {
+      const n = S.deals.filter(d => d.stageId === id).length;
+      if (S.stages.length <= 2) ui.stageErr = 'В воронке должно остаться хотя бы два этапа.';
+      else if (n) ui.stageErr = `Нельзя удалить «${stage(id).name}»: в нём ${n} ${plural(n, ['сделка', 'сделки', 'сделок'])}. Сначала перенесите ${n === 1 ? "её" : "их"} в другой этап.`;
+      else { S.stages = S.stages.filter(s => s.id !== id); stagesChanged(); return; }
+      openStages(); return;
+    }
+    case 'reset': S = seed(); ui = { dealId: null, draft: false, editing: false, preview: null, stageErr: '' }; filterAgent = ''; $('drawer').close(); $('modal').close(); break;
     default: return;
   }
   save(); render();
 });
 
 document.addEventListener('change', e => {
-  if (e.target.id !== 'stage') return;
-  cl(e.target.dataset.id).stage = e.target.value;
+  const t = e.target;
+  if (t.id === 'me') { S.me = t.value; filterAgent = ''; $('drawer').close(); $('modal').close(); ui.dealId = null; }
+  else if (t.id === 'filter-agent') filterAgent = t.value;
+  else if (t.id === 'deal-stage') deal(ui.dealId).stageId = t.value;
+  else if (t.id === 'deal-agent') deal(ui.dealId).agentId = t.value;
+  else if (t.dataset.role) user(t.dataset.role).role = t.value;
+  else if (t.dataset.stageName) { const v = t.value.trim(); if (v) stage(t.dataset.stageName).name = v; save(); render(); return; }
+  else return;
   save(); render();
 });
 
 document.addEventListener('submit', e => {
-  if (e.target.id !== 'parsed') return;
+  const f = e.target;
   e.preventDefault();
-  const rooms = $('f-rooms').value, budget = parseFloat($('f-budget').value);
-  const c = {
-    id: 'c' + (++S.seq), name: $('f-name').value.trim(), phone: $('f-phone').value.trim(), stage: 'Новый',
-    budget: budget > 0 ? Math.round(budget * 1e6) : 0, rooms: rooms === '' ? null : Number(rooms),
-    district: $('f-district').value, type: $('f-type').value, mortgage: $('f-mortgage').checked, lastContact: iso(0),
-  };
-  S.clients.push(c);
-  save(); $('modal').close(); tab = 'funnel'; render(); openClient(c.id);
+  if (f.id === 'edit-deal') { Object.assign(deal(ui.dealId), readForm()); ui.editing = false; }
+  else if (f.id === 'add-task') S.tasks.push({ id: 't' + (++S.seq), dealId: ui.dealId, title: $('nt-title').value.trim(), due: $('nt-due').value, done: false });
+  else if (f.id === 'add-user') S.users.push({ id: 'u' + (++S.seq), name: $('nu-name').value.trim(), role: $('nu-role').value });
+  else if (f.id === 'parsed') {
+    const text = $('chat').value.trim(), r = parseChat(text);
+    const d = { id: 'd' + (++S.seq), agentId: $('n-agent')?.value || S.me, stageId: S.stages[0].id, lastContact: iso(0), notes: [{ date: iso(0), author: S.me, text }], ...DEFAULTS, ...readForm() };
+    S.deals.push(d);
+    S.tasks.push({ id: 't' + (++S.seq), dealId: d.id, title: r.next ? taskTitle(r.next.kind) : 'Первый звонок', due: iso(r.next ? r.next.inDays : 0), done: false });
+    save(); $('modal').close(); tab = 'deals'; render(); openDeal(d.id); return;
+  }
+  else return;
+  save(); render();
 });
 
-function openInvoice(id) {
-  const k = S.commissions.find(x => x.id === id), c = cl(k.clientId), o = ob(k.objectId);
-  const no = `R-${k.dealDate.slice(0, 4)}-${k.id.toUpperCase()}`;
-  $('modal').innerHTML = `<div class="dlg">
-    <div class="dlg-head"><div><h2>Счёт № ${no}</h2><span class="muted small">от ${fmtDate(iso(0))}</span></div><button class="x" data-act="close" aria-label="Закрыть">×</button></div>
-    <div class="invoice">
-      <dl>
-        <dt>Исполнитель</dt><dd>АН «Демо-Недвижимость», ИНН 0000000000<br><span class="small muted">реквизиты берутся из настроек агентства</span></dd>
-        <dt>Плательщик</dt><dd>${k.payer === 'Застройщик' ? `Застройщик, ${esc(o.address)}` : `Продавец объекта: ${esc(o.address)}`}</dd>
-        <dt>Услуга</dt><dd>Агентское вознаграждение по сделке: ${esc(objTitle(o))}, покупатель ${esc(c.name)}, сделка ${fmtDate(k.dealDate)}</dd>
-      </dl>
-      <div class="total"><span>Итого к оплате</span><span>${rub(k.amount)}</span></div>
-    </div>
-    <p class="small muted" style="margin:0">Оплата поступает напрямую на счёт агентства. Realtika платежи не принимает.</p>
-    <div class="actions">${k.status === 'ожидается' ? `<button class="btn primary" data-act="issue" data-id="${k.id}">Отметить: счёт выставлен</button>` : pill(commState(k.status), k.status)}</div>
-  </div>`;
-  if (!$('modal').open) $('modal').showModal();
-}
+// Перетаскивание сделок между этапами мышью; на телефоне этап меняется в карточке сделки
+document.addEventListener('dragstart', e => {
+  const c = e.target.closest?.('.card[draggable]');
+  if (!c) return;
+  e.dataTransfer.setData('text/plain', c.dataset.id);
+  e.dataTransfer.effectAllowed = 'move';
+  c.classList.add('dragging');
+});
+document.addEventListener('dragend', e => { e.target.classList?.remove('dragging'); document.querySelectorAll('.col.over').forEach(c => c.classList.remove('over')); });
+document.addEventListener('dragover', e => {
+  const col = e.target.closest?.('.col[data-stage]');
+  if (!col) return;
+  e.preventDefault();
+  document.querySelectorAll('.col.over').forEach(c => c !== col && c.classList.remove('over'));
+  col.classList.add('over');
+});
+document.addEventListener('drop', e => {
+  const col = e.target.closest?.('.col[data-stage]');
+  if (!col) return;
+  e.preventDefault();
+  const d = deal(e.dataTransfer.getData('text/plain'));
+  if (d) { d.stageId = col.dataset.stage; save(); render(); }
+});
 
 render();
 </script>
