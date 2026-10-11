@@ -17,6 +17,7 @@
   --f-display: "Golos Text", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --f-body: "Golos Text", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --r: 8px;
+  --s1: 8px; --s2: 24px; --s3: 56px; /* внутри элемента / между элементами / между секциями */
 }
 :root[data-palette="burgundy"] {
   --bg: #F7F5F3; --surface: #FFFDFC; --sunken: #EFEBE7; --hover: #ECE6E1; --ink: #231B1A; --muted: #72645E; --line: #E5DED8;
@@ -115,7 +116,7 @@ nav.tabs { display: grid; gap: 1px; flex: 1; align-content: start; }
 .acc .avatar { --size: 30px; }
 .acc small { display: block; color: var(--muted); font-size: 12px; }
 
-.profile-head { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 20px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; }
+.profile-head { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 20px; }
 .profile-head h2 { font-size: 20px; }
 .palettes { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
 .pal { display: grid; gap: 8px; text-align: left; font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px; cursor: pointer; }
@@ -123,7 +124,7 @@ nav.tabs { display: grid; gap: 1px; flex: 1; align-content: start; }
 .pal i { display: flex; height: 28px; border-radius: 5px; overflow: hidden; }
 .pal i b { flex: 1; }
 .profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; align-items: start; }
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 12px; }
+.panel { border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 12px; }
 .panel h3 { font-size: 15px; }
 
 .btn { font: 500 13.5px/1.3 var(--f-body); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; white-space: nowrap; }
@@ -138,8 +139,10 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; gap: 6
 td .btn.link, .trow .btn.link, .alert .btn.link, .fi .btn.link { color: var(--ink); text-decoration: none; font-weight: 500; }
 td .btn.link:hover, .trow .btn.link:hover, .alert .btn.link:hover, .fi .btn.link:hover { color: var(--accent); }
 
-main { max-width: 1400px; padding-block: 24px 40px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; }
-.section { display: grid; gap: 12px; min-width: 0; }
+main { max-width: 1400px; padding-block: 32px 64px; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s3); }
+.section { display: grid; gap: var(--s1); min-width: 0; }
+.section > .block + .block, .section > .section-head + .block { margin-top: calc(var(--s2) - var(--s1)); }
+.section > .section-head + .block:first-of-type { margin-top: 0; }
 .section-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 16px; }
 .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .toolbar select { width: auto; }
@@ -148,21 +151,21 @@ main { max-width: 1400px; padding-block: 24px 40px; display: grid; grid-template
 .pill { display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 5px; font-size: 12px; font-weight: 500; white-space: nowrap; background: color-mix(in srgb, currentColor 13%, transparent); }
 .pill.ok { color: var(--ok); } .pill.warn { color: var(--warn); } .pill.crit { color: var(--crit); } .pill.muted { color: var(--muted); } .pill.accent { color: var(--accent); }
 
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
-.stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 12px 14px; display: grid; gap: 2px; }
+.stats { display: flex; flex-wrap: wrap; gap: var(--s2) 48px; }
+.stat { display: grid; gap: 2px; }
 .stat b { font: 600 20px/1.25 var(--f-body); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
 
-.list { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+.list { border-top: 1px solid var(--line); }
 .list > * { border-bottom: 1px solid var(--line); }
 .list > *:last-child { border-bottom: 0; }
-.alert { display: grid; grid-template-columns: 140px 1fr auto; gap: 6px 14px; align-items: center; padding: 9px 14px; }
+.alert { display: grid; grid-template-columns: 140px 1fr auto; gap: 6px 14px; align-items: center; padding: 9px 6px; }
 .alert p { margin: 0; min-width: 0; }
-.trow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 2px 12px; align-items: center; padding: 8px 14px; }
+.trow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 2px 12px; align-items: center; padding: 8px 6px; }
 .trow:hover, .alert:hover { background: color-mix(in srgb, var(--hover) 60%, transparent); }
 .trow input { width: 16px; height: 16px; margin: 0; accent-color: var(--accent); }
 .trow > label, .trow .title { color: var(--ink); font-size: 14px; font-weight: 500; }
 .trow .meta { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 13px; color: var(--muted); }
-.empty { padding: 18px 16px; color: var(--muted); }
+.empty { padding: 16px 6px; color: var(--muted); }
 
 .kanban { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(200px, 1fr); gap: 10px; overflow-x: auto; padding-bottom: 8px; align-items: start; }
 .col { background: var(--sunken); border-radius: var(--r); padding: 8px; display: grid; gap: 8px; align-content: start; min-height: 120px; }
@@ -176,9 +179,9 @@ main { max-width: 1400px; padding-block: 24px 40px; display: grid; grid-template
 .who { font-size: 12px; color: var(--muted); }
 .amt { margin-left: auto; font-weight: 600; font-size: 12.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
-.tbl { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+.tbl { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
-th { text-align: left; font-size: 12.5px; font-weight: 500; color: var(--muted); padding: 8px 12px; background: var(--sunken); border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { text-align: left; font-size: 12.5px; font-weight: 500; color: var(--muted); padding: 8px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
 td { padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
 tbody tr:hover td { background: color-mix(in srgb, var(--hover) 50%, transparent); }
 tr:last-child td { border-bottom: 0; }
@@ -189,17 +192,17 @@ dialog { border: 1px solid var(--line); background: var(--surface); color: var(-
 dialog::backdrop { background: rgb(12 13 16 / .32); }
 dialog.drawer { margin: 0 0 0 auto; width: min(520px, 100%); max-width: 100%; height: 100%; max-height: 100%; border-width: 0 0 0 1px; }
 dialog.modal { width: min(600px, calc(100% - 32px)); border-radius: var(--r); }
-.dlg { padding: 20px; display: grid; gap: 22px; align-content: start; box-sizing: border-box; min-height: 100%; }
+.dlg { padding: 20px; display: grid; gap: var(--s2); align-content: start; box-sizing: border-box; min-height: 100%; }
 .dlg-head { display: flex; justify-content: space-between; align-items: start; gap: 12px; position: sticky; top: 0; z-index: 5; background: var(--surface); margin: -20px -20px 0; padding: 16px 20px 12px; border-bottom: 1px solid var(--line); }
 .x { font: 24px/1 var(--f-body); background: none; border: 0; color: var(--muted); cursor: pointer; padding: 0 4px; }
 dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; }
 dt { color: var(--muted); } dd { margin: 0; }
-.block { display: grid; gap: 8px; }
+.block { display: grid; gap: var(--s1); }
 .block > h3 { font-size: 13px; font-weight: 600; color: var(--ink); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .ai { border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line)); background: color-mix(in srgb, var(--accent) 6%, var(--surface)); border-radius: 8px; padding: 12px 14px; display: grid; gap: 8px; }
 .ai ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
 .ai s { color: var(--muted); }
-.match { display: grid; gap: 4px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; }
+.match { display: grid; gap: 4px; padding: var(--s1) 0; border-bottom: 1px solid var(--line); }
 .match .row { display: flex; flex-wrap: wrap; gap: 6px; }
 .note { display: grid; gap: 2px; padding-left: 12px; border-left: 2px solid var(--line); }
 .note p { margin: 0; }
@@ -221,12 +224,16 @@ textarea { resize: vertical; }
 .steps .cur { background: var(--accent); }
 .col.lost { background: color-mix(in srgb, var(--crit) 7%, var(--sunken)); }
 .col.lost .card { cursor: pointer; opacity: .8; }
-.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 8px; font-size: 14px; z-index: 1000; max-width: calc(100% - 32px); box-sizing: border-box; }
+.toast button { font: 600 14px var(--f-body); color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; }
+.toast[hidden] { display: none; }
+.btn[aria-busy="true"] { opacity: .7; cursor: progress; }
+.toast { display: flex; align-items: center; gap: 16px; position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 8px; font-size: 14px; z-index: 1000; max-width: calc(100% - 32px); box-sizing: border-box; }
 @media (max-width: 640px) { .stage-row { grid-template-columns: 1fr 1fr; } }
 
 .invoice { border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: grid; gap: 12px; background: var(--bg); }
 .invoice .total { display: flex; justify-content: space-between; font-weight: 700; border-top: 1px solid var(--line); padding-top: 10px; font-variant-numeric: tabular-nums; }
 
+#map:not(.ready)::after { content: "Загружаем карту…"; position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); z-index: 500; pointer-events: none; }
 #map { height: 460px; border-radius: var(--r); border: 1px solid var(--line); background: var(--sunken); z-index: 0; }
 #map.map-empty { display: grid; place-items: center; color: var(--muted); padding: 16px; text-align: center; }
 .pin span { display: inline-block; transform: translate(-50%, -100%); white-space: nowrap; font: 600 12px/1 var(--f-body); padding: 5px 7px; border-radius: 6px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); box-shadow: 0 2px 6px rgb(0 0 0 / .2); cursor: pointer; }
@@ -251,10 +258,10 @@ dialog.drawer.wide { width: min(660px, 100%); }
 .plan .outer { fill: none; stroke: var(--ink); stroke-width: 5; }
 .plan text { fill: var(--ink); font: 500 12px var(--f-body); text-anchor: middle; }
 .plan .sub { fill: var(--muted); font-size: 11px; }
-.doc { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; }
+.doc { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: var(--s1) 0; border-bottom: 1px solid var(--line); }
 
 dialog.modal.wide { width: min(860px, calc(100% - 32px)); }
-.filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; }
+.filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: var(--s1) 16px; padding-bottom: var(--s2); border-bottom: 1px solid var(--line); }
 .filters .wide-field { grid-column: 1 / -1; }
 .range { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .lbl { font-size: 12.5px; font-weight: 500; color: var(--muted); }
@@ -286,9 +293,10 @@ dialog.modal.wide { width: min(860px, calc(100% - 32px)); }
 
 .hello { display: grid; gap: 2px; }
 .hello h1 { font-size: 22px; font-weight: 600; letter-spacing: -.01em; }
-.dash { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 24px; align-items: start; }
-.dash-main { display: grid; gap: 24px; min-width: 0; }
-.fi { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 10px; padding: 10px 14px; }
+.dash { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 48px; align-items: start; }
+.hello + .dash { margin-top: calc(var(--s2) - var(--s3)); }
+.dash-main { display: grid; gap: var(--s3); min-width: 0; }
+.fi { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 10px; padding: 10px 2px; }
 .fi .avatar { --size: 26px; grid-row: span 2; }
 .fi p { margin: 0; color: var(--muted); font-size: 13px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .fi .meta { font-size: 13px; display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: baseline; }
@@ -300,7 +308,12 @@ dialog.modal.search { margin-top: 12vh; width: min(580px, calc(100% - 32px)); }
 .gs-item { display: grid; gap: 1px; width: 100%; text-align: left; font: inherit; color: var(--ink); background: none; border: 0; border-radius: 6px; padding: 7px 10px; cursor: pointer; }
 .gs-item:hover, .gs-item:focus-visible { background: var(--hover); outline: none; }
 .gs-item small { color: var(--muted); font-size: 12.5px; }
-@media (max-width: 1100px) { .dash { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 1100px) {
+  .dash { grid-template-columns: minmax(0, 1fr); }
+  .shell { grid-template-columns: 196px minmax(0, 1fr); }
+  .alert { grid-template-columns: minmax(0, 1fr) auto; }
+  .alert > div:first-child { grid-column: 1 / -1; }
+}
 
 footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
 
@@ -689,7 +702,7 @@ function taskRow(t) {
 // Лента событий: заметки, звонки, встречи и переходы этапов по видимым сделкам
 function feedHtml() {
   const items = scoped().flatMap(d => d.notes.map((n, i) => ({ d, n, i }))).sort((a, b) => b.n.date.localeCompare(a.n.date) || b.i - a.i).slice(0, 14);
-  if (!items.length) return '<div class="list"><div class="empty">Пока ничего не происходило.</div></div>';
+  if (!items.length) return '<div class="list"><div class="empty">Здесь появятся звонки, встречи и смены этапов. Первое событие — после перевода сделки на «Связались».</div></div>';
   return `<div class="list">${items.map(({ d, n }) => { const a = user(n.author) || { name: '—' };
     return `<div class="fi">${avatar(a)}<div class="meta"><b>${esc(a.name)}</b><span class="muted">${n.kind ? NOTE_KIND[n.kind].toLowerCase() + ' · ' : ''}${dueLabel(n.date)}</span></div>
       <div>${dealLink(d)}<p>${esc(n.text)}</p></div></div>`; }).join('')}</div>`;
@@ -734,12 +747,12 @@ const views = {
       <span class="muted">${new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' })} · ${today0} ${plural(today0, ['задача', 'задачи', 'задач'])} на сегодня${late ? ` · ${late} ${plural(late, ['просрочена', 'просрочены', 'просрочено'])}` : ''}</span></div>
     <div class="dash"><div class="dash-main">
     <section class="section"><div class="section-head"><h2>Задачи</h2><div class="toolbar">${agentFilter()}</div></div>
-      ${groups.map(([name, list]) => list.length ? `<div class="block"><h3 class="group-title">${name} · ${list.length}</h3><div class="list">${list.map(taskRow).join('')}</div></div>` : '').join('') || '<div class="list"><div class="empty">Открытых задач нет. Задачи создаются в карточке сделки или из заметки агента.</div></div>'}
+      ${groups.map(([name, list]) => list.length ? `<div class="block"><h3 class="group-title">${name} · ${list.length}</h3><div class="list">${list.map(taskRow).join('')}</div></div>` : '').join('') || '<div class="list"><div class="empty">Открытых задач нет. Они появятся, когда вы назначите встречу или показ, или добавите задачу в карточке сделки.</div></div>'}
     </section>
-    <section class="section"><div class="section-head"><h2>Подсказки ИИ</h2><span class="muted small">${h.length} ${plural(h.length, ['подсказка', 'подсказки', 'подсказок'])}</span></div>
+    <section class="section"><div class="section-head"><h2>Горит · ${h.length}</h2><span class="muted small">ИИ проверил брони, контакты и комиссии</span></div>
       <div class="list">${h.map(x => `<div class="alert"><div>${x.p}</div><p>${dealLink(x.dl)}: ${x.text}</p><div>${x.act}</div></div>`).join('') || '<div class="empty">Истекающих броней, забытых клиентов и комиссий без счёта нет.</div>'}</div>
     </section></div>
-    <aside class="section"><div class="section-head"><h2>Лента</h2><span class="muted small">что происходило по сделкам</span></div>${feedHtml()}</aside></div>`;
+    <aside class="section"><div class="section-head"><h2>Лента</h2></div>${feedHtml()}</aside></div>`;
   },
   deals() {
     const ds = scoped(), c = can();
@@ -788,7 +801,7 @@ const views = {
     return `<section class="section"><div class="section-head"><h2>Брони</h2><span class="muted small">Только учёт: деньги держит указанная сторона, Realtika их не принимает</span></div>
       <div class="tbl cards"><table><thead><tr><th>Сделка</th>${all ? '<th>Агент</th>' : ''}<th>Объект</th><th>Тип</th><th class="num">Сумма</th><th>Деньги у</th><th>Срок</th><th>Статус</th><th></th></tr></thead><tbody>
       ${bs.map(b => { const d = deal(b.dealId), [cls, txt] = bookingState(b); return `<tr><td>${dealLink(d)}</td>${all ? `<td>${esc(user(d.agentId)?.name)}</td>` : ''}<td>${esc(objTitle(ob(b.objectId)))}</td><td>${b.kind}</td><td class="num">${rub(b.amount)}</td><td>${b.holder}</td><td>${fmtDate(b.expires)}</td><td>${pill(cls, txt)}</td>
-        <td>${b.closed ? '' : `<div class="actions"><button class="btn sm" data-act="extend" data-id="${b.id}">+7 дней</button><button class="btn sm" data-act="close-booking" data-id="${b.id}">Закрыть</button></div>`}</td></tr>`; }).join('') || `<tr><td colspan="9" class="muted">Броней нет.</td></tr>`}
+        <td>${b.closed ? '' : `<div class="actions"><button class="btn sm" data-act="extend" data-id="${b.id}">+7 дней</button><button class="btn sm" data-act="close-booking" data-id="${b.id}">Закрыть</button></div>`}</td></tr>`; }).join('') || `<tr><td colspan="9" class="muted">Броней нет. Забронируйте квартиру в «Объектах» или переведите сделку на этап «Бронь».</td></tr>`}
       </tbody></table></div></section>`;
   },
   commissions() {
@@ -1066,11 +1079,23 @@ function openLose(id) {
     <div class="actions"><button class="btn primary" type="submit">Закрыть сделку</button><button type="button" class="btn" data-act="close">Отмена</button></div></form>`;
   if (!$('modal').open) $('modal').showModal();
 }
-function toast(msg) {
+// Сообщение об успехе внизу экрана; undo — подпись и действие для кнопки «Вернуть»
+function toast(msg, undo) {
   let t = $('toast');
   if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; t.setAttribute('role', 'status'); document.body.append(t); }
   t.textContent = msg; t.hidden = false;
-  clearTimeout(toast.timer); toast.timer = setTimeout(() => { t.hidden = true; }, 4000);
+  if (undo) {
+    const b = document.createElement('button'); b.textContent = undo[0];
+    b.onclick = () => { undo[1](); t.hidden = true; save(); render(); };
+    t.append(b);
+  }
+  clearTimeout(toast.timer); toast.timer = setTimeout(() => { t.hidden = true; }, undo ? 6000 : 4000);
+}
+// Кнопка ИИ показывает, что работает: с настоящей моделью ответ придёт не мгновенно
+function busy(btn, label, fn) {
+  const was = btn.textContent;
+  btn.disabled = true; btn.setAttribute('aria-busy', 'true'); btn.textContent = label;
+  setTimeout(() => { btn.disabled = false; btn.removeAttribute('aria-busy'); btn.textContent = was; fn(); }, 450);
 }
 
 function renderDeal() {
@@ -1089,7 +1114,7 @@ function renderDeal() {
 
     <div class="block"><h3>Что нового по сделке</h3>
       <textarea id="note" rows="3" placeholder="Своими словами: «Созвонился, ипотека одобрена, взнос 3 млн. Встреча в четверг»">${esc(keepNote)}</textarea>
-      <div class="actions"><button class="btn primary sm" data-act="ai-note">Разобрать через ИИ</button><button class="btn sm" data-act="ai-example">Вставить пример</button>${pill('muted', 'ИИ-заглушка')}</div>
+      <div class="actions"><button class="btn primary sm" data-act="ai-note">Обновить сделку из заметки</button><button class="btn sm" data-act="ai-example">Вставить пример</button>${pill('muted', 'ИИ-заглушка')}</div>
       ${p ? `<div class="ai"><strong>${any ? 'ИИ предлагает' : 'Новых данных не найдено'}</strong>
         ${any ? `<ul>
           ${p.changes.map(([label, from, to]) => `<li>${label}: <s>${esc(from)}</s> → <b>${esc(to)}</b></li>`).join('')}
@@ -1260,7 +1285,8 @@ function fillResults() {
 }
 
 function tiles(m) {
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(m);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' })
+    .on('load', () => m.getContainer().classList.add('ready')).on('tileerror', () => m.getContainer().classList.add('ready')).addTo(m);
 }
 function initMap(items) {
   const el = $('map');
@@ -1581,8 +1607,8 @@ document.addEventListener('click', e => {
     case 'reopen': { const d = deal(id); d.notes.push({ date: iso(0), author: S.me, kind: 'stage', text: `Возвращена в работу после отказа: ${d.lost.reason}` }); d.lost = null; break; }
     case 'draft': openDeal(id, true); return;
     case 'close': el.closest('dialog').close(); return;
-    case 'contact': deal(id).lastContact = iso(0); break;
-    case 'done': S.tasks.find(t => t.id === id).done = true; break;
+    case 'contact': { const d = deal(id), was = d.lastContact; d.lastContact = iso(0); toast('Контакт отмечен сегодняшним числом', ['Вернуть', () => { d.lastContact = was; }]); break; }
+    case 'done': { const t = S.tasks.find(x => x.id === id); t.done = true; toast(`Готово: «${t.title}»`, ['Вернуть', () => { t.done = false; }]); break; }
     case 'copy': {
       const box = $('draft-box'), st = $('copy-status');
       navigator.clipboard.writeText(box.value).then(() => { st.textContent = 'Скопировано'; }, () => { box.select(); st.textContent = 'Выделено, нажмите Cmd+C'; });
@@ -1592,7 +1618,7 @@ document.addEventListener('click', e => {
     case 'ai-note': {
       const text = $('note').value.trim();
       if (!text) { $('note').focus(); return; }
-      ui.preview = previewNote(text); renderDeal(); return;
+      busy(el, 'ИИ разбирает заметку…', () => { ui.preview = previewNote(text); renderDeal(); }); return;
     }
     case 'ai-cancel': ui.preview = null; renderDeal(); return;
     case 'ai-apply': {
@@ -1607,7 +1633,7 @@ document.addEventListener('click', e => {
     }
     case 'edit': ui.editing = true; renderDeal(); return;
     case 'edit-cancel': ui.editing = false; renderDeal(); return;
-    case 'extend': { const b = S.bookings.find(x => x.id === id); b.expires = iso(Math.max(days(b.expires), 0) + 7); break; }
+    case 'extend': { const b = S.bookings.find(x => x.id === id), was = b.expires; b.expires = iso(Math.max(days(b.expires), 0) + 7); toast(`Бронь продлена до ${fmtDate(b.expires)}`, ['Вернуть', () => { b.expires = was; }]); break; }
     case 'close-booking': {
       const b = S.bookings.find(x => x.id === id), o = ob(b.objectId);
       b.closed = true;
@@ -1628,6 +1654,8 @@ document.addEventListener('click', e => {
     case 'l-ai': {
       const text = $('l-ai').value.trim();
       if (!text) { $('l-ai').focus(); return; }
+      if (!el.dataset.go) return busy(el, 'ИИ заполняет поля…', () => { el.dataset.go = '1'; el.click(); });
+      delete el.dataset.go;
       syncListing();
       const r = parseListing(text), names = { rooms: 'комнаты', district: 'район', price: 'цена', area: 'площадь', kitchen: 'кухня', floor: 'этаж', floors: 'этажность', address: 'адрес', renovation: 'ремонт', bathroom: 'санузел', balcony: 'балкон' };
       Object.assign(ui.listing, r);
@@ -1638,10 +1666,10 @@ document.addEventListener('click', e => {
     case 'l-desc': syncListing(); ui.listing.description = genDescription(ui.listing); renderListing(); initPickMap(); return;
     case 'l-photo-del': syncListing(); ui.listing.photos.splice(Number(el.dataset.i), 1); renderListing(); initPickMap(); return;
     case 'invoice': openInvoice(id); return;
-    case 'issue': S.commissions.find(x => x.id === id).status = 'счёт выставлен'; $('modal').close(); break;
-    case 'paid': S.commissions.find(x => x.id === id).status = 'получена'; break;
+    case 'issue': { const k = S.commissions.find(x => x.id === id); k.status = 'счёт выставлен'; $('modal').close(); toast(`Счёт на ${rub(k.amount)} отмечен выставленным`); break; }
+    case 'paid': { const k = S.commissions.find(x => x.id === id); k.status = 'получена'; toast(`Комиссия ${rub(k.amount)} получена`, ['Вернуть', () => { k.status = 'счёт выставлен'; }]); break; }
     case 'import-open': openImport(); return;
-    case 'parse': showParsed(parseChat($('chat').value)); return;
+    case 'parse': busy(el, 'ИИ разбирает переписку…', () => showParsed(parseChat($('chat').value))); return;
     case 'stages': ui.stageErr = ''; openStages(); return;
     case 'st-up': moveStage(id, -1); stagesChanged(); return;
     case 'st-down': moveStage(id, 1); stagesChanged(); return;
