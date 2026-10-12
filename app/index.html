@@ -87,7 +87,7 @@ h2 { font-size: 26px; line-height: 1.15; }
   background: linear-gradient(150deg, color-mix(in srgb, var(--accent) 55%, #fff), var(--accent) 50%, color-mix(in srgb, var(--accent) 70%, #000));
   box-shadow: inset 0 1.5px 1px rgb(255 255 255 / .55), inset 0 -3px 6px rgb(0 0 0 / .28), 0 6px 16px -4px color-mix(in srgb, var(--accent) 75%, transparent), 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent); }
 .mark svg { width: 66%; height: 66%; fill: currentColor; filter: drop-shadow(0 1.5px 1.5px rgb(0 0 0 / .3)); }
-.mark::after, .flip::after { content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / .45) 50%, transparent 65%); transform: translateX(-120%); }
+.flip::after { content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / .45) 50%, transparent 65%); transform: translateX(-120%); }
 .icon-btn { position: relative; width: 30px; height: 30px; display: grid; place-items: center; border: 0; border-radius: 6px; background: none; color: var(--side-muted); cursor: pointer; }
 .icon-btn:hover { background: var(--side-hover); color: var(--side-ink); }
 .icon-btn svg, .side-search svg, .tab svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
@@ -448,9 +448,8 @@ footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: f
   dialog.drawer[open] { animation: drawer-in .45s var(--ease); }
   dialog.modal[open] { animation: pop-in .35s var(--ease); }
   .flip-cube { transition: transform .6s var(--ease); }
-  /* Блик пробегает по значку и оранжевой пилюле */
+  /* Блик пробегает по оранжевой пилюле */
   .flip::after { animation: shine 2.6s var(--ease) infinite; }
-  .mark::after { animation: shine 5s var(--ease) 1s infinite; }
   .logo:hover .mark { transform: translateY(-1px) rotate(-6deg); }
   .mark { transition: transform .3s var(--ease); }
 }
