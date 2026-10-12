@@ -13,7 +13,7 @@
   --bg: #F4F4F5; --surface: #FFFFFF; --sunken: #F3F4F6; --hover: #E4E4E7; --ink: #18181B; --muted: #71717A; --line: #E4E4E7; --dot: #D4D4D8;
   --accent: #3733FF; --accent-ink: #FFFFFF; --accent-d: #8F8CFF; --accent-ink-d: #07063A; --hot: #FE4B01;
   --side-bg: #FFFFFF; --side-ink: #18181B; --side-muted: #71717A; --side-hover: #F3F4F6; --side-line: #E4E4E7; --side-field: #F3F4F6;
-  --panel: #18181B;
+  --panel: #3733FF;
   --ok: #12805C; --warn: #A15C07; --crit: #D92D20;
   --f-display: Onest, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --f-body: Onest, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -114,9 +114,9 @@ nav.tabs { display: grid; gap: 1px; flex: 1; align-content: start; }
 
 .login { min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding-block: 24px; box-sizing: border-box; }
 .login-card { width: min(960px, 100%); display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 8px; box-sizing: border-box; background: var(--surface); border-radius: 32px; box-shadow: 0 24px 48px rgb(16 24 40 / .08); overflow: hidden; }
-.login-brand { background: var(--panel); color: #F4F3F1; border-radius: 26px; padding: 36px; display: grid; gap: 18px; align-content: space-between; }
+.login-brand { background: radial-gradient(70% 55% at 100% 100%, rgb(254 75 1 / .4), transparent 70%), radial-gradient(60% 50% at 0% 0%, rgb(255 255 255 / .16), transparent 70%), var(--panel); color: #fff; border-radius: 26px; padding: 36px; display: grid; gap: 18px; align-content: space-between; }
 .login-brand .logo { font-size: 24px; gap: 10px; }
-.login-brand .mark { width: 44px; height: 44px; border-radius: 14px; }
+.login-brand .mark { width: 44px; height: 44px; border-radius: 14px; color: var(--panel); background: linear-gradient(150deg, #fff, #E4E3FF); box-shadow: inset 0 -3px 6px rgb(20 18 160 / .18), 0 8px 20px -6px rgb(10 8 90 / .5); }
 .login-brand .lead { font: 500 30px/1.1 var(--f-display); letter-spacing: -.03em; margin: 0; max-width: 16ch; }
 .login-brand .fine { font-size: 12px; opacity: .8; margin: 0; }
 .login-form { padding: 40px; display: grid; gap: 14px; align-content: start; }
@@ -347,7 +347,7 @@ dialog.modal.search { margin-top: 12vh; width: min(580px, calc(100% - 32px)); }
   nav.tabs { order: 1; display: flex; flex: 1; gap: 2px; }
   .tab { padding: 9px 16px; border-radius: 999px; white-space: nowrap; }
   .tab svg { display: none; }
-  .tab[aria-current="page"] { background: var(--ink); color: var(--surface); font-weight: 500; }
+  .tab[aria-current="page"] { background: var(--accent); color: var(--accent-ink); font-weight: 500; box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--accent) 70%, transparent); }
   .tab b { margin-left: 4px; }
   .side-search { order: 2; width: 240px; border: 0; border-radius: 999px; padding: 9px 16px; }
   .side .icon-btn { order: 3; width: 40px; height: 40px; border-radius: 50%; }
