@@ -369,6 +369,7 @@ dialog.modal.wide { width: min(860px, calc(100% - 32px)); }
 .thumbs figure { margin: 0; position: relative; width: 112px; aspect-ratio: 4 / 3; border-radius: 6px; overflow: hidden; background: var(--sunken); }
 .thumbs img { width: 100%; height: 100%; object-fit: cover; }
 .thumbs .x { position: absolute; top: 2px; right: 2px; background: rgb(20 24 22 / .72); color: #fff; border-radius: 6px; font-size: 16px; padding: 2px 6px; }
+#unit-detail { scroll-margin-top: 96px; } /* не уезжает под шапку окна */
 #pickmap { height: 240px; border-radius: 8px; border: 1px solid var(--line); background: var(--sunken); z-index: 0; }
 .info { color: var(--ok); font-size: var(--fs-sm); margin: 0; }
 
@@ -538,7 +539,7 @@ footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: f
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="parse.js"></script>
 <script>
-const K = 'realtika-demo-v6';
+const K = 'realtika-demo-v7';
 const ROLES = { agent: 'Агент', head: 'Руководитель отдела продаж', director: 'Директор' };
 const TABS = [['tasks', 'Задачи'], ['deals', 'Сделки'], ['objects', 'Объекты'], ['bookings', 'Брони'], ['commissions', 'Комиссии'], ['team', 'Команда']];
 const TAB_ICONS = {
@@ -604,7 +605,7 @@ const COMPLEX_DOCS = ['Разрешение на строительство', '�
 // Что агент обязан заполнить, чтобы перевести сделку НА этап с этим требованием
 const GATES = {
   '': { label: 'ничего, просто переход', need: 'ничего заполнять не нужно' },
-  call: { label: 'запись звонка и комментарий', need: 'запись звонка и комментарий' },
+  call: { label: 'комментарий после звонка', need: 'комментарий после звонка, запись по желанию' },
   meeting: { label: 'дата и время встречи', need: 'дата, время и место встречи' },
   meetingDone: { label: 'итоги встречи с вопросами ИИ', need: 'запись или итоги встречи, ответы на вопросы ИИ' },
   showing: { label: 'объект, дата и время показа', need: 'объект, дата, время и место показа' },
@@ -612,7 +613,7 @@ const GATES = {
   won: { label: 'размер комиссии', need: 'объект и размер комиссии' },
 };
 const LOSE_REASONS = ['Не выходит на связь', 'Купил через другое агентство', 'Передумал покупать', 'Не прошёл по ипотеке', 'Не подошли объекты', 'Другое'];
-const NOTE_KIND = { call: 'Звонок', meeting: 'Встреча', stage: 'Этап', lost: 'Отказ' };
+const NOTE_KIND = { call: 'Звонок', contact: 'Контакт', meeting: 'Встреча', stage: 'Этап', lost: 'Отказ' };
 const REQUIRED_DOCS = ['Выписка из ЕГРН', 'Технический план', 'Справка о зарегистрированных', 'Согласие супруга на продажу'];
 const PLATFORMS = [['avito', 'Авито'], ['cian', 'Циан'], ['domclick', 'Домклик'], ['yandex', 'Яндекс Недвижимость']];
 const RENOVATIONS = ['', 'без ремонта', 'косметический', 'евро', 'дизайнерский'];
@@ -669,7 +670,10 @@ function seed() {
   ev('d7', -4, 'u5', 'meeting', 'Встреча прошла онлайн: бюджет 11 млн, нужна двушка в Калининском, ипотека в процессе одобрения.');
   ev('d10', -2, 'u5', 'stage', 'Аванс 100 000 ₽ за квартиру на пр. Просвещения, деньги у агентства.');
   ev('d6', -5, 'u5', 'stage', 'Сделка закрыта: 1-к на пр. Энгельса. Комиссия 290 000 ₽, платит продавец.');
-  ev('d12', -8, 'u3', 'call', 'Клиент думает между двумя корпусами, просил подождать до выходных.');
+  ev('d12', -16, 'u3', 'stage', 'Назначена встреча в офисе агентства.');
+  ev('d12', -10, 'u3', 'stage', `Назначен показ: ${u12.address}, кв. ${u12.number}.`);
+  ev('d12', -10, 'u3', 'stage', `Бронь у застройщика 30 000 ₽ на кв. ${u12.number} в ${u12.address}, срок 7 дней.`);
+  ev('d12', -8, 'u3', 'call', 'Клиент думает, брать ли эту квартиру или ждать корпус 2. Просил подождать до выходных.');
   deals[0].notes.push({ date: iso(-6), author: 'u3', text: 'Показ на Комендантском: квартира понравилась, смущает 2-й этаж. Ипотека одобрена, взнос 2,5 млн.' });
   return {
     seq: 100, me: 'u3',
@@ -684,7 +688,7 @@ function seed() {
     deals,
     complexes: COMPLEXES,
     objects: [
-      O('o1', 'u3', 2, 'Приморский', 'Комендантский пр., д. 30', 58, 12.2e6, 7, 12, 60.008, 30.258, { kitchen: 10, renovation: 'евро', bathroom: 'раздельный', balcony: true, ownerName: 'Олег Петров', ownerPhone: '+7 900 000-20-01' }),
+      O('o1', 'u3', 2, 'Приморский', 'Комендантский пр., д. 30', 58, 12.2e6, 2, 12, 60.008, 30.258, { kitchen: 10, renovation: 'евро', bathroom: 'раздельный', balcony: true, ownerName: 'Олег Петров', ownerPhone: '+7 900 000-20-01' }),
       O('o4', 'u4', 3, 'Петроградский', 'ул. Ленина, д. 18', 86, 17.5e6, 4, 6, 59.963, 30.307, { kitchen: 12, renovation: 'косметический', bathroom: 'раздельный', ownerName: 'Ирина Соловьёва', ownerPhone: '+7 900 000-20-02', platforms: { avito: true, cian: true, domclick: true, yandex: true } }),
       O('o7', 'u5', 1, 'Выборгский', 'пр. Энгельса, д. 61', 36, 9.6e6, 9, 9, 60.035, 30.330, { status: 'продана', kitchen: 8, renovation: 'косметический', bathroom: 'совмещённый', balcony: true, ownerName: 'Андрей Белов', ownerPhone: '+7 900 000-20-03' }),
       O('o8', 'u3', 2, 'Калининский', 'Гражданский пр., д. 88', 52, 10.7e6, 5, 9, 60.020, 30.395, { kitchen: 7, renovation: 'без ремонта', bathroom: 'совмещённый', balcony: true, ownerName: 'Галина Козлова', ownerPhone: '+7 900 000-20-04', platforms: { avito: false, cian: true, domclick: false, yandex: false } }),
@@ -706,12 +710,12 @@ function seed() {
     ],
     tasks: [
       { id: 't1', dealId: 'd1', title: 'Отправить подборку на Приморском, не ниже 3-го этажа', due: iso(0), done: false },
-      { id: 't2', dealId: 'd9', title: 'Встреча в офисе', due: iso(1), done: false },
+      { id: 't2', dealId: 'd9', title: 'Встреча в офисе', due: iso(1), done: false, closeOn: 'meetingDone' },
       { id: 't3', dealId: 'd4', title: 'Перезвонить по студиям в «Невской волне»', due: iso(-2), done: false },
-      { id: 't4', dealId: 'd3', title: 'Показ на Большой Пушкарской', due: iso(0), done: false },
+      { id: 't4', dealId: 'd3', title: 'Показ на ул. Ленина', due: iso(0), done: false, closeOn: 'booking' },
       { id: 't5', dealId: 'd7', title: 'Подготовить договор аванса', due: iso(2), done: false },
-      { id: 't6', dealId: 'd13', title: 'Назначить встречу', due: iso(-1), done: false },
-      { id: 't7', dealId: 'd2', title: 'Первый звонок', due: iso(0), done: false },
+      { id: 't6', dealId: 'd13', title: 'Назначить встречу', due: iso(-1), done: false, closeOn: 'meeting' },
+      { id: 't7', dealId: 'd2', title: 'Первый звонок', due: iso(0), done: false, closeOn: 'call' },
     ],
   };
 }
@@ -741,6 +745,10 @@ const me = () => user(S.me);
 const can = () => ({ all: me().role !== 'agent', users: me().role === 'director' });
 const lastStageId = () => S.stages[S.stages.length - 1].id;
 const isOpen = d => !d.lost && d.stageId !== lastStageId();
+// «Давно не связывались» — только если у сделки нет запланированного шага: иначе агент уже знает, когда выйдет на связь
+const cold = d => isOpen(d) && days(d.lastContact) <= -5 && !S.tasks.some(t => t.dealId === d.id && !t.done);
+const activeBooking = d => S.bookings.find(b => b.dealId === d.id && !b.closed);
+const meetWhere = m => m.place && m.place.toLowerCase().includes(m.format) ? m.place : [m.format, m.place].filter(Boolean).join(', ');
 const objTitle = o => o ? `${roomsLabel(o.rooms)}, ${o.area} м² · ${o.address}${o.complexId ? `, кв. ${o.number}` : ''}` : '—';
 const mlnShort = n => (n / 1e6).toLocaleString('ru-RU', { maximumFractionDigits: 1 }) + ' млн';
 const pill = (cls, text) => `<span class="pill ${cls}">${esc(text)}</span>`;
@@ -770,13 +778,13 @@ function scoped() {
 const scopedIds = () => new Set(scoped().map(d => d.id));
 
 function fits(d, o) {
-  return o.status === 'свободна' && (!o.draft || o.agentId === d.agentId)
+  return o.status === 'свободна' && !o.draft
     && (d.type === 'любая' || o.type === d.type)
     && (d.rooms == null || o.rooms === d.rooms)
     && (!d.budget || o.price <= d.budget * 1.05);
 }
 function matches(d) {
-  return S.objects.filter(o => fits(d, o)).map(o => {
+  return S.objects.filter(o => fits(d, o) && o.id !== d.showing?.objectId).map(o => {
     const why = [];
     const same = d.district && o.district === d.district;
     if (same) why.push(['ok', `район ${o.district}`]);
@@ -787,8 +795,14 @@ function matches(d) {
   }).sort((a, b) => b.score - a.score || a.o.price - b.o.price).slice(0, 3);
 }
 function draftText(d) {
-  const first = d.name.split(' ')[0];
-  const m = matches(d).filter(x => x.score > 0);
+  const first = d.name.split(' ')[0], b = activeBooking(d);
+  if (b) return days(b.expires) < 0
+    ? `${first}, добрый день! Бронь на ${objTitle(ob(b.objectId))} закончилась ${fmtDate(b.expires)}. Продлеваем или подобрать другие варианты?`
+    : `${first}, добрый день! Напоминаю: квартира ${objTitle(ob(b.objectId))} забронирована до ${fmtDate(b.expires)}. Готовы выходить на сделку? Если нужно время, продлим бронь.`;
+  const next = [d.showing && ['показ', d.showing.date, d.showing.time, d.showing.place], d.meeting && ['встреча', d.meeting.date, d.meeting.time, meetWhere(d.meeting)]].find(x => x && days(x[1]) >= 0);
+  if (next) return `${first}, добрый день! Напоминаю: ${next[0]} ${dueLabel(next[1])} в ${next[2]}, ${next[3]}. Всё в силе?`;
+  // в сообщение клиенту — только его район, если он его назвал
+  const m = matches(d).filter(x => d.district ? x.o.district === d.district : x.score > 0);
   const req = `${roomsLabel(d.rooms)}, ${d.district || 'любой район'}${d.budget ? ', до ' + mln(d.budget) : ''}`;
   if (!m.length) return `${first}, добрый день! Продолжаем подбор под ваш запрос (${req}). Новых подходящих вариантов пока нет. Бюджет и район ещё актуальны?`;
   return `${first}, добрый день! Подобрали для вас ${m.length} ${plural(m.length, ['вариант', 'варианта', 'вариантов'])}:\n`
@@ -814,7 +828,8 @@ function hints() {
   S.commissions.filter(k => ids.has(k.dealId) && k.status === 'ожидается' && days(k.dealDate) <= -3).forEach(k => {
     out.push({ w: 1, p: pill('warn', 'Нет счёта'), dl: deal(k.dealId), text: `комиссия ${rub(k.amount)} от ${k.payer === 'Застройщик' ? 'застройщика' : 'продавца'}: сделка ${dayWord(-days(k.dealDate))} назад, счёт не выставлен.`, act: `<button class="btn sm" data-act="invoice" data-id="${k.id}">Выставить счёт</button>` });
   });
-  scoped().filter(d => isOpen(d) && days(d.lastContact) <= -5).forEach(d => {
+  const flagged = new Set(out.map(x => x.dl.id));
+  scoped().filter(d => cold(d) && !flagged.has(d.id)).forEach(d => {
     out.push({ w: 2, p: pill('warn', 'Давно не связывались'), dl: d, text: `${dayWord(-days(d.lastContact))} без связи, этап «${esc(stage(d.stageId)?.name)}».`, act: `<button class="btn sm" data-act="draft" data-id="${d.id}">Черновик сообщения</button>` });
   });
   return out.sort((a, b) => a.w - b.w);
@@ -822,8 +837,8 @@ function hints() {
 // Дела на сегодня: просроченные и сегодняшние задачи и подсказки ИИ; «давно не связывались» не дублируем, если по сделке уже есть задача
 function todo() {
   const ts = openTasks(), late = ts.filter(t => days(t.due) < 0), now = ts.filter(t => days(t.due) === 0);
-  const busy = new Set([...late, ...now].map(t => t.dealId));
-  const h = me().settings.aiHints ? hints().filter(x => x.w !== 2 || !busy.has(x.dl.id)) : [];
+  // брони и счета — факты, их показываем всегда; выключается только подсказка ИИ «давно не связывались»
+  const h = hints().filter(x => x.w !== 2 || me().settings.aiHints);
   return { late, now, h, later: ts.filter(t => days(t.due) > 0), n: late.length + now.length + h.length };
 }
 const openTasks = () => { const ids = scopedIds(); return S.tasks.filter(t => !t.done && ids.has(t.dealId)).sort((a, b) => a.due.localeCompare(b.due)); };
@@ -891,15 +906,15 @@ const views = {
     const ds = scoped(), c = can(), open = openTasks();
     const cols = S.stages.map(st => ds.filter(d => d.stageId === st.id && !d.lost));
     return `<section class="section"><div class="section-head"><h2>Сделки</h2><div class="toolbar">${agentFilter()}${c.all ? '<button class="btn sm" data-act="stages">Настроить этапы</button>' : ''}</div></div>
-      ${me().settings.kanbanTip ? '' : '<p class="small muted" style="margin:0">Перетащите карточку на следующий этап, откроется форма с данными этапа. <button class="btn link small" data-act="kanban-tip">Понятно</button></p>'}
+      ${me().settings.kanbanTip ? '' : '<p class="small muted" style="margin:0"><span class="only-desktop">Перетащите карточку на следующий этап, откроется форма с данными этапа.</span><span class="only-mobile">Этап меняется на странице сделки кнопкой «Далее».</span> <button class="btn link small" data-act="kanban-tip">Понятно</button></p>'}
       <div class="kanban">${S.stages.map((st, i) => {
         const cs = cols[i];
         return `<div class="col" data-stage="${st.id}"><h3><span>${esc(st.name)}</span><span>${cs.length}</span></h3>${cs.length ? '' : EMPTY_COL}${cs.map(d => {
-          const n = -days(d.lastContact), t = open.find(x => x.dealId === d.id);
+          const n = -days(d.lastContact), t = open.find(x => x.dealId === d.id), b = activeBooking(d), bs = b && bookingState(b);
           const next = !isOpen(d) ? '' : t ? `<span class="since${days(t.due) < 0 ? ' crit' : ''}">${esc(t.title)}, ${dueLabel(t.due)}</span>` : '<span class="since warn">нет следующего шага</span>';
           return `<a class="card" draggable="true" href="${dealHref(d.id)}" data-act="deal" data-id="${d.id}"><strong>${esc(d.name)}</strong>
             <span class="small muted">${roomsLabel(d.rooms)} · ${esc(d.district || 'любой район')}${c.all ? ` · ${esc(user(d.agentId)?.name)}` : ''}</span>
-            ${next}${isOpen(d) && n >= 5 ? `<span class="since warn">${dayWord(n)} без связи</span>` : ''}
+            ${bs && bs[0] !== 'ok' ? `<span class="since ${bs[0]}">бронь: ${bs[1]}</span>` : ''}${next}${cold(d) ? `<span class="since warn">${dayWord(n)} без связи</span>` : ''}
             ${d.budget ? `<span class="amt">${mlnShort(d.budget)}</span>` : ''}</a>`;
         }).join('')}</div>`;
       }).join('')}
@@ -958,13 +973,13 @@ const views = {
     const row = u => {
       const ds = S.deals.filter(d => d.agentId === u.id), ids = new Set(ds.map(d => d.id)), open = ds.filter(isOpen).length;
       const overdue = S.tasks.filter(t => !t.done && ids.has(t.dealId) && days(t.due) < 0).length;
-      const cold = ds.filter(d => isOpen(d) && days(d.lastContact) <= -5).length;
+      const coldN = ds.filter(cold).length;
       const due = S.commissions.filter(k => ids.has(k.dealId) && k.status !== 'получена').reduce((s, k) => s + k.amount, 0);
       const roleCell = c.users && u.id !== S.me
         ? `<select data-role="${u.id}" aria-label="Роль: ${esc(u.name)}">${Object.entries(ROLES).map(([k, v]) => `<option value="${k}"${k === u.role ? ' selected' : ''}>${v}</option>`).join('')}</select>`
         : ROLES[u.role];
       return `<tr><td>${esc(u.name)}${u.id === S.me ? ' <span class="muted small">(вы)</span>' : ''}</td><td>${roleCell}</td><td class="num">${open || '—'}</td>
-        <td class="num">${overdue ? pill('crit', overdue) : '—'}</td><td class="num">${cold ? pill('warn', cold) : '—'}</td><td class="num">${ds.filter(d => !d.lost && d.stageId === lastStageId()).length || '—'}</td><td class="num">${due ? rub(due) : '—'}</td></tr>`;
+        <td class="num">${overdue ? pill('crit', overdue) : '—'}</td><td class="num">${coldN ? pill('warn', coldN) : '—'}</td><td class="num">${ds.filter(d => !d.lost && d.stageId === lastStageId()).length || '—'}</td><td class="num">${due ? rub(due) : '—'}</td></tr>`;
     };
     return `<section class="section"><div class="section-head"><h2>Команда</h2><span class="muted small">${c.users ? 'Вы назначаете роли и добавляете сотрудников' : 'Роли назначает директор'}</span></div>
       <div class="tbl cards"><table><thead><tr><th>Сотрудник</th><th>Роль</th><th class="num">Сделок в работе</th><th class="num">Просрочено задач</th><th class="num">Без связи 5+ дней</th><th class="num">Закрыто</th><th class="num">Комиссии к получению</th></tr></thead>
@@ -1113,8 +1128,9 @@ function stageBlock(d) {
       ${i > 0 ? `<button class="btn link small" data-act="back" data-id="${d.id}">вернуть на «${esc(S.stages[i - 1].name)}»</button>` : ''}</div>
     <span class="small muted">Для перехода нужно: ${GATES[next.gate || ''].need}.</span>`;
   const facts = [];
-  if (d.meeting) facts.push(`Встреча: ${fmtDate(d.meeting.date)} в ${d.meeting.time}, ${esc(d.meeting.format)}${d.meeting.place ? ', ' + esc(d.meeting.place) : ''}`);
-  if (d.showing) facts.push(`Показ: ${esc(objTitle(ob(d.showing.objectId)))}, ${fmtDate(d.showing.date)} в ${d.showing.time}${d.showing.place ? ', ' + esc(d.showing.place) : ''}`);
+  if (d.meeting) facts.push(`Встреча: ${fmtDate(d.meeting.date)} в ${d.meeting.time}, ${esc(meetWhere(d.meeting))}`);
+  if (d.showing) { const t = objTitle(ob(d.showing.objectId)), pl = d.showing.place && !t.includes(d.showing.place) ? ', ' + esc(d.showing.place) : '';
+    facts.push(`Показ: ${esc(t)}, ${fmtDate(d.showing.date)} в ${d.showing.time}${pl}`); }
   return `<div class="block"><h3><span>Этап: ${esc(st.name)}</span><span>${i + 1} из ${S.stages.length}</span></h3>${steps}${body}${facts.map(f => `<div class="doc"><span>${f}</span></div>`).join('')}</div>`;
 }
 
@@ -1139,9 +1155,9 @@ function objectOptions(d, cur) {
     ${fit.length ? `<optgroup label="Подходят по запросу">${fit.map(op).join('')}</optgroup>` : ''}<optgroup label="Другие свободные">${other.map(op).join('')}</optgroup>`;
 }
 
-function openAdvance(id) {
+function openAdvance(id, to, objectId) {
   const d = deal(id), i = S.stages.findIndex(s => s.id === d.stageId);
-  ui.adv = { dealId: id, to: S.stages[i + 1].id, err: '' };
+  ui.adv = { dealId: id, to: to || S.stages[i + 1].id, objectId, err: '' };
   renderAdvance();
   if (!$('modal').open) $('modal').showModal();
 }
@@ -1150,9 +1166,9 @@ function renderAdvance() {
   const fileField = (label, req) => `<div class="field"><label for="adv-file">${label}</label><input id="adv-file" type="file" accept="audio/*,video/*"${req ? ' required' : ''}></div>`;
   const when = (date, time) => `<div class="fields"><div class="field"><label for="adv-date">Дата</label><input id="adv-date" type="date" required value="${date || iso(1)}"></div><div class="field"><label for="adv-time">Время</label><input id="adv-time" type="time" required value="${time || '12:00'}"></div></div>`;
   const comment = (label, req, ph = '') => `<div class="field"><label for="adv-comment">${label}</label><textarea id="adv-comment" rows="3"${req ? ' required' : ''} placeholder="${ph}"></textarea></div>`;
-  const b = S.bookings.find(x => x.dealId === d.id && !x.closed), cur = b?.objectId || d.showing?.objectId;
+  const b = activeBooking(d), cur = a.objectId || b?.objectId || d.showing?.objectId;
   let body = '';
-  if (g === 'call') body = fileField('Запись звонка', true) + comment('Комментарий после звонка', true, 'Что узнали: бюджет, район, комнаты, оплата, сроки')
+  if (g === 'call') body = fileField('Запись звонка, если есть', false) + comment('Комментарий после звонка', true, 'Что узнали: бюджет, район, комнаты, оплата, сроки')
     + '<span class="small muted">ИИ вытащит из комментария данные клиента и обновит сделку.</span>';
   else if (g === 'meeting') body = when() + `<div class="fields"><div class="field"><label for="adv-format">Формат</label><select id="adv-format"><option>офис</option><option>онлайн</option><option>у объекта</option></select></div>
     <div class="field"><label for="adv-place">Место или ссылка</label><input id="adv-place" value="Офис агентства"></div></div><span class="small muted">В задачах появится напоминание о встрече.</span>`;
@@ -1164,7 +1180,8 @@ function renderAdvance() {
     + '<div class="field"><label for="adv-place">Где встречаемся</label><input id="adv-place" placeholder="По умолчанию адрес объекта"></div><span class="small muted">В задачах появится напоминание о показе.</span>';
   else if (g === 'booking') {
     const o = cur && ob(cur);
-    body = `<div class="field"><label for="adv-obj">Объект</label><select id="adv-obj" required>${objectOptions(d, cur)}</select></div>
+    body = `${b ? `<span class="small muted">Сейчас бронь на ${esc(objTitle(ob(b.objectId)))} до ${fmtDate(b.expires)}. Новая бронь заменит её.</span>` : ''}
+      <div class="field"><label for="adv-obj">Объект</label><select id="adv-obj" required>${objectOptions(d, cur)}</select></div>
       <div class="fields"><div class="field"><label for="adv-kind">Тип</label><select id="adv-kind">${['Бронь у застройщика', 'Аванс', 'Задаток'].map(k => `<option${(o?.complexId ? 'Бронь у застройщика' : 'Аванс') === k ? ' selected' : ''}>${k}</option>`).join('')}</select></div>
       <div class="field"><label for="adv-amount">Сумма, ₽</label><input id="adv-amount" type="number" min="0" step="1000" required value="${o?.complexId ? 50000 : 100000}"></div>
       <div class="field"><label for="adv-holder">Деньги у</label><select id="adv-holder">${['Застройщик', 'Агентство', 'Агент', 'Собственник'].map(h => `<option${(o?.complexId ? 'Застройщик' : 'Агентство') === h ? ' selected' : ''}>${h}</option>`).join('')}</select></div>
@@ -1177,9 +1194,9 @@ function renderAdvance() {
       ${hint ? '<span class="small muted">Подставлено 3% от цены объекта. Исправьте под договор.</span>' : ''}`;
   } else body = comment('Комментарий', false);
   $('modal').innerHTML = `<form id="adv-form" class="dlg">
-    <div class="dlg-head"><div><h2>${esc(d.name)} → ${esc(to.name)}</h2><span class="muted small">Переход с этапа «${esc(stage(d.stageId).name)}»</span></div><button type="button" class="x" data-act="close" aria-label="Закрыть">×</button></div>
+    <div class="dlg-head"><div><h2>${esc(d.name)} → ${esc(to.name)}</h2><span class="muted small">${to.id === d.stageId ? 'Сделка уже на этом этапе' : `Переход с этапа «${esc(stage(d.stageId).name)}»`}</span></div><button type="button" class="x" data-act="close" aria-label="Закрыть">×</button></div>
     ${body}${a.err ? `<p class="err">${esc(a.err)}</p>` : ''}
-    <div class="actions"><button class="btn primary" type="submit">Перевести на «${esc(to.name)}»</button><button type="button" class="btn" data-act="close">Отмена</button></div></form>`;
+    <div class="actions"><button class="btn primary" type="submit">${to.id === d.stageId ? 'Сохранить' : `Перевести на «${esc(to.name)}»`}</button><button type="button" class="btn" data-act="close">Отмена</button></div></form>`;
 }
 function applyAdvance() {
   const a = ui.adv, d = deal(a.dealId), to = stage(a.to), g = to.gate || '';
@@ -1188,37 +1205,40 @@ function applyAdvance() {
   const updated = [];
   const applyFields = r => FIELDS.forEach(([k, label]) => { if (r[k] !== undefined && r[k] !== d[k]) { d[k] = r[k]; if (!updated.includes(label.toLowerCase())) updated.push(label.toLowerCase()); } });
   const note = (text, kind) => d.notes.push({ date: iso(0), author: S.me, kind, file, text });
-  const task = (title, due) => S.tasks.push({ id: 't' + (++S.seq), dealId: d.id, title, due, done: false });
+  const task = (title, due, closeOn) => S.tasks.push({ id: 't' + (++S.seq), dealId: d.id, title, due, done: false, closeOn });
   if (g === 'call') { applyFields(parseChat(v('adv-comment'))); note(v('adv-comment'), 'call'); }
   else if (g === 'meeting') {
     d.meeting = { date: v('adv-date'), time: v('adv-time'), format: v('adv-format'), place: v('adv-place') };
-    task(`Встреча в ${d.meeting.time}, ${d.meeting.format}`, d.meeting.date);
-    note(`Назначена встреча: ${fmtDate(d.meeting.date)} в ${d.meeting.time}, ${d.meeting.format}${d.meeting.place ? ', ' + d.meeting.place : ''}`, 'stage');
+    task(`Встреча в ${d.meeting.time}, ${d.meeting.format}`, d.meeting.date, 'meetingDone');
+    note(`Назначена встреча: ${fmtDate(d.meeting.date)} в ${d.meeting.time}, ${meetWhere(d.meeting)}`, 'stage');
   } else if (g === 'meetingDone') {
     const answers = [...document.querySelectorAll('#adv-form [data-q]')].map(el => [el.dataset.q, el.value.trim(), $('modal').querySelector(`label[for="${el.id}"]`).textContent]).filter(x => x[1]);
     const text = v('adv-comment');
     if (!answers.length && !text && !file) { a.err = 'Заполните хотя бы один ответ, комментарий или приложите запись встречи.'; return renderAdvance(); }
     answers.forEach(([k, t]) => applyFields(answerToFields(k, t)));
     if (text) applyFields(parseChat(text));
-    S.tasks.filter(t => t.dealId === d.id && !t.done && t.title.startsWith('Встреча')).forEach(t => { t.done = true; });
     note([...answers.map(([, t, q]) => `${q} ${t}`), text].filter(Boolean).join('\n') || 'Итоги встречи во вложении', 'meeting');
   } else if (g === 'showing') {
     const o = ob(v('adv-obj'));
     d.showing = { objectId: o.id, date: v('adv-date'), time: v('adv-time'), place: v('adv-place') || `${o.address}${o.complexId ? `, кв. ${o.number}` : ''}` };
-    task(`Показ: ${objTitle(o)}`, d.showing.date);
+    task(`Показ: ${objTitle(o)}`, d.showing.date, 'booking');
     note(`Назначен показ: ${objTitle(o)}, ${fmtDate(d.showing.date)} в ${d.showing.time}, ${d.showing.place}`, 'stage');
   } else if (g === 'booking') {
     const o = ob(v('adv-obj'));
+    S.bookings.filter(x => x.dealId === d.id && !x.closed).forEach(x => { x.closed = true; const xo = ob(x.objectId); if (xo?.status === 'бронь') xo.status = 'свободна'; });
     S.bookings.push({ id: 'b' + (++S.seq), dealId: d.id, objectId: o.id, kind: v('adv-kind'), amount: Number(v('adv-amount')) || 0, holder: v('adv-holder'), expires: v('adv-exp'), closed: false });
     o.status = 'бронь';
     note(`${v('adv-kind')} ${rub(Number(v('adv-amount')) || 0)} на ${objTitle(o)} до ${fmtDate(v('adv-exp'))}`, 'stage');
   } else if (g === 'won') {
     const o = ob(v('adv-obj')), amount = Number(v('adv-comm'));
-    S.bookings.filter(x => x.dealId === d.id && !x.closed).forEach(x => { x.closed = true; });
+    // бронь на другой квартире больше не нужна: возвращаем её в продажу
+    S.bookings.filter(x => x.dealId === d.id && !x.closed).forEach(x => { x.closed = true; const xo = ob(x.objectId); if (xo !== o && xo?.status === 'бронь') xo.status = 'свободна'; });
     o.status = 'продана';
     S.commissions.push({ id: 'k' + (++S.seq), dealId: d.id, objectId: o.id, payer: v('adv-payer'), amount, dealDate: iso(0), status: 'ожидается' });
     note(`Сделка закрыта: ${objTitle(o)}. Комиссия ${rub(amount)}, платит ${v('adv-payer').toLowerCase()}`, 'stage');
   } else if (v('adv-comment')) note(v('adv-comment'), 'stage');
+  const from = S.stages.findIndex(s => s.id === d.stageId), passed = S.stages.slice(from + 1, S.stages.indexOf(to) + 1).map(s => s.gate || '');
+  S.tasks.filter(t => t.dealId === d.id && !t.done && passed.includes(t.closeOn)).forEach(t => { t.done = true; });
   d.stageId = to.id; d.lastContact = iso(0);
   ui.flash = `Сделка на этапе «${to.name}».${updated.length ? ` ИИ обновил: ${updated.join(', ')}.` : ''}`;
   save(); $('modal').close(); render(); openDeal(d.id);
@@ -1262,8 +1282,8 @@ function renderDeal() {
   const p = ui.preview, any = p && (p.changes.length || p.task || p.stage);
   // Лента: сверху открытые задачи по сроку (просроченные первыми), ниже звонки, комментарии и выполненные задачи, новое сверху
   const feed = [
-    ...d.notes.map((x, i) => ({ date: x.date, i, html: `<div class="ev"><span class="ev-meta">${x.kind ? NOTE_KIND[x.kind] : 'Комментарий'} · ${dueLabel(x.date)} · ${esc(user(x.author)?.name)}</span>${x.file ? `<span class="ev-file">Запись звонка: ${esc(x.file)}</span>` : ''}<p>${esc(x.text)}</p></div>` })),
-    ...S.tasks.filter(t => t.dealId === d.id).map((t, i) => ({ date: t.due, open: !t.done, i: -1 - i, html: `<div class="ev task${t.done ? ' done' : ''}"><span class="ev-meta">${t.done ? 'Задача · выполнена' : 'Задача'}</span>
+    ...d.notes.map((x, i) => ({ date: x.date, i, html: `<div class="ev"><span class="ev-meta">${x.kind ? NOTE_KIND[x.kind] : 'Комментарий'} · ${dueLabel(x.date)} · ${esc(user(x.author)?.name)}</span>${x.file ? `<span class="ev-file">${x.kind === 'meeting' ? 'Запись встречи' : 'Запись звонка'}: ${esc(x.file)}</span>` : ''}<p>${esc(x.text)}</p></div>` })),
+    ...S.tasks.filter(t => t.dealId === d.id).map((t, i) => ({ date: t.due, open: !t.done, i: -1 - i, html: `<div class="ev task${t.done ? ' done' : ''}"><span class="ev-meta">${t.cancelled ? 'Задача · отменена' : t.done ? 'Задача · выполнена' : 'Задача'}</span>
       <label class="check"><input type="checkbox" ${t.done ? 'checked disabled' : `data-act="done" data-id="${t.id}"`}> ${esc(t.title)}</label>${t.done ? '' : pill(dueCls(t.due), dueLabel(t.due))}</div>` })),
   ].sort((a, b) => !!b.open - !!a.open || (a.open ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date) || b.i - a.i));
   $('drawer').innerHTML = `<div class="dlg">
@@ -1274,7 +1294,7 @@ function renderDeal() {
       ${stageBlock(d)}
       <div class="block"><h3>Клиент</h3>
         <div class="actions">${d.phone ? `<a href="${telHref(d.phone)}" style="color:var(--ink);font-weight:600">${esc(d.phone)}</a>` : '<span class="muted">телефон не указан</span>'}${callBtn(d.phone)}</div>
-        <span class="small ${n >= 5 && isOpen(d) ? 'since warn' : 'muted'}">Последний контакт: ${n === 0 ? 'сегодня' : `${dayWord(n)} назад`}</span>
+        <span class="small ${cold(d) ? 'since warn' : 'muted'}">Последний контакт: ${n === 0 ? 'сегодня' : `${dayWord(n)} назад`}</span>
         <div class="actions"><button class="btn sm" data-act="contact" data-id="${d.id}">Связался сегодня</button><button class="btn sm" data-act="draft" data-id="${d.id}">Черновик сообщения</button></div>
         ${ui.draft ? `<textarea id="draft-box" rows="6" aria-label="Черновик сообщения">${esc(draftText(d))}</textarea><div class="actions"><button class="btn sm primary" data-act="copy">Копировать</button><span class="small muted" id="copy-status"></span></div>` : ''}
         <div class="field"><label for="deal-agent">Ответственный</label>${c.all ? `<select id="deal-agent">${S.users.map(u => `<option value="${u.id}"${u.id === d.agentId ? ' selected' : ''}>${esc(u.name)}</option>`).join('')}</select>` : `<span id="deal-agent">${esc(user(d.agentId)?.name)}</span>`}</div>
@@ -1339,6 +1359,7 @@ function readForm() {
 }
 
 function openDeal(id, draft = false) {
+  if (!scopedIds().has(id)) return;
   if (ui.dealId !== id || ui.placeId) { ui = { ...ui, dealId: id, placeId: null, editing: false, preview: null }; if ($('note')) $('note').value = ''; }
   $('drawer').classList.remove('wide'); $('drawer').classList.add('page');
   ui.draft = draft;
@@ -1487,23 +1508,23 @@ function openPlace(id, unitId) {
   $('drawer').scrollTop = 0;
 }
 
+const bookStage = () => S.stages.find(s => s.gate === 'booking');
 function unitDetail(u) {
-  const open = scoped().filter(isOpen), fitting = open.filter(d => fits(d, u));
+  // бронь возможна для сделок до этапа «Бронь» включительно
+  const bi = S.stages.indexOf(bookStage()), open = scoped().filter(d => isOpen(d) && S.stages.findIndex(s => s.id === d.stageId) <= bi), fitting = open.filter(d => fits(d, u));
   const b = S.bookings.find(x => x.objectId === u.id && !x.closed);
   const options = [...fitting, ...open.filter(d => !fitting.includes(d))];
-  return `<div class="block"><h3>${u.complexId ? `Квартира № ${u.number}` : 'Квартира'}</h3>
+  const canBook = u.status === 'свободна' && options.length && bookStage();
+  return `<div class="block" id="unit-detail"><h3>${u.complexId ? `Квартира № ${u.number}` : 'Квартира'}</h3>
     <div class="actions">${pill(UNIT_STATUS[u.status] === 'free' ? 'ok' : UNIT_STATUS[u.status] === 'booked' ? 'warn' : 'muted', u.status)}${u.complexId ? '<span class="small muted">схема, не в масштабе</span>' : ''}</div>
+    ${canBook ? `<div class="actions"><select id="b-deal" aria-label="Сделка для брони" style="width:auto;max-width:100%">${options.map(d => `<option value="${d.id}">${esc(d.name)}${fitting.includes(d) ? ' · подходит' : ''}</option>`).join('')}</select><button class="btn primary" data-act="book" data-id="${u.id}">Забронировать</button></div>` : ''}
     ${u.complexId ? planSvg(u.rooms, u.area) : ''}
     <dl><dt>Комнаты</dt><dd>${roomsLabel(u.rooms)}</dd><dt>Площадь</dt><dd>${u.area} м²${u.kitchen ? `, кухня ${u.kitchen} м²` : ''}</dd><dt>Этаж</dt><dd>${u.floor} из ${u.floors}</dd>
       ${u.complexId ? '' : `<dt>Ремонт</dt><dd>${u.renovation ? RENO_TEXT[u.renovation] : '—'}</dd><dt>Санузел</dt><dd>${u.bathroom || '—'}</dd><dt>Балкон</dt><dd>${yesNo(u.balcony)}</dd>`}
       <dt>Цена</dt><dd>${rub(u.price)}</dd><dt>За м²</dt><dd>${rub(u.price / u.area)}</dd></dl>
     ${u.description ? `<p style="margin:0">${esc(u.description)}</p>` : ''}
-    ${u.status === 'свободна' ? `<div class="actions"><span class="small muted">Подходит сделкам:</span>${fitting.length ? fitting.map(dealLink).join(', ') : '<span class="small muted">нет</span>'}</div>
-      ${options.length ? `<form id="book-form" class="fields">
-        <div class="field"><label for="b-deal">Забронировать для сделки</label><select id="b-deal">${options.map(d => `<option value="${d.id}">${esc(d.name)}${fitting.includes(d) ? ' · подходит' : ''}</option>`).join('')}</select></div>
-        <div class="field"><label for="b-amount">${u.complexId ? 'Платная бронь, ₽' : 'Аванс, ₽'}</label><input id="b-amount" type="number" min="0" step="1000" value="${u.complexId ? 50000 : 100000}"></div>
-        <div class="field" style="align-content:end"><button class="btn primary" type="submit">Забронировать на 7 дней</button></div></form>` : ''}`
-      : b ? `<p class="small" style="margin:0">Бронь: ${dealLink(deal(b.dealId))}, ${b.kind.toLowerCase()} до ${fmtDate(b.expires)}</p>` : ''}
+    ${u.status === 'свободна' ? `<div class="actions"><span class="small muted">Подходит сделкам:</span>${fitting.length ? fitting.map(dealLink).join(', ') : '<span class="small muted">нет</span>'}</div>`
+      : b ? `<p class="small" style="margin:0">Бронь: ${scopedIds().has(b.dealId) ? dealLink(deal(b.dealId)) : `сделка агента ${esc(user(deal(b.dealId).agentId)?.name)}`}, ${b.kind.toLowerCase()} до ${fmtDate(b.expires)}</p>` : ''}
   </div>`;
 }
 
@@ -1692,9 +1713,9 @@ const SAMPLE_NOTE = 'Созвонился с клиентом. Ипотека о
 
 function openImport() {
   $('modal').innerHTML = `<div class="dlg">
-    <div class="dlg-head"><div><h2>Сделка из переписки</h2><span class="muted small">Вставьте сообщение клиента или заметку после звонка. Пример уже вставлен.</span></div><button class="x" data-act="close" aria-label="Закрыть">×</button></div>
-    <div class="field"><label for="chat">Переписка</label><textarea id="chat" rows="5">${esc(SAMPLE_CHAT)}</textarea></div>
-    <div class="actions"><button class="btn primary" data-act="parse">Разобрать</button></div>
+    <div class="dlg-head"><div><h2>Сделка из переписки</h2><span class="muted small">Вставьте сообщение клиента или заметку после звонка.</span></div><button class="x" data-act="close" aria-label="Закрыть">×</button></div>
+    <div class="field"><label for="chat">Переписка</label><textarea id="chat" rows="5" placeholder="Например: «Ищем однушку в Московском районе до 8 млн, ипотека. Ксения, +7 900 000-00-15»"></textarea></div>
+    <div class="actions"><button class="btn primary" data-act="parse">Разобрать</button><button class="btn sm link" data-act="chat-example">вставить пример</button></div>
     <form id="parsed" class="block" hidden></form></div>`;
   $('modal').showModal();
 }
@@ -1702,6 +1723,7 @@ function showParsed(r) {
   const c = can();
   $('parsed').innerHTML = `<h3 class="group-title">Проверьте и сохраните</h3>${dealFields({ ...DEFAULTS, name: '', phone: '', ...r })}
     ${c.all ? `<div class="field"><label for="n-agent">Ответственный</label><select id="n-agent">${S.users.map(u => `<option value="${u.id}"${u.id === S.me ? ' selected' : ''}>${esc(u.name)}</option>`).join('')}</select></div>` : ''}
+    <p class="err" id="parsed-err" role="alert" hidden></p>
     <div class="actions"><button class="btn primary" type="submit">Создать сделку</button></div>`;
   $('parsed').hidden = false;
 }
@@ -1770,7 +1792,8 @@ document.addEventListener('click', e => {
     case 'reopen': { const d = deal(id); d.notes.push({ date: iso(0), author: S.me, kind: 'stage', text: `Возвращена в работу после отказа: ${d.lost.reason}` }); d.lost = null; break; }
     case 'draft': openDeal(id, true); return;
     case 'close': el.closest('dialog').close(); return;
-    case 'contact': { const d = deal(id), was = d.lastContact; d.lastContact = iso(0); toast('Контакт отмечен сегодняшним числом', ['Вернуть', () => { d.lastContact = was; }]); break; }
+    case 'contact': { const d = deal(id), was = d.lastContact, n = { date: iso(0), author: S.me, kind: 'contact', text: 'Связался с клиентом' };
+      d.lastContact = iso(0); d.notes.push(n); toast('Контакт отмечен в ленте сделки', ['Вернуть', () => { d.lastContact = was; d.notes.splice(d.notes.indexOf(n), 1); }]); break; }
     case 'done': { const t = S.tasks.find(x => x.id === id); t.done = true; toast(`Готово: «${t.title}»`, ['Вернуть', () => { t.done = false; }]); break; }
     case 'copy': {
       const box = $('draft-box'), st = $('copy-status');
@@ -1817,7 +1840,8 @@ document.addEventListener('click', e => {
       break;
     }
     case 'place': if ($('modal').classList.contains('search')) $('modal').close(); openPlace(id, el.dataset.unit); return;
-    case 'unit': ui.unitId = id; renderPlace(); return;
+    case 'unit': ui.unitId = id; renderPlace(); $('unit-detail')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); return;
+    case 'book': openAdvance($('b-deal').value, bookStage().id, id); return;
     case 'rooms': ui.rooms = el.dataset.rooms === '' ? null : Number(el.dataset.rooms); renderPlace(); return;
     case 'objview': objView = el.dataset.view; break;
     case 'kanban-tip': me().settings.kanbanTip = true; break;
@@ -1847,7 +1871,8 @@ document.addEventListener('click', e => {
     case 'issue': { const k = S.commissions.find(x => x.id === id); k.status = 'счёт выставлен'; $('modal').close(); toast(`Счёт на ${rub(k.amount)} отмечен выставленным`); break; }
     case 'paid': { const k = S.commissions.find(x => x.id === id); k.status = 'получена'; toast(`Комиссия ${rub(k.amount)} получена`, ['Вернуть', () => { k.status = 'счёт выставлен'; }]); break; }
     case 'import-open': openImport(); return;
-    case 'parse': busy(el, 'ИИ разбирает переписку…', () => showParsed(parseChat($('chat').value))); return;
+    case 'chat-example': $('chat').value = SAMPLE_CHAT; return;
+    case 'parse': if (!$('chat').value.trim()) { $('chat').focus(); return; } busy(el, 'ИИ разбирает переписку…', () => showParsed(parseChat($('chat').value))); return;
     case 'stages': ui.stageErr = ''; openStages(); return;
     case 'st-up': moveStage(id, -1); stagesChanged(); return;
     case 'st-down': moveStage(id, 1); stagesChanged(); return;
@@ -1920,19 +1945,13 @@ document.addEventListener('submit', e => {
     const d = deal(ui.loseId);
     d.lost = { reason: $('lose-reason').value, comment: $('lose-comment').value.trim(), date: iso(0) };
     S.bookings.filter(b => b.dealId === d.id && !b.closed).forEach(b => { b.closed = true; const o = ob(b.objectId); if (o?.status === 'бронь') o.status = 'свободна'; });
-    S.tasks.filter(t => t.dealId === d.id && !t.done).forEach(t => { t.done = true; });
+    S.tasks.filter(t => t.dealId === d.id && !t.done).forEach(t => { t.done = true; t.cancelled = true; });
     d.notes.push({ date: iso(0), author: S.me, kind: 'lost', text: `${d.lost.reason}${d.lost.comment ? ': ' + d.lost.comment : ''}` });
     save(); $('modal').close(); render(); return;
   }
   if (f.id === 'filters') return;
   if (f.id === 'edit-deal') { Object.assign(deal(ui.dealId), readForm()); ui.editing = false; }
   else if (f.id === 'add-task') S.tasks.push({ id: 't' + (++S.seq), dealId: ui.dealId, title: $('nt-title').value.trim(), due: $('nt-due').value, done: false });
-  else if (f.id === 'book-form') {
-    const u = ob(ui.unitId), d = deal($('b-deal').value), st = S.stages.find(x => x.name === 'Бронь');
-    S.bookings.push({ id: 'b' + (++S.seq), dealId: d.id, objectId: u.id, kind: u.complexId ? 'Бронь у застройщика' : 'Аванс', amount: Math.max(0, Number($('b-amount').value) || 0), holder: u.complexId ? 'Застройщик' : 'Агентство', expires: iso(7), closed: false });
-    u.status = 'бронь';
-    if (st) d.stageId = st.id;
-  }
   else if (f.id === 'add-user') {
     const email = $('nu-email').value.trim().toLowerCase();
     if (S.users.some(u => u.email.toLowerCase() === email)) { toast('Сотрудник с такой почтой уже есть.'); return; }
@@ -1944,15 +1963,18 @@ document.addEventListener('submit', e => {
     return logIn(u.id);
   }
   else if (f.id === 'profile-form') {
-    const u = me();
+    const u = me(), email = $('pf-email').value.trim();
+    if (S.users.some(x => x !== u && x.email.toLowerCase() === email.toLowerCase())) { toast('Эта почта уже у другого сотрудника.'); return; }
     Object.assign(u, { name: $('pf-name').value.trim() || u.name, phone: $('pf-phone').value.trim(), email: $('pf-email').value.trim() || u.email });
     toast('Профиль сохранён.');
   }
   else if (f.id === 'parsed') {
-    const text = $('chat').value.trim(), r = parseChat(text);
+    const text = $('chat').value.trim(), r = parseChat(text), digits = s => s.replace(/\D/g, '').slice(-10);
+    const ph = digits($('e-phone').value), dup = ph && S.deals.find(x => digits(x.phone) === ph);
+    if (dup) { const er = $('parsed-err'); er.innerHTML = scopedIds().has(dup.id) ? `Клиент с этим телефоном уже есть: ${dealLink(dup)}` : `Клиент с этим телефоном уже в работе у агента ${esc(user(dup.agentId)?.name)}.`; er.hidden = false; return; }
     const d = { id: 'd' + (++S.seq), agentId: $('n-agent')?.value || S.me, stageId: S.stages[0].id, lastContact: iso(0), notes: [{ date: iso(0), author: S.me, text }], ...DEFAULTS, ...readForm() };
     S.deals.push(d);
-    S.tasks.push({ id: 't' + (++S.seq), dealId: d.id, title: r.next ? taskTitle(r.next.kind) : 'Первый звонок', due: iso(r.next ? r.next.inDays : 0), done: false });
+    S.tasks.push({ id: 't' + (++S.seq), dealId: d.id, title: r.next ? taskTitle(r.next.kind) : 'Первый звонок', due: iso(r.next ? r.next.inDays : 0), done: false, closeOn: r.next ? undefined : 'call' });
     save(); $('modal').close(); tab = 'deals'; render(); openDeal(d.id); return;
   }
   else return;
