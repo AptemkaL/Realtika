@@ -278,11 +278,27 @@ textarea { resize: vertical; }
 .pin.new span { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 .pin.off span { opacity: .55; }
 dialog.drawer.wide { width: min(660px, 100%); }
+/* Страница сделки: слева кто, где и что хочет клиент; справа лента звонков, комментариев и задач */
+.deal-grid { display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: 16px; align-items: start; }
+.deal-side, .deal-main { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; min-width: 0; }
+.deal-side { position: sticky; top: 96px; }
+.deal-grid .block { box-sizing: border-box; background: var(--surface); border-radius: 20px; padding: 20px 24px; box-shadow: 0 1px 2px rgb(16 24 40 / .05); }
+.deal-grid dl { gap: 4px 16px; }
+.feed { display: grid; }
+.ev { display: grid; gap: 4px; padding: 14px 0; border-top: 1px solid var(--line); }
+.ev:first-child { border-top: 0; padding-top: 0; }
+.ev p { margin: 0; white-space: pre-line; }
+.ev-meta { font-size: var(--fs-sm); color: var(--muted); }
+.ev-file { font-size: var(--fs-sm); font-weight: 500; }
+.ev.task { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+.ev.task .ev-meta { grid-column: 1 / -1; }
+.ev.done label { color: var(--muted); text-decoration: line-through; }
+#add-task { box-sizing: border-box; background: var(--surface); border-radius: 20px; padding: 12px; box-shadow: 0 1px 2px rgb(16 24 40 / .05); }
+@media (max-width: 900px) { .deal-grid { grid-template-columns: minmax(0, 1fr); } .deal-side { position: static; } }
 /* Сделка — отдельная страница на весь экран: фон страницы, разделы на плашках */
 dialog.drawer.page { width: 100%; border: 0; background: var(--bg); }
-.page .dlg { --pad: max(20px, calc((100vw - 880px) / 2)); padding: 20px var(--pad) 48px; gap: 12px; }
+.page .dlg { --pad: max(20px, calc((100vw - 1240px) / 2)); padding: 20px var(--pad) 48px; gap: 12px; }
 .page .dlg-head { margin: -20px calc(-1 * var(--pad)) 12px; padding: 16px var(--pad); }
-.page .dlg > :not(.dlg-head):not(.info) { background: var(--surface); border-radius: 20px; padding: 20px 24px; box-shadow: 0 1px 2px rgb(16 24 40 / .05); }
 .chess { display: grid; gap: 4px; overflow-x: auto; }
 .chess .fl { font-size: var(--fs-xs); color: var(--muted); display: grid; place-items: center; font-variant-numeric: tabular-nums; }
 .unit { font: 600 var(--fs-xs)/1.25 var(--f-body); padding: 5px 2px; border-radius: 6px; border: 2px solid transparent; cursor: pointer; text-align: center; font-variant-numeric: tabular-nums; color: var(--ink); }
@@ -1217,53 +1233,57 @@ function busy(btn, label, fn) {
 
 function renderDeal() {
   const d = deal(ui.dealId), c = can(), n = -days(d.lastContact), m = matches(d);
-  const keepNote = $('note')?.value ?? '';
-  const ts = S.tasks.filter(t => t.dealId === d.id && !t.done).sort((a, b) => a.due.localeCompare(b.due));
+  const keepNote = $('note')?.value ?? '', keepKind = $('note-kind')?.value || 'comment';
   const bs = S.bookings.filter(b => b.dealId === d.id), ks = S.commissions.filter(k => k.dealId === d.id);
   const p = ui.preview, any = p && (p.changes.length || p.task || p.stage);
+  // Лента: сверху открытые задачи по сроку (просроченные первыми), ниже звонки, комментарии и выполненные задачи, новое сверху
+  const feed = [
+    ...d.notes.map((x, i) => ({ date: x.date, i, html: `<div class="ev"><span class="ev-meta">${x.kind ? NOTE_KIND[x.kind] : 'Комментарий'} · ${dueLabel(x.date)} · ${esc(user(x.author)?.name)}</span>${x.file ? `<span class="ev-file">Запись звонка: ${esc(x.file)}</span>` : ''}<p>${esc(x.text)}</p></div>` })),
+    ...S.tasks.filter(t => t.dealId === d.id).map((t, i) => ({ date: t.due, open: !t.done, i: -1 - i, html: `<div class="ev task${t.done ? ' done' : ''}"><span class="ev-meta">${t.done ? 'Задача · выполнена' : 'Задача'}</span>
+      <label class="check"><input type="checkbox" ${t.done ? 'checked disabled' : `data-act="done" data-id="${t.id}"`}> ${esc(t.title)}</label>${t.done ? '' : pill(dueCls(t.due), dueLabel(t.due))}</div>` })),
+  ].sort((a, b) => !!b.open - !!a.open || (a.open ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date) || b.i - a.i));
   $('drawer').innerHTML = `<div class="dlg">
-    <div class="dlg-head"><div><h2>${esc(d.name)}</h2><div class="actions">${d.phone ? `<a class="muted" href="${telHref(d.phone)}">${esc(d.phone)}</a>` : '<span class="muted">телефон не указан</span>'}${callBtn(d.phone)}</div></div><button class="x" data-act="close" aria-label="Закрыть">×</button></div>
+    <div class="dlg-head"><div><h2>${esc(d.name)}</h2><span class="muted small">${esc(stage(d.stageId)?.name)}${d.lost ? ' · отказ' : ''} · ${esc(user(d.agentId)?.name)}</span></div><button class="x" data-act="close" aria-label="Закрыть">×</button></div>
     ${ui.flash ? `<p class="info">${esc(ui.flash)}</p>` : ''}
-    ${stageBlock(d)}
-    <div class="fields">
-      <div class="field"><label for="deal-agent">Агент</label>${c.all ? `<select id="deal-agent">${S.users.map(u => `<option value="${u.id}"${u.id === d.agentId ? ' selected' : ''}>${esc(u.name)}</option>`).join('')}</select>` : `<span id="deal-agent" style="padding-block:8px">${esc(user(d.agentId)?.name)}</span>`}</div>
-    </div>
-
-    <div class="block"><h3>Что нового по сделке</h3>
-      <textarea id="note" rows="3" placeholder="Своими словами: «Созвонился, ипотека одобрена, взнос 3 млн. Встреча в четверг»">${esc(keepNote)}</textarea>
-      <div class="actions"><button class="btn primary sm" data-act="ai-note">Обновить сделку из заметки</button><button class="btn sm" data-act="ai-example">Вставить пример</button>${pill('muted', 'ИИ-заглушка')}</div>
-      ${p ? `<div class="ai"><strong>${any ? 'ИИ предлагает' : 'Новых данных не найдено'}</strong>
-        ${any ? `<ul>
-          ${p.changes.map(([label, from, to]) => `<li>${label}: <s>${esc(from)}</s> → <b>${esc(to)}</b></li>`).join('')}
-          ${p.stage ? `<li>Этап: <s>${esc(stage(d.stageId).name)}</s> → <b>${esc(p.stage.name)}</b></li>` : ''}
-          ${p.task ? `<li>Задача: <b>${esc(p.task.title)}</b>, ${dueLabel(p.task.due)}</li>` : ''}
-        </ul>` : '<span class="small muted">Заметка сохранится в историю сделки.</span>'}
-        <div class="actions"><button class="btn primary sm" data-act="ai-apply">${any ? 'Применить' : 'Сохранить заметку'}</button><button class="btn sm" data-act="ai-cancel">Отмена</button></div></div>` : ''}
-    </div>
-
-    <div class="block"><h3><span>Параметры</span>${ui.editing ? '' : '<button class="btn sm" data-act="edit">Изменить</button>'}</h3>
-      ${ui.editing ? `<form id="edit-deal" class="block">${dealFields(d)}<div class="actions"><button class="btn primary sm" type="submit">Сохранить</button><button class="btn sm" type="button" data-act="edit-cancel">Отмена</button></div></form>`
-        : `<dl>${FIELDS.map(([k, label, f]) => `<dt>${label}</dt><dd>${esc(f(d[k]))}</dd>`).join('')}</dl>`}
-    </div>
-
-    <div class="block"><h3>Задачи по сделке</h3>
-      ${ts.length ? `<div class="list">${ts.map(t => `<div class="trow"><input type="checkbox" id="dtask-${t.id}" data-act="done" data-id="${t.id}"><label for="dtask-${t.id}" class="title">${esc(t.title)}</label>${pill(dueCls(t.due), dueLabel(t.due))}</div>`).join('')}</div>` : '<span class="muted small">Открытых задач нет.</span>'}
-      <form id="add-task" class="actions"><input id="nt-title" required placeholder="Новая задача" aria-label="Новая задача" style="flex:1;min-width:160px"><input id="nt-due" type="date" required value="${iso(1)}" aria-label="Срок" style="width:auto"><button class="btn sm" type="submit">Добавить</button></form>
-    </div>
-
-    <div class="block"><h3>Контакт</h3>
-      <div class="actions"><span>${n === 0 ? 'Сегодня' : `${fmtDate(d.lastContact)}, ${dayWord(n)} назад`}</span>${n >= 5 && isOpen(d) ? pill('warn', 'пора написать') : ''}</div>
-      <div class="actions"><button class="btn sm" data-act="contact" data-id="${d.id}">Связался сегодня</button><button class="btn sm" data-act="draft" data-id="${d.id}">Черновик сообщения</button></div>
-      ${ui.draft ? `<textarea id="draft-box" rows="6" aria-label="Черновик сообщения">${esc(draftText(d))}</textarea><div class="actions"><button class="btn sm primary" data-act="copy">Копировать</button><span class="small muted" id="copy-status"></span></div>` : ''}
-    </div>
-
-    <div class="block"><h3><span>Подходящие объекты</span><button class="btn sm" data-act="deal-search" data-id="${d.id}">Подобрать в поиске</button></h3>
-      ${m.length ? m.map(x => `<div class="match"><button class="btn link" style="color:var(--ink);font-weight:600" data-act="place" data-id="${x.o.complexId || x.o.id}" data-unit="${x.o.id}">${esc(objTitle(x.o))}</button><span>${mln(x.o.price)} · ${x.o.type}</span><span class="row">${x.why.map(([cls, t]) => pill(cls, t)).join('')}</span></div>`).join('') : '<span class="muted">В базе нет объектов под этот запрос.</span>'}
-    </div>
-    ${bs.length ? `<div class="block"><h3>Брони</h3>${bs.map(b => { const [cls, t] = bookingState(b); return `<div class="actions">${pill(cls, t)}<span>${b.kind}, ${rub(b.amount)}, до ${fmtDate(b.expires)}</span></div>`; }).join('')}</div>` : ''}
-    ${ks.length ? `<div class="block"><h3>Комиссии</h3>${ks.map(k => `<div class="actions">${pill(commState(k.status), k.status)}<span>${rub(k.amount)} от ${k.payer === 'Застройщик' ? 'застройщика' : 'продавца'}</span></div>`).join('')}</div>` : ''}
-    <div class="block"><h3>История</h3>
-      ${d.notes.length ? d.notes.slice().reverse().map(x => `<div class="note"><span class="small muted">${fmtDate(x.date)} · ${x.kind ? NOTE_KIND[x.kind] + ' · ' : ''}${esc(user(x.author)?.name)}</span>${x.file ? `<span class="small">Запись: ${esc(x.file)}</span>` : ''}<p style="white-space:pre-line">${esc(x.text)}</p></div>`).join('') : '<span class="muted small">Заметок пока нет.</span>'}
+    <div class="deal-grid">
+    <aside class="deal-side">
+      ${stageBlock(d)}
+      <div class="block"><h3>Клиент</h3>
+        <div class="actions">${d.phone ? `<a href="${telHref(d.phone)}" style="color:var(--ink);font-weight:600">${esc(d.phone)}</a>` : '<span class="muted">телефон не указан</span>'}${callBtn(d.phone)}</div>
+        <span class="small ${n >= 5 && isOpen(d) ? 'since warn' : 'muted'}">Последний контакт: ${n === 0 ? 'сегодня' : `${dayWord(n)} назад`}</span>
+        <div class="actions"><button class="btn sm" data-act="contact" data-id="${d.id}">Связался сегодня</button><button class="btn sm" data-act="draft" data-id="${d.id}">Черновик сообщения</button></div>
+        ${ui.draft ? `<textarea id="draft-box" rows="6" aria-label="Черновик сообщения">${esc(draftText(d))}</textarea><div class="actions"><button class="btn sm primary" data-act="copy">Копировать</button><span class="small muted" id="copy-status"></span></div>` : ''}
+        <div class="field"><label for="deal-agent">Ответственный</label>${c.all ? `<select id="deal-agent">${S.users.map(u => `<option value="${u.id}"${u.id === d.agentId ? ' selected' : ''}>${esc(u.name)}</option>`).join('')}</select>` : `<span id="deal-agent">${esc(user(d.agentId)?.name)}</span>`}</div>
+      </div>
+      <div class="block"><h3><span>Запрос</span>${ui.editing ? '' : '<button class="btn sm" data-act="edit">Изменить</button>'}</h3>
+        ${ui.editing ? `<form id="edit-deal" class="block">${dealFields(d)}<div class="actions"><button class="btn primary sm" type="submit">Сохранить</button><button class="btn sm" type="button" data-act="edit-cancel">Отмена</button></div></form>`
+          : `<dl>${FIELDS.map(([k, label, f]) => `<dt>${label}</dt><dd>${esc(f(d[k]))}</dd>`).join('')}</dl>`}
+      </div>
+      ${bs.length ? `<div class="block"><h3>Брони</h3>${bs.map(b => { const [cls, t] = bookingState(b); return `<div class="actions">${pill(cls, t)}<span>${b.kind}, ${rub(b.amount)}, до ${fmtDate(b.expires)}</span></div>`; }).join('')}</div>` : ''}
+      ${ks.length ? `<div class="block"><h3>Комиссии</h3>${ks.map(k => `<div class="actions">${pill(commState(k.status), k.status)}<span>${rub(k.amount)} от ${k.payer === 'Застройщик' ? 'застройщика' : 'продавца'}</span></div>`).join('')}</div>` : ''}
+      <div class="block"><h3><span>Подходящие объекты</span><button class="btn sm" data-act="deal-search" data-id="${d.id}">Искать</button></h3>
+        ${m.length ? m.map(x => `<div class="match"><button class="btn link" style="color:var(--ink);font-weight:600" data-act="place" data-id="${x.o.complexId || x.o.id}" data-unit="${x.o.id}">${esc(objTitle(x.o))}</button><span>${mln(x.o.price)} · ${x.o.type}</span><span class="row">${x.why.map(([cls, t]) => pill(cls, t)).join('')}</span></div>`).join('') : '<span class="muted">В базе нет объектов под этот запрос.</span>'}
+      </div>
+    </aside>
+    <section class="deal-main">
+      <div class="block"><h3>Новый звонок или комментарий</h3>
+        <div class="actions"><select id="note-kind" aria-label="Тип записи" style="width:auto"><option value="comment">Комментарий</option><option value="call"${keepKind === 'call' ? ' selected' : ''}>Звонок</option></select>
+          <label class="btn sm" style="color:var(--ink)">Прикрепить запись<input id="note-file" type="file" accept="audio/*" hidden></label><span class="small muted" id="note-file-name"></span></div>
+        <textarea id="note" rows="3" placeholder="Своими словами: «Созвонился, ипотека одобрена, взнос 3 млн. Встреча в четверг»">${esc(keepNote)}</textarea>
+        <div class="actions"><button class="btn primary sm" data-act="note-add">Добавить в ленту</button><button class="btn sm" data-act="ai-note">Разобрать через ИИ</button><button class="btn sm link" data-act="ai-example">вставить пример</button></div>
+        ${p ? `<div class="ai"><strong>${any ? 'ИИ предлагает обновить сделку' : 'Новых данных не найдено'}</strong>
+          ${any ? `<ul>
+            ${p.changes.map(([label, from, to]) => `<li>${label}: <s>${esc(from)}</s> → <b>${esc(to)}</b></li>`).join('')}
+            ${p.stage ? `<li>Этап: <s>${esc(stage(d.stageId).name)}</s> → <b>${esc(p.stage.name)}</b></li>` : ''}
+            ${p.task ? `<li>Задача: <b>${esc(p.task.title)}</b>, ${dueLabel(p.task.due)}</li>` : ''}
+          </ul>` : '<span class="small muted">Запись просто добавится в ленту.</span>'}
+          <div class="actions"><button class="btn primary sm" data-act="ai-apply">${any ? 'Применить и добавить в ленту' : 'Добавить в ленту'}</button><button class="btn sm" data-act="ai-cancel">Отмена</button></div></div>` : ''}
+      </div>
+      <form id="add-task" class="actions"><input id="nt-title" required placeholder="Новая задача, например «Позвонить после показа»" aria-label="Новая задача" style="flex:1;min-width:160px"><input id="nt-due" type="date" required value="${iso(1)}" aria-label="Срок" style="width:auto"><button class="btn sm" type="submit">Добавить задачу</button></form>
+      <div class="block"><h3>Лента сделки</h3>
+        <div class="feed">${feed.map(x => x.html).join('') || '<span class="muted small">Здесь появятся звонки, комментарии и задачи.</span>'}</div>
+      </div>
+    </section>
     </div>
   </div>`;
 }
@@ -1735,10 +1755,20 @@ document.addEventListener('click', e => {
       return;
     }
     case 'ai-example': $('note').value = SAMPLE_NOTE; return;
+    case 'note-add': {
+      const text = $('note').value.trim(), file = $('note-file').files[0]?.name;
+      if (!text && !file) { $('note').focus(); return; }
+      const d = deal(ui.dealId), kind = $('note-kind').value === 'call' ? 'call' : undefined;
+      d.notes.push({ date: iso(0), author: S.me, kind, file, text });
+      if (kind) d.lastContact = iso(0);
+      $('note').value = '';
+      break;
+    }
     case 'ai-note': {
       const text = $('note').value.trim();
       if (!text) { $('note').focus(); return; }
-      busy(el, 'ИИ разбирает заметку…', () => { ui.preview = previewNote(text); renderDeal(); }); return;
+      const kind = $('note-kind').value === 'call' ? 'call' : undefined, file = $('note-file').files[0]?.name;
+      busy(el, 'ИИ разбирает заметку…', () => { ui.preview = { ...previewNote(text), kind, file }; renderDeal(); }); return;
     }
     case 'ai-cancel': ui.preview = null; renderDeal(); return;
     case 'ai-apply': {
@@ -1746,7 +1776,7 @@ document.addEventListener('click', e => {
       Object.assign(d, p.fields);
       if (p.stage) d.stageId = p.stage.id;
       if (p.task) S.tasks.push({ id: 't' + (++S.seq), dealId: d.id, title: p.task.title, due: p.task.due, done: false });
-      d.notes.push({ date: iso(0), author: S.me, text: p.text });
+      d.notes.push({ date: iso(0), author: S.me, kind: p.kind, file: p.file, text: p.text });
       d.lastContact = iso(0);
       ui.preview = null; $('note').value = '';
       break;
@@ -1820,6 +1850,7 @@ document.addEventListener('input', e => {
 
 document.addEventListener('change', async e => {
   const t = e.target;
+  if (t.id === 'note-file') { $('note-file-name').textContent = t.files[0]?.name || ''; if (t.files[0]) $('note-kind').value = 'call'; return; }
   if (t.id === 'f-deal') { if (t.value) { F = fromDeal(deal(t.value)); mapView = null; render(); } return; }
   if (t.id === 'l-photos') {
     const files = [...t.files].slice(0, 12 - ui.listing.photos.length);
