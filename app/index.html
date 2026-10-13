@@ -56,14 +56,14 @@
 /* Тёмная тема: общие тёмные нейтрали, акцент — светлый вариант цвета выбранной схемы */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #111213; --surface: #18191B; --sunken: #1F2023; --hover: #232427; --ink: #E9E9E7; --muted: #9C9D99; --line: #2A2B2E;
+    --bg: #111213; --surface: #1F2023; --sunken: #2A2B2F; --hover: #2A2B2F; --ink: #ECECEA; --muted: #A3A49F; --line: #303135;
     --accent: var(--accent-d); --accent-ink: var(--accent-ink-d);
     --side-bg: #141516; --side-ink: #E9E9E7; --side-muted: #9C9D99; --side-hover: #232427; --side-line: #2A2B2E; --side-field: #1B1C1E;
     --ok: #4CC38A; --warn: #E3A04A; --crit: #F07468; --dot: #26272A; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #111213; --surface: #18191B; --sunken: #1F2023; --hover: #232427; --ink: #E9E9E7; --muted: #9C9D99; --line: #2A2B2E;
+  --bg: #111213; --surface: #1F2023; --sunken: #2A2B2F; --hover: #2A2B2F; --ink: #ECECEA; --muted: #A3A49F; --line: #303135;
   --accent: var(--accent-d); --accent-ink: var(--accent-ink-d);
   --side-bg: #141516; --side-ink: #E9E9E7; --side-muted: #9C9D99; --side-hover: #232427; --side-line: #2A2B2E; --side-field: #1B1C1E;
   --ok: #4CC38A; --warn: #E3A04A; --crit: #F07468; --dot: #26272A; color-scheme: dark;
@@ -202,11 +202,15 @@ main { max-width: 1400px; padding-block: 32px 64px; display: grid; grid-template
 .empty { padding: 16px 6px; color: var(--muted); }
 
 .kanban { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(200px, 1fr); gap: 10px; overflow-x: auto; padding-bottom: 8px; align-items: start; }
-.col { background: color-mix(in srgb, var(--hover) 70%, transparent); border-radius: 20px; padding: 8px; display: grid; gap: 8px; align-content: start; min-height: 120px; }
+.col { background: color-mix(in srgb, var(--ink) 4%, transparent); border-radius: 20px; padding: 8px; display: grid; gap: 8px; align-content: start; min-height: 120px; }
 .col.over { outline: 2px dashed var(--accent); outline-offset: -2px; }
 .col h3 { font-size: var(--fs-md); font-weight: 600; color: var(--ink); display: flex; justify-content: space-between; gap: 8px; padding: 2px 4px; }
-.card { display: grid; gap: 3px; width: 100%; text-align: left; font: inherit; color: inherit; background: var(--surface); border: 1px solid transparent; border-radius: 16px; padding: 12px 14px; cursor: grab; box-shadow: 0 1px 2px rgb(16 24 40 / .06); }
-.card:hover { border-color: color-mix(in srgb, var(--ink) 25%, var(--line)); }
+.card { display: grid; gap: 3px; width: 100%; box-sizing: border-box; text-align: left; font: inherit; color: inherit; text-decoration: none; background: var(--surface); border-radius: 16px; padding: 12px 14px; cursor: grab; box-shadow: 0 1px 2px rgb(16 24 40 / .06); }
+.card:hover { box-shadow: 0 6px 18px rgb(16 24 40 / .1); }
+/* Давность контакта — текстом, без плашек; «давно не писали» — точкой цвета предупреждения */
+.since { font-size: var(--fs-sm); color: var(--muted); }
+.since.warn { color: var(--warn); }
+.since.warn::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-right: 6px; vertical-align: 2px; }
 .card.dragging { opacity: .45; }
 .card strong { font-weight: 600; }
 .card .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
@@ -274,6 +278,11 @@ textarea { resize: vertical; }
 .pin.new span { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 .pin.off span { opacity: .55; }
 dialog.drawer.wide { width: min(660px, 100%); }
+/* Сделка — отдельная страница на весь экран: фон страницы, разделы на плашках */
+dialog.drawer.page { width: 100%; border: 0; background: var(--bg); }
+.page .dlg { --pad: max(20px, calc((100vw - 880px) / 2)); padding: 20px var(--pad) 48px; gap: 12px; }
+.page .dlg-head { margin: -20px calc(-1 * var(--pad)) 12px; padding: 16px var(--pad); }
+.page .dlg > :not(.dlg-head):not(.info) { background: var(--surface); border-radius: 20px; padding: 20px 24px; box-shadow: 0 1px 2px rgb(16 24 40 / .05); }
 .chess { display: grid; gap: 4px; overflow-x: auto; }
 .chess .fl { font-size: var(--fs-xs); color: var(--muted); display: grid; place-items: center; font-variant-numeric: tabular-nums; }
 .unit { font: 600 var(--fs-xs)/1.25 var(--f-body); padding: 5px 2px; border-radius: 6px; border: 2px solid transparent; cursor: pointer; text-align: center; font-variant-numeric: tabular-nums; color: var(--ink); }
@@ -449,7 +458,7 @@ footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: f
   .btn:hover .arr svg + svg, .cta:hover .arr svg + svg { transform: none; }
   .cta:hover .arr svg:first-child { transform: translate(300%, -300%); }
   .card { transition: border-color .2s, transform .3s var(--ease), box-shadow .3s; }
-  .card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgb(24 24 27 / .08); }
+  .card:hover { transform: translateY(-2px); }
   .rcard { transition: transform .4s var(--ease), box-shadow .4s; }
   .rcard:hover { transform: translateY(-6px); }
   .rphoto img, .rphoto svg { transition: transform .6s var(--ease); }
@@ -701,10 +710,12 @@ const pill = (cls, text) => `<span class="pill ${cls}">${esc(text)}</span>`;
 // Номер для ссылки tel: — только цифры, 8XXXXXXXXXX → +7XXXXXXXXXX. Телефон сам покажет «Позвонить» или откроет звонилку
 const telHref = phone => { const n = phone.replace(/[^\d+]/g, ''); return 'tel:' + (/^8\d{10}$/.test(n) ? '+7' + n.slice(1) : n); };
 const callBtn = phone => phone ? `<a class="btn sm primary call" href="${telHref(phone)}" aria-label="Позвонить ${esc(phone)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>Позвонить</a>` : '';
-const dealLink = d => `<button class="btn link" data-act="deal" data-id="${d.id}">${esc(d.name)}</button>`;
+// У каждой сделки свой адрес: открывается в новой вкладке и переживает перезагрузку
+const dealHref = id => '#/deal/' + id;
+const dealLink = d => `<a class="btn link" href="${dealHref(d.id)}" data-act="deal" data-id="${d.id}">${esc(d.name)}</a>`;
 const taskTitle = kind => kind === 'Звонок' ? 'Позвонить клиенту' : kind;
 
-let tab = location.hash.slice(1) || 'tasks';
+let tab = location.hash.startsWith('#/deal/') ? 'deals' : location.hash.slice(1) || 'tasks';
 let filterAgent = '';
 let ui = { dealId: null, placeId: null, unitId: null, rooms: null, draft: false, editing: false, preview: null, stageErr: '' };
 let map = null, mapView = null, pickMap = null;
@@ -847,14 +858,14 @@ const views = {
         const cs = ds.filter(d => d.stageId === st.id && !d.lost);
         return `<div class="col" data-stage="${st.id}"><h3><span>${esc(st.name)}</span><span>${cs.length}</span></h3>${cs.map(d => {
           const n = -days(d.lastContact);
-          const contact = !isOpen(d) ? '' : n >= 5 ? pill('warn', `${dayWord(n)} без касания`) : pill('muted', n === 0 ? 'контакт сегодня' : `контакт ${dayWord(n)} назад`);
-          return `<button class="card" draggable="true" data-act="deal" data-id="${d.id}"><strong>${esc(d.name)}</strong>
+          const contact = !isOpen(d) ? '' : n >= 5 ? `<span class="since warn">${dayWord(n)} без касания</span>` : `<span class="since">${n === 0 ? 'контакт сегодня' : `контакт ${dayWord(n)} назад`}</span>`;
+          return `<a class="card" draggable="true" href="${dealHref(d.id)}" data-act="deal" data-id="${d.id}"><strong>${esc(d.name)}</strong>
             <span class="small muted">${roomsLabel(d.rooms)} · ${esc(d.district || 'любой район')}${c.all ? ` · ${esc(user(d.agentId)?.name)}` : ''}</span>
-            <span class="row">${contact}${d.budget ? `<span class="amt">${mlnShort(d.budget)}</span>` : ''}</span></button>`;
+            <span class="row">${contact}${d.budget ? `<span class="amt">${mlnShort(d.budget)}</span>` : ''}</span></a>`;
         }).join('')}</div>`;
       }).join('')}
       <div class="col lost" data-stage="lost"><h3><span>Отказ</span><span>${ds.filter(d => d.lost).length}</span></h3>${ds.filter(d => d.lost).map(d =>
-        `<button class="card" data-act="deal" data-id="${d.id}"><strong>${esc(d.name)}</strong><span class="row">${pill('crit', d.lost.reason)}</span>${c.all ? `<span class="who">${esc(user(d.agentId)?.name)}</span>` : ''}</button>`).join('')}</div>
+        `<a class="card" href="${dealHref(d.id)}" data-act="deal" data-id="${d.id}"><strong>${esc(d.name)}</strong><span class="row">${pill('crit', d.lost.reason)}</span>${c.all ? `<span class="who">${esc(user(d.agentId)?.name)}</span>` : ''}</a>`).join('')}</div>
       </div></section>`;
   },
   objects() {
@@ -978,6 +989,7 @@ function logIn(id, restore = false) {
   save(); applyTheme();
   $('login').hidden = true; $('app').hidden = false;
   render(); window.scrollTo(0, 0);
+  route();
 }
 function logOut() {
   session = null;
@@ -1284,10 +1296,11 @@ function readForm() {
 
 function openDeal(id, draft = false) {
   if (ui.dealId !== id || ui.placeId) { ui = { ...ui, dealId: id, placeId: null, editing: false, preview: null }; if ($('note')) $('note').value = ''; }
-  $('drawer').classList.remove('wide');
+  $('drawer').classList.remove('wide'); $('drawer').classList.add('page');
   ui.draft = draft;
   renderDeal();
   if (!$('drawer').open) { $('drawer').showModal(); $('drawer').scrollTop = 0; }
+  if (location.hash !== dealHref(id)) try { history.pushState(null, '', dealHref(id)); } catch (err) {}
 }
 
 // Разбор заметки агента: показываем изменения, применяем только после подтверждения
@@ -1424,7 +1437,7 @@ function planSvg(rooms, area) {
 
 function openPlace(id, unitId) {
   ui = { ...ui, placeId: id, unitId: unitId || (id.startsWith('c') ? null : id), rooms: null, dealId: null };
-  $('drawer').classList.toggle('wide', id.startsWith('c'));
+  $('drawer').classList.toggle('wide', id.startsWith('c')); $('drawer').classList.remove('page');
   renderPlace();
   if (!$('drawer').open) $('drawer').showModal();
   $('drawer').scrollTop = 0;
@@ -1694,7 +1707,7 @@ document.addEventListener('click', e => {
   const id = el.dataset.id;
   switch (el.dataset.act) {
     case 'tab': tab = el.dataset.tab; try { history.replaceState(null, '', '#' + tab); } catch (err) {} $('modal').close(); $('drawer').close(); window.scrollTo(0, 0); break;
-    case 'deal': if ($('modal').classList.contains('search')) $('modal').close(); openDeal(id); return;
+    case 'deal': if (e.ctrlKey || e.metaKey || e.shiftKey) return; e.preventDefault(); if ($('modal').classList.contains('search')) $('modal').close(); openDeal(id); return;
     case 'search': openSearch(); return;
     case 'notif': openNotif(); return;
     case 'logout': logOut(); return;
@@ -1920,6 +1933,15 @@ document.addEventListener('drop', e => {
 });
 
 $('modal').addEventListener('close', () => { $('modal').classList.remove('wide', 'search'); if (pickMap) { pickMap.remove(); pickMap = null; } });
+
+// Адрес #/deal/<id> открывает сделку; закрытие страницы сделки возвращает адрес раздела
+function route() {
+  const id = location.hash.startsWith('#/deal/') && location.hash.slice(7);
+  if (id && scoped().some(d => d.id === id)) openDeal(id);
+  else if ($('drawer').open && $('drawer').classList.contains('page')) $('drawer').close();
+}
+window.addEventListener('popstate', () => { if (session) route(); });
+$('drawer').addEventListener('close', () => { if (location.hash.startsWith('#/deal/')) try { history.replaceState(null, '', '#' + tab); } catch (err) {} });
 
 if (session && user(session)) logIn(session, true); else showLogin();
 </script>
