@@ -220,9 +220,8 @@ main { max-width: 1400px; padding-block: 32px 64px; display: grid; grid-template
 .since.crit { color: var(--crit); }
 .card .amt { margin-left: 0; justify-self: end; }
 @media (min-width: 641px) {
-  .kanban { grid-auto-flow: row; grid-template-columns: var(--cols); grid-auto-columns: unset; }
-  .col.empty { min-height: 0; align-self: stretch; }
-  .col.empty h3 { writing-mode: vertical-rl; justify-content: start; padding: 6px 0; margin: 0 auto; color: var(--muted); }
+  .kanban { grid-auto-columns: minmax(150px, 1fr); } /* все этапы одной ширины: 8 колонок влезают в 1400px */
+  .col { grid-template-columns: minmax(0, 1fr); } .card { overflow-wrap: anywhere; } /* длинный район не распирает узкую колонку */
 }
 .since.warn::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-right: 6px; vertical-align: 2px; }
 .card.dragging { opacity: .45; }
@@ -751,6 +750,7 @@ const callBtn = phone => phone ? `<a class="btn sm primary call" href="${telHref
 // У каждой сделки свой адрес: открывается в новой вкладке и переживает перезагрузку
 const dealHref = id => '#/deal/' + id;
 const dealLink = d => `<a class="btn link" href="${dealHref(d.id)}" data-act="deal" data-id="${d.id}">${esc(d.name)}</a>`;
+const EMPTY_COL = '<p class="empty" style="margin:0;text-align:center">Пусто</p>';
 const taskTitle = kind => kind === 'Звонок' ? 'Позвонить клиенту' : kind;
 
 let tab = location.hash.startsWith('#/deal/') ? 'deals' : location.hash.slice(1) || 'tasks';
@@ -890,13 +890,11 @@ const views = {
   deals() {
     const ds = scoped(), c = can(), open = openTasks();
     const cols = S.stages.map(st => ds.filter(d => d.stageId === st.id && !d.lost));
-    // пустые этапы — узкой полосой, чтобы доска помещалась без прокрутки
-    const widths = [...cols, ds.filter(d => d.lost)].map(cs => cs.length ? 'minmax(190px, 1fr)' : '64px').join(' ');
     return `<section class="section"><div class="section-head"><h2>Сделки</h2><div class="toolbar">${agentFilter()}${c.all ? '<button class="btn sm" data-act="stages">Настроить этапы</button>' : ''}</div></div>
       ${me().settings.kanbanTip ? '' : '<p class="small muted" style="margin:0">Перетащите карточку на следующий этап, откроется форма с данными этапа. <button class="btn link small" data-act="kanban-tip">Понятно</button></p>'}
-      <div class="kanban" style="--cols: ${widths}">${S.stages.map((st, i) => {
+      <div class="kanban">${S.stages.map((st, i) => {
         const cs = cols[i];
-        return `<div class="col${cs.length ? '' : ' empty'}" data-stage="${st.id}"><h3><span>${esc(st.name)}</span><span>${cs.length}</span></h3>${cs.map(d => {
+        return `<div class="col" data-stage="${st.id}"><h3><span>${esc(st.name)}</span><span>${cs.length}</span></h3>${cs.length ? '' : EMPTY_COL}${cs.map(d => {
           const n = -days(d.lastContact), t = open.find(x => x.dealId === d.id);
           const next = !isOpen(d) ? '' : t ? `<span class="since${days(t.due) < 0 ? ' crit' : ''}">${esc(t.title)}, ${dueLabel(t.due)}</span>` : '<span class="since warn">нет следующего шага</span>';
           return `<a class="card" draggable="true" href="${dealHref(d.id)}" data-act="deal" data-id="${d.id}"><strong>${esc(d.name)}</strong>
@@ -905,7 +903,7 @@ const views = {
             ${d.budget ? `<span class="amt">${mlnShort(d.budget)}</span>` : ''}</a>`;
         }).join('')}</div>`;
       }).join('')}
-      <div class="col lost${ds.some(d => d.lost) ? '' : ' empty'}" data-stage="lost"><h3><span>Отказ</span><span>${ds.filter(d => d.lost).length}</span></h3>${ds.filter(d => d.lost).map(d =>
+      <div class="col lost" data-stage="lost"><h3><span>Отказ</span><span>${ds.filter(d => d.lost).length}</span></h3>${ds.some(d => d.lost) ? '' : EMPTY_COL}${ds.filter(d => d.lost).map(d =>
         `<a class="card" href="${dealHref(d.id)}" data-act="deal" data-id="${d.id}"><strong>${esc(d.name)}</strong><span class="row">${pill('crit', d.lost.reason)}</span>${c.all ? `<span class="who">${esc(user(d.agentId)?.name)}</span>` : ''}</a>`).join('')}</div>
       </div></section>`;
   },
