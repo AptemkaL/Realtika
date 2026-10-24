@@ -509,6 +509,10 @@ footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: f
   .logo:hover .mark { transform: translateY(-1px) rotate(-6deg); }
   .mark { transition: transform .3s var(--ease); }
 }
+/* Смена темы: новая тема расползается кругом от кнопки */
+::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+@keyframes theme-in { from { clip-path: circle(0 at var(--tx) var(--ty)); } to { clip-path: circle(var(--tr) at var(--tx) var(--ty)); } }
+::view-transition-new(root) { animation: theme-in .7s var(--ease); }
 @keyframes rise { from { opacity: 0; transform: translateY(28px); } }
 @keyframes drawer-in { from { transform: translateX(100%); } }
 @keyframes pop-in { from { opacity: 0; transform: translateY(16px) scale(.98); } }
@@ -518,6 +522,7 @@ footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: f
 <div class="shell" id="app" hidden>
   <aside class="side">
     <div class="side-head"><span class="logo"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 11.2 12 4l8.5 7.2V20a1 1 0 0 1-1 1h-5v-5.5h-5V21h-5a1 1 0 0 1-1-1z"/></svg></span>Realtika<small>демо</small></span>
+      <button class="icon-btn" id="theme-btn" data-act="theme" aria-label="Сменить тему"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg></button>
 </div>
     <button class="side-search" data-act="search" aria-label="Поиск"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg><span>Поиск</span><kbd>Ctrl K</kbd></button>
     <button class="btn primary side-new" data-act="import-open" aria-label="Новая сделка из переписки">+<span class="fab-text">&nbsp;Сделка</span><span class="only-desktop">&nbsp;из переписки</span><span class="arr" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2 10 10 2M4 2h6v6"/></svg><svg viewBox="0 0 12 12"><path d="M2 10 10 2M4 2h6v6"/></svg></span></button>
@@ -1095,6 +1100,16 @@ function reveal(root) {
   root.querySelectorAll('.hero > *, .login-title, .login-box, .hello, .section-head, .filters, .dash-main > .section, .dash > aside, .col, .rcard, .tbl, .stats, #map').forEach(el => {
     el.classList.add('rise'); io.observe(el);
   });
+  root.querySelectorAll('.stat b').forEach(countUp);
+}
+// Цифры в статистике набегают от нуля до значения
+function countUp(el) {
+  const m = el.textContent.match(/\d(?:[\d\s]*\d)?/);
+  if (!m) return;
+  const to = Number(m[0].replace(/\s/g, '')), [pre, post] = [el.textContent.slice(0, m.index), el.textContent.slice(m.index + m[0].length)];
+  const fmt = n => pre + new Intl.NumberFormat('ru-RU').format(n) + post, t0 = performance.now();
+  const tick = now => { const k = Math.min((now - t0) / 1200, 1); el.textContent = fmt(Math.round(to * (1 - (1 - k) ** 3))); if (k < 1) requestAnimationFrame(tick); };
+  requestAnimationFrame(tick);
 }
 
 function render() {
@@ -1787,6 +1802,16 @@ document.addEventListener('click', e => {
       const d = deal(id), i = S.stages.findIndex(s => s.id === d.stageId);
       d.stageId = S.stages[i - 1].id;
       d.notes.push({ date: iso(0), author: S.me, kind: 'stage', text: `Возвращена на этап «${S.stages[i - 1].name}»` });
+      break;
+    }
+    case 'theme': {
+      const dark = matchMedia('(prefers-color-scheme: dark)').matches, cur = me().settings.theme;
+      me().settings.theme = (cur === 'dark' || (cur !== 'light' && dark)) ? 'light' : 'dark';
+      if (!document.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches) { applyTheme(); break; }
+      const r = el.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2, st = document.documentElement.style;
+      st.setProperty('--tx', x + 'px'); st.setProperty('--ty', y + 'px');
+      st.setProperty('--tr', Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y)) + 'px');
+      document.startViewTransition(applyTheme);
       break;
     }
     case 'reopen': { const d = deal(id); d.notes.push({ date: iso(0), author: S.me, kind: 'stage', text: `Возвращена в работу после отказа: ${d.lost.reason}` }); d.lost = null; break; }
