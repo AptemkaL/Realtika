@@ -385,7 +385,11 @@ dialog.modal.wide { width: min(860px, calc(100% - 32px)); }
 .an-head h3 { font-size: var(--fs-md); font-weight: 600; }
 .an-ico { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; flex: none; background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); }
 .an-ico svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.an-kpi { position: relative; overflow: hidden; display: grid; gap: 2px; }
+.an-kpi { position: relative; overflow: hidden; display: grid; gap: 2px; width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; }
+.an-go { width: 32px; height: 32px; flex: none; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: none; color: var(--muted); cursor: pointer; overflow: hidden; }
+.an-go:hover { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+.an-go .arr { margin: 0; background: none; }
+.an-go:hover .arr svg:first-child { transform: translate(130%, -130%); } .an-go:hover .arr svg + svg { transform: none; }
 .an-kpi-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
 .an-kpi b { font: 600 var(--fs-2xl)/1.15 var(--f-display); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
 .an-kpi .small { color: var(--muted); }
@@ -587,7 +591,8 @@ footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: f
   .an-col { animation: grow-y 1s var(--ease) calc(var(--i, 0) * 70ms + .2s) backwards; }
   .an-bar i { animation: grow-x 1s var(--ease) .2s backwards; }
   .an-kpi, .an-card { transition: transform .3s var(--ease), box-shadow .3s; }
-  .an-kpi:hover, .an-card:hover { transform: translateY(-5px); box-shadow: 0 14px 30px -14px rgb(16 24 40 / .25); }
+  .an-kpi:hover { transform: translateY(-5px); box-shadow: 0 14px 30px -14px rgb(16 24 40 / .25); }
+  .an-go { transition: background-color .2s, color .2s; } .an-go .arr svg { transition: transform .32s cubic-bezier(.4, 0, .6, 1); }
   dialog.modal[open] { animation: pop-in .35s var(--ease); }
   .logo:hover .mark { transform: translateY(-1px) rotate(-6deg); }
   .mark { transition: transform .3s var(--ease); }
@@ -1093,8 +1098,10 @@ const views = {
   analytics() {
     const c = can(), ds = scoped(), won = ds.filter(d => !d.lost && d.stageId === lastStageId()).length, lost = ds.filter(d => d.lost).length;
     const daily = DEMO.daily(), month = daily.reduce((a, b) => a + b, 0), budgets = ds.filter(d => d.budget);
-    const card = (cls, icon, title, sub, body, extra = '') => `<section class="an-card ${cls}"><div class="an-head"><span class="an-ico" aria-hidden="true"><svg viewBox="0 0 24 24">${icon}</svg></span><div><h3>${title}</h3>${sub ? `<span class="muted small">${sub}</span>` : ''}</div>${extra}</div>${body}</section>`;
-    const kpi = (hero, icon, value, label, trend) => `<div class="an-kpi${hero ? ' an-hero' : ''}"><div class="an-kpi-top"><span class="an-ico" aria-hidden="true"><svg viewBox="0 0 24 24">${icon}</svg></span><span class="an-trend">▲ ${trend}%</span></div><b>${value}</b><span class="small">${label}</span>${hero ? '<i class="an-swoosh" aria-hidden="true"></i>' : ''}</div>`;
+    // Кликабельно только то, что ведёт в раздел: плашка KPI целиком или стрелка в заголовке карточки
+    const go = (tab, name) => `<button type="button" class="an-go" data-act="tab" data-tab="${tab}" aria-label="Открыть раздел «${name}»" title="Открыть «${name}»">${ARR}</button>`;
+    const card = (cls, icon, title, sub, body, extra = '', tab) => `<section class="an-card ${cls}"><div class="an-head"><span class="an-ico" aria-hidden="true"><svg viewBox="0 0 24 24">${icon}</svg></span><div><h3>${title}</h3>${sub ? `<span class="muted small">${sub}</span>` : ''}</div>${extra}${tab ? go(tab, TABS.find(t => t[0] === tab)[1]) : ''}</div>${body}</section>`;
+    const kpi = (hero, icon, value, label, trend, tab) => `<button type="button" class="an-kpi${hero ? ' an-hero' : ''}" data-act="tab" data-tab="${tab}" aria-label="${label}: открыть раздел «${TABS.find(t => t[0] === tab)[1]}»"><span class="an-kpi-top"><span class="an-ico" aria-hidden="true"><svg viewBox="0 0 24 24">${icon}</svg></span><span class="an-trend">▲ ${trend}%</span></span><b>${value}</b><span class="small">${label}</span>${hero ? '<i class="an-swoosh" aria-hidden="true"></i>' : ''}</button>`;
     // Источники заявок: доля каждого источника, полукольцо как в референсе
     const src = Object.entries(ds.filter(d => d.source).reduce((m, d) => (m[d.source] = (m[d.source] || 0) + 1, m), {})).sort((a, b) => b[1] - a[1]).slice(0, 4);
     const tot = src.reduce((t, [, n]) => t + n, 0) || 1, SRC_C = ['var(--accent)', 'var(--lime)', 'var(--ink)', 'var(--muted)'];
@@ -1114,21 +1121,21 @@ const views = {
     return `<div class="an"><div class="section-head"><div><h1 class="an-h1">Аналитика</h1><span class="muted small">${c.all ? 'Как работает отдел продаж' : 'Как идут ваши продажи'}</span></div><span class="pill muted">${today().toLocaleString('ru-RU', { month: 'long', year: 'numeric' })}</span></div>
       <div class="an-switch" role="group" aria-label="Цветовая схема">${PALETTES.map(([k, n, , a]) => `<button type="button" data-act="palette" data-id="${k}" aria-pressed="${(me().settings.palette || 'trend') === k}"><i style="--c:${a}"></i>${n}</button>`).join('')}</div>
       <div class="an-kpis">
-        ${kpi(true, I.rub, rub(month), 'Комиссии за месяц', '9.1')}
-        ${kpi(false, I.user, ds.length, 'Заявок в работе', '12')}
-        ${kpi(false, I.pct, won + lost ? Math.round(won / (won + lost) * 100) + '%' : '—', 'Конверсия в сделку', '3.4')}
-        ${kpi(false, I.bag, budgets.length ? mlnShort(budgets.reduce((t, d) => t + d.budget, 0) / budgets.length) : '—', 'Средний бюджет', '4.2')}
+        ${kpi(true, I.rub, rub(month), 'Комиссии за месяц', '9.1', 'commissions')}
+        ${kpi(false, I.user, ds.length, 'Заявок в работе', '12', 'deals')}
+        ${kpi(false, I.pct, won + lost ? Math.round(won / (won + lost) * 100) + '%' : '—', 'Конверсия в сделку', '3.4', 'deals')}
+        ${kpi(false, I.bag, budgets.length ? mlnShort(budgets.reduce((t, d) => t + d.budget, 0) / budgets.length) : '—', 'Средний бюджет', '4.2', 'deals')}
       </div>
       <div class="an-row2">
-        ${card('', I.chart, 'Комиссии по дням', '', plot(daily), '<span class="an-legend"><i style="--c:var(--accent)"></i>Комиссии</span>')}
+        ${card('', I.chart, 'Комиссии по дням', '', plot(daily), '<span class="an-legend"><i style="--c:var(--accent)"></i>Комиссии</span>', 'commissions')}
         ${card('', I.target, 'Комиссии и план', '', plot(DEMO.vsPlan(), 70000), '<span class="an-legend"><i style="--c:var(--accent)"></i>Факт <i style="--c:var(--ink)"></i>План</span>')}
       </div>
       <div class="an-row3${c.all ? '' : ' two'}">
         ${card('', I.pie, 'Источники заявок', 'Откуда пришли сделки', `<div class="an-src"><div class="an-gauge"><svg viewBox="0 0 100 55" aria-hidden="true"><g transform="rotate(180 50 50)">${arcs}</g></svg><b>${Math.round(src[0]?.[1] / tot * 100 || 0)}%</b></div>
           <ul class="an-list">${src.map(([k, n], i) => `<li><i style="--c:${SRC_C[i]}"></i>${esc(k)}<b>${Math.round(n / tot * 100)}%</b></li>`).join('')}</ul></div>`)}
         ${card('', I.funnel, 'Воронка', 'Сколько сделок дошло до этапа', `<ul class="an-funnel">${S.stages.map((st, i) => `<li><span class="small">${esc(st.name)}</span><span class="an-bar"><i style="--w:${Math.max(reached[i] / top * 100, 8)}%">${reached[i]}</i></span><span class="muted small">${Math.round(reached[i] / top * 100)}%</span></li>`).join('')}</ul>`,
-          `<span class="an-conv"><span class="muted small">Конверсия</span><b>${Math.round(reached[reached.length - 1] / top * 100)}%</b></span>`)}
-        ${c.all ? card('', I.star, 'Лучшие агенты', 'Сумма сделок в работе', `<ul class="an-reps">${agents.map(([u, v]) => `<li>${avatar(u)}<span>${esc(u.name)}</span><b>${mlnShort(v)}</b><span class="an-bar thin"><i style="--w:${v / amax * 100}%"></i></span></li>`).join('')}</ul>`) : ''}
+          `<span class="an-conv"><span class="muted small">Конверсия</span><b>${Math.round(reached[reached.length - 1] / top * 100)}%</b></span>`, 'deals')}
+        ${c.all ? card('', I.star, 'Лучшие агенты', 'Сумма сделок в работе', `<ul class="an-reps">${agents.map(([u, v]) => `<li>${avatar(u)}<span>${esc(u.name)}</span><b>${mlnShort(v)}</b><span class="an-bar thin"><i style="--w:${v / amax * 100}%"></i></span></li>`).join('')}</ul>`, '', 'team') : ''}
       </div>
       <div class="an-row4">
         <section class="an-card an-plan"><div class="an-head"><span class="an-ico" aria-hidden="true"><svg viewBox="0 0 24 24">${I.target}</svg></span><div><h3>План на квартал</h3><span class="small">Комиссии агентства</span></div></div>
