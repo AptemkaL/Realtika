@@ -13,7 +13,7 @@
   --bg: #F4F4F5; --surface: #FFFFFF; --sunken: #F3F4F6; --hover: #E4E4E7; --ink: #18181B; --muted: #71717A; --line: #E4E4E7; --dot: #D4D4D8;
   --accent: #3733FF; --accent-ink: #FFFFFF; --accent-d: #8F8CFF; --accent-ink-d: #07063A; --hot: #FE4B01;
   --side-bg: #FFFFFF; --side-ink: #18181B; --side-muted: #71717A; --side-hover: #F3F4F6; --side-line: #E4E4E7; --side-field: #F3F4F6;
-  --panel: #3733FF;
+  --panel: #3733FF; --lime: #C6F36B;
   --ok: #12805C; --warn: #A15C07; --crit: #D92D20;
   --f-display: Onest, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --f-body: Onest, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -373,6 +373,78 @@ dialog.modal.wide { width: min(860px, calc(100% - 32px)); }
 #pickmap { height: 240px; border-radius: 8px; border: 1px solid var(--line); background: var(--sunken); z-index: 0; }
 .info { color: var(--ok); font-size: var(--fs-sm); margin: 0; }
 
+/* Аналитика: дашборд по мотивам референса — KPI-плашки, графики, воронка */
+.an { display: grid; gap: 16px; padding-bottom: 56px; }
+.an-h1 { font-size: clamp(28px, 3vw, 40px); line-height: 1.1; }
+.an-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.an-row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.an-row3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; } .an-row3.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.an-row4 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 16px; }
+.an-card, .an-kpi { background: var(--surface); border: 1px solid var(--card-line); border-radius: var(--r); padding: 20px; box-shadow: 0 1px 2px rgb(16 24 40 / .05); min-width: 0; box-sizing: border-box; }
+.an-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; } .an-head > div { flex: 1; display: grid; }
+.an-head h3 { font-size: var(--fs-md); font-weight: 600; }
+.an-ico { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; flex: none; background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); }
+.an-ico svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.an-kpi { position: relative; overflow: hidden; display: grid; gap: 2px; }
+.an-kpi-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.an-kpi b { font: 600 var(--fs-2xl)/1.15 var(--f-display); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.an-kpi .small { color: var(--muted); }
+.an-trend { font-size: var(--fs-xs); font-weight: 600; color: var(--ok); }
+.an-kpi.an-hero { background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 80%, #fff), var(--accent) 60%); color: var(--accent-ink); border-color: transparent; box-shadow: 0 14px 30px -12px color-mix(in srgb, var(--accent) 80%, transparent); }
+.an-hero .small, .an-hero .an-trend { color: inherit; opacity: .85; }
+.an-hero .an-ico { background: rgb(255 255 255 / .2); color: inherit; }
+.an-swoosh { position: absolute; right: 18px; bottom: -14px; width: 26px; height: 84px; border-radius: 13px; background: var(--lime); transform: rotate(32deg); }
+.an-legend { display: flex; align-items: center; gap: 6px; font-size: var(--fs-xs); color: var(--muted); }
+.an-legend i, .an-list i, .an-tip i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); display: inline-block; flex: none; }
+.an-legend i + i { margin-left: 8px; }
+.an-chart { margin-top: 36px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 10px; }
+.an-y { display: flex; flex-direction: column; justify-content: space-between; height: 180px; font-size: var(--fs-xs); text-align: right; }
+.an-x { display: flex; justify-content: space-between; font-size: var(--fs-xs); }
+.an-plot { position: relative; height: 180px; touch-action: pan-y;
+  background: repeating-linear-gradient(to bottom, var(--line) 0 1px, transparent 1px 25%) 0 0 / 100% 100%; }
+.an-plot svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.an-plot .line, .an-plot .target { fill: none; stroke-width: 2.5; vector-effect: non-scaling-stroke; stroke-linecap: round; }
+.an-plot .line { stroke: var(--accent); } .an-plot .target { stroke: var(--ink); stroke-width: 1.5; }
+.an-plot .area { fill: color-mix(in srgb, var(--accent) 14%, transparent); }
+.an-plot::after { content: ""; position: absolute; left: var(--x); top: var(--y); bottom: 0; width: 1px; background: var(--accent); pointer-events: none; }
+.an-dot { position: absolute; left: var(--x); top: var(--y); width: 12px; height: 12px; margin: -6px; border-radius: 50%; background: var(--surface); border: 3px solid var(--accent); box-sizing: border-box; z-index: 1; pointer-events: none; }
+.an-tip { position: absolute; left: var(--x); top: var(--y); transform: translate(-50%, calc(-100% - 14px)); display: grid; gap: 2px; padding: 6px 10px; border-radius: 10px; background: var(--ink); color: var(--bg); font-size: var(--fs-xs); white-space: nowrap; pointer-events: none; z-index: 2; text-align: center; }
+.an-tip b { font-size: var(--fs-sm); } .an-tip span { opacity: .75; display: flex; align-items: center; gap: 6px; }
+.an-src { display: grid; gap: 14px; }
+.an-gauge { position: relative; display: grid; justify-items: center; }
+.an-gauge svg { width: 100%; max-width: 220px; overflow: visible; }
+.an-gauge circle { fill: none; stroke-width: 14; }
+.an-gauge > b { position: absolute; bottom: 0; font: 600 var(--fs-2xl)/1 var(--f-display); }
+.an-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.an-list li { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 10px; background: var(--sunken); font-size: var(--fs-sm); }
+.an-list b { margin-left: auto; font-weight: 600; }
+.an-funnel, .an-reps { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.an-funnel li { display: grid; grid-template-columns: 110px minmax(0, 1fr) 40px; gap: 10px; align-items: center; }
+.an-funnel li > :first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.an-funnel li > :last-child { text-align: right; }
+.an-bar { display: block; height: 24px; border-radius: 8px; background: var(--sunken); overflow: hidden; }
+.an-bar i { display: flex; align-items: center; height: 100%; width: var(--w); border-radius: 8px; background: var(--accent); color: var(--accent-ink); font: 600 var(--fs-xs)/1 var(--f-body); font-style: normal; padding-left: 8px; box-sizing: border-box; transform-origin: left; }
+.an-funnel li:nth-child(n+4) .an-bar i { background: color-mix(in srgb, var(--accent) 65%, var(--surface)); }
+.an-conv { display: grid; justify-items: end; } .an-conv b { font-size: var(--fs-lg); }
+.an-reps li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; font-size: var(--fs-sm); }
+.an-reps .an-bar { grid-column: 2 / -1; height: 6px; }
+.an-plan { background: var(--panel); color: #fff; border-color: transparent; }
+.an-plan .small { opacity: .7; } .an-plan .an-ico { background: rgb(255 255 255 / .12); color: var(--lime); }
+.an-gauge.big { padding-top: 8px; } .an-gauge.big svg { max-width: 260px; }
+.an-gauge.big > div { position: absolute; bottom: 0; display: grid; justify-items: center; }
+.an-gauge.big b { font: 600 var(--fs-2xl)/1.2 var(--f-display); }
+.an-gauge .track { stroke: rgb(255 255 255 / .12); stroke-dasharray: 100 200; }
+.an-cols { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 12px; height: 220px; align-items: end; }
+.an-cols > div { position: relative; display: grid; justify-items: center; gap: 6px; height: 100%; grid-template-rows: 1fr auto; }
+.an-col { align-self: end; display: flex; flex-direction: column; width: 100%; max-width: 64px; height: var(--h); border-radius: 14px; overflow: hidden; background: var(--sunken); transform-origin: bottom; }
+.an-col i { display: block; }
+.an-cols .cur .an-col i:first-child { background: var(--accent); } .an-cols .cur .an-col i:last-child { background: var(--lime); }
+.an-cols .cur .an-tip { left: auto; right: calc(50% + 40px); top: 20%; transform: none; text-align: left; }
+.an-switch { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 45; display: flex; gap: 2px; padding: 4px; border-radius: 999px; background: color-mix(in srgb, var(--surface) 85%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border: 1px solid var(--line); box-shadow: 0 10px 30px -10px rgb(16 24 40 / .3); max-width: calc(100% - 32px); overflow-x: auto; box-sizing: border-box; }
+.an-switch button { display: flex; align-items: center; gap: 6px; padding: 7px 12px; border: 0; border-radius: 999px; background: none; color: var(--muted); font: 500 var(--fs-sm) var(--f-body); cursor: pointer; white-space: nowrap; }
+.an-switch button:hover { color: var(--ink); }
+.an-switch button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1.5px var(--ink); }
+.an-switch i { width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
 .hello { display: grid; gap: 2px; }
 .hello h1 { font-size: clamp(32px, 4vw, 52px); line-height: 1.05; }
 .dash { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 48px; align-items: start; }
@@ -431,7 +503,12 @@ footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: f
 .only-mobile { display: none; }
 
 /* Телефон: нижняя панель вкладок, свайп по этапам, окна на весь экран, таблицы карточками */
+@media (max-width: 1100px) { .an-row3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .an-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 640px) {
+  .an-row2, .an-row3, .an-row3.two, .an-row4 { grid-template-columns: minmax(0, 1fr); }
+  .an-kpis { gap: 10px; } .an-kpi { padding: 14px; } .an-kpi b { font-size: var(--fs-lg); } .an-swoosh { display: none; }
+  .an-cols .cur .an-tip { right: calc(50% + 24px); }
+  .an-switch { position: static; transform: none; max-width: 100%; justify-self: start; }
   .alert { grid-template-columns: 1fr; }
   .trow { grid-template-columns: auto minmax(0, 1fr); }
   .trow > :last-child { grid-column: 2; justify-self: start; }
@@ -505,10 +582,25 @@ footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: f
   .rise:not(.in) { opacity: 0; }
   .rise.in { animation: rise .8s var(--ease) calc(var(--i, 0) * 70ms) backwards; }
   dialog.drawer[open] { animation: drawer-in .45s var(--ease); }
+  .an-plot svg, .an-gauge svg { animation: wipe 1.4s var(--ease) .2s backwards; }
+  .an-plot .an-dot, .an-plot .an-tip, .an-plot::after { transition: left .25s var(--ease), top .25s var(--ease); animation: rise .6s var(--ease) 1.2s backwards; }
+  .an-col { animation: grow-y 1s var(--ease) calc(var(--i, 0) * 70ms + .2s) backwards; }
+  .an-bar i { animation: grow-x 1s var(--ease) .2s backwards; }
+  .an-kpi, .an-card { transition: transform .3s var(--ease), box-shadow .3s; }
+  .an-kpi:hover, .an-card:hover { transform: translateY(-5px); box-shadow: 0 14px 30px -14px rgb(16 24 40 / .25); }
   dialog.modal[open] { animation: pop-in .35s var(--ease); }
   .logo:hover .mark { transform: translateY(-1px) rotate(-6deg); }
   .mark { transition: transform .3s var(--ease); }
 }
+/* Смена темы: новая тема расползается кругом от кнопки */
+::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+@keyframes theme-in { from { clip-path: circle(0 at var(--tx) var(--ty)); } to { clip-path: circle(var(--tr) at var(--tx) var(--ty)); } }
+::view-transition-new(root) { animation: theme-in .7s var(--ease); }
+@keyframes wipe-in { from { clip-path: polygon(0 0, 0 0, 0 0); } to { clip-path: polygon(0 0, 200% 0, 0 200%); } }
+:root[data-vt="wipe"]::view-transition-new(root) { animation: wipe-in .9s var(--ease); }
+@keyframes wipe { from { clip-path: inset(0 100% 0 0); } }
+@keyframes grow-y { from { transform: scaleY(0); } }
+@keyframes grow-x { from { transform: scaleX(0); } }
 @keyframes rise { from { opacity: 0; transform: translateY(28px); } }
 @keyframes drawer-in { from { transform: translateX(100%); } }
 @keyframes pop-in { from { opacity: 0; transform: translateY(16px) scale(.98); } }
@@ -518,6 +610,7 @@ footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: f
 <div class="shell" id="app" hidden>
   <aside class="side">
     <div class="side-head"><span class="logo"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 11.2 12 4l8.5 7.2V20a1 1 0 0 1-1 1h-5v-5.5h-5V21h-5a1 1 0 0 1-1-1z"/></svg></span>Realtika<small>демо</small></span>
+      <button class="icon-btn" id="theme-btn" data-act="theme" aria-label="Сменить тему"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg></button>
 </div>
     <button class="side-search" data-act="search" aria-label="Поиск"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg><span>Поиск</span><kbd>Ctrl K</kbd></button>
     <button class="btn primary side-new" data-act="import-open" aria-label="Новая сделка из переписки">+<span class="fab-text">&nbsp;Сделка</span><span class="only-desktop">&nbsp;из переписки</span><span class="arr" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2 10 10 2M4 2h6v6"/></svg><svg viewBox="0 0 12 12"><path d="M2 10 10 2M4 2h6v6"/></svg></span></button>
@@ -541,8 +634,9 @@ footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: f
 <script>
 const K = 'realtika-demo-v7';
 const ROLES = { agent: 'Агент', head: 'Руководитель отдела продаж', director: 'Директор' };
-const TABS = [['tasks', 'Задачи'], ['deals', 'Сделки'], ['objects', 'Объекты'], ['bookings', 'Брони'], ['commissions', 'Комиссии'], ['team', 'Команда']];
+const TABS = [['tasks', 'Задачи'], ['analytics', 'Аналитика'], ['deals', 'Сделки'], ['objects', 'Объекты'], ['bookings', 'Брони'], ['commissions', 'Комиссии'], ['team', 'Команда']];
 const TAB_ICONS = {
+  analytics: '<path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/>',
   tasks: '<path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
   deals: '<rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="10" rx="1"/><rect x="17" y="4" width="4" height="13" rx="1"/>',
   objects: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/>',
@@ -751,6 +845,34 @@ const activeBooking = d => S.bookings.find(b => b.dealId === d.id && !b.closed);
 const meetWhere = m => m.place && m.place.toLowerCase().includes(m.format) ? m.place : [m.format, m.place].filter(Boolean).join(', ');
 const objTitle = o => o ? `${roomsLabel(o.rooms)}, ${o.area} м² · ${o.address}${o.complexId ? `, кв. ${o.number}` : ''}` : '—';
 const mlnShort = n => (n / 1e6).toLocaleString('ru-RU', { maximumFractionDigits: 1 }) + ' млн';
+// shortcut: история комиссий по дням и месяцам — детерминированные демо-цифры; с бэкендом считать из закрытых сделок
+const DEMO = {
+  daily: () => Array.from({ length: 30 }, (_, i) => Math.round(42000 + 30000 * Math.sin(i / 4.2 - 1.6) + 9000 * Math.sin(i * 1.3) + i * 900, -3)),
+  vsPlan: () => Array.from({ length: 30 }, (_, i) => Math.round(68000 + 34000 * Math.sin(i / 3.6 + 2.2) + 6000 * Math.cos(i * 1.1), -3)),
+  months: () => [5, 4, 3, 2, 1, 0].map(k => { const d = today(); d.setDate(1); d.setMonth(d.getMonth() - k); return d.toLocaleString('ru-RU', { month: 'short' }).replace('.', ''); }).map((m, i) => [m, [0.9, 1.2, 1.05, 1.4, 1.3, 1.6][i] * 1e6, [0.3, 0.25, 0.4, 0.35, 0.5, 0.7][i] * 1e6]),
+};
+// Линейный график: сглаженная линия + заливка, подсказка на пике, при наведении — у ближайшей точки
+function plot(v, target) {
+  const max = Math.max(...v, target || 0) * 1.1, X = i => i / (v.length - 1) * 300, Y = n => 100 - n / max * 100;
+  const pts = v.map((n, i) => [X(i), Y(n)]);
+  let d = `M${pts[0]}`;
+  for (let i = 1; i < pts.length; i++) { const [a, b, c, e] = [pts[i - 2] || pts[i - 1], pts[i - 1], pts[i], pts[i + 1] || pts[i]];
+    d += ` C${b[0] + (c[0] - a[0]) / 6},${b[1] + (c[1] - a[1]) / 6} ${c[0] - (e[0] - b[0]) / 6},${c[1] - (e[1] - b[1]) / 6} ${c[0]},${c[1]}`; }
+  const peak = v.indexOf(Math.max(...v)), ticks = [1, .75, .5, .25, 0].map(k => Math.round(max * k / 1000) + 'K');
+  return `<div class="an-chart"><div class="an-y small muted">${ticks.map(t => `<span>${t}</span>`).join('')}</div>
+    <div class="an-plot" data-v="${v.join(',')}" data-max="${max}" style="--x:${peak / (v.length - 1) * 100}%;--y:${Y(v[peak])}%">
+      <svg viewBox="0 0 300 100" preserveAspectRatio="none" aria-hidden="true"><path class="area" d="${d} L300,100 L0,100Z"/><path class="line" d="${d}"/>${target ? `<path class="target" d="M0,${Y(target)} H300"/>` : ''}</svg>
+      <span class="an-dot"></span><span class="an-tip"><b>${rub(v[peak])}</b><span>${fmtDate(iso(peak - v.length + 1)).slice(0, 5)}</span></span></div>
+    <span></span><div class="an-x small muted">${[0, 7, 14, 21, 29].map(i => `<span>${fmtDate(iso(i - 29)).slice(0, 5)}</span>`).join('')}</div></div>`;
+}
+document.addEventListener('pointermove', e => {
+  const p = e.target.closest?.('.an-plot');
+  if (!p) return;
+  const v = p.dataset.v.split(',').map(Number), r = p.getBoundingClientRect(), i = Math.max(0, Math.min(v.length - 1, Math.round((e.clientX - r.left) / r.width * (v.length - 1))));
+  p.style.setProperty('--x', i / (v.length - 1) * 100 + '%');
+  p.style.setProperty('--y', (100 - v[i] / (Number(p.dataset.max)) * 100) + '%');
+  p.querySelector('.an-tip').innerHTML = `<b>${rub(v[i])}</b><span>${fmtDate(iso(i - v.length + 1)).slice(0, 5)}</span>`;
+});
 const pill = (cls, text) => `<span class="pill ${cls}">${esc(text)}</span>`;
 // Номер для ссылки tel: — только цифры, 8XXXXXXXXXX → +7XXXXXXXXXX. Телефон сам покажет «Позвонить» или откроет звонилку
 const telHref = phone => { const n = phone.replace(/[^\d+]/g, ''); return 'tel:' + (/^8\d{10}$/.test(n) ? '+7' + n.slice(1) : n); };
@@ -968,6 +1090,56 @@ const views = {
         <td>${k.status === 'ожидается' ? `<button class="btn sm" data-act="invoice" data-id="${k.id}">Выставить счёт</button>` : k.status === 'счёт выставлен' ? `<div class="actions"><button class="btn sm" data-act="invoice" data-id="${k.id}">Счёт</button><button class="btn sm" data-act="paid" data-id="${k.id}">Оплачено</button></div>` : ''}</td></tr>`; }).join('') || `<tr><td colspan="8" class="muted">Комиссий пока нет: они появляются после закрытия сделки.</td></tr>`}
       </tbody></table></div></section>`;
   },
+  analytics() {
+    const c = can(), ds = scoped(), won = ds.filter(d => !d.lost && d.stageId === lastStageId()).length, lost = ds.filter(d => d.lost).length;
+    const daily = DEMO.daily(), month = daily.reduce((a, b) => a + b, 0), budgets = ds.filter(d => d.budget);
+    const card = (cls, icon, title, sub, body, extra = '') => `<section class="an-card ${cls}"><div class="an-head"><span class="an-ico" aria-hidden="true"><svg viewBox="0 0 24 24">${icon}</svg></span><div><h3>${title}</h3>${sub ? `<span class="muted small">${sub}</span>` : ''}</div>${extra}</div>${body}</section>`;
+    const kpi = (hero, icon, value, label, trend) => `<div class="an-kpi${hero ? ' an-hero' : ''}"><div class="an-kpi-top"><span class="an-ico" aria-hidden="true"><svg viewBox="0 0 24 24">${icon}</svg></span><span class="an-trend">▲ ${trend}%</span></div><b>${value}</b><span class="small">${label}</span>${hero ? '<i class="an-swoosh" aria-hidden="true"></i>' : ''}</div>`;
+    // Источники заявок: доля каждого источника, полукольцо как в референсе
+    const src = Object.entries(ds.filter(d => d.source).reduce((m, d) => (m[d.source] = (m[d.source] || 0) + 1, m), {})).sort((a, b) => b[1] - a[1]).slice(0, 4);
+    const tot = src.reduce((t, [, n]) => t + n, 0) || 1, SRC_C = ['var(--accent)', 'var(--lime)', 'var(--ink)', 'var(--muted)'];
+    let acc = 0;
+    const arcs = src.map(([, n], i) => { const p = n / tot * 100, a = `<circle r="40" cx="50" cy="50" pathLength="200" stroke="${SRC_C[i]}" stroke-dasharray="${Math.max(p - 1.2, .1)} 200" stroke-dashoffset="${-acc}"/>`; acc += p; return a; }).join('');
+    // Воронка: сколько сделок дошло до каждого этапа
+    const reached = S.stages.map((st, i) => ds.filter(d => S.stages.findIndex(x => x.id === d.stageId) >= i).length), top = reached[0] || 1;
+    const agents = S.users.filter(u => u.role === 'agent').map(u => [u, S.deals.filter(d => d.agentId === u.id && isOpen(d)).reduce((t, d) => t + d.budget, 0)]).sort((a, b) => b[1] - a[1]);
+    const amax = agents[0]?.[1] || 1, months = DEMO.months(), mmax = Math.max(...months.map(m => m[1] + m[2]));
+    const qFact = months.slice(-3).reduce((t, m) => t + m[1], 0), qPlan = 4.5e6, qp = Math.min(qFact / qPlan, 1);
+    const I = {
+      rub: '<circle cx="12" cy="12" r="9"/><path d="M10 17V7h3a3 3 0 0 1 0 6h-5"/><path d="M8 15h5"/>', user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+      pct: '<path d="M5 19 19 5"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/>', bag: '<path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 0 1 6 0"/>',
+      chart: '<path d="M4 20V10M10 20V4M16 20v-7"/>', target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/>', pie: '<path d="M12 3a9 9 0 1 0 9 9h-9z"/>',
+      funnel: '<path d="M3 4h18l-7 9v6l-4 2v-8z"/>', star: '<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',
+    };
+    return `<div class="an"><div class="section-head"><div><h1 class="an-h1">Аналитика</h1><span class="muted small">${c.all ? 'Как работает отдел продаж' : 'Как идут ваши продажи'}</span></div><span class="pill muted">${today().toLocaleString('ru-RU', { month: 'long', year: 'numeric' })}</span></div>
+      <div class="an-switch" role="group" aria-label="Цветовая схема">${PALETTES.map(([k, n, , a]) => `<button type="button" data-act="palette" data-id="${k}" aria-pressed="${(me().settings.palette || 'trend') === k}"><i style="--c:${a}"></i>${n}</button>`).join('')}</div>
+      <div class="an-kpis">
+        ${kpi(true, I.rub, rub(month), 'Комиссии за месяц', '9.1')}
+        ${kpi(false, I.user, ds.length, 'Заявок в работе', '12')}
+        ${kpi(false, I.pct, won + lost ? Math.round(won / (won + lost) * 100) + '%' : '—', 'Конверсия в сделку', '3.4')}
+        ${kpi(false, I.bag, budgets.length ? mlnShort(budgets.reduce((t, d) => t + d.budget, 0) / budgets.length) : '—', 'Средний бюджет', '4.2')}
+      </div>
+      <div class="an-row2">
+        ${card('', I.chart, 'Комиссии по дням', '', plot(daily), '<span class="an-legend"><i style="--c:var(--accent)"></i>Комиссии</span>')}
+        ${card('', I.target, 'Комиссии и план', '', plot(DEMO.vsPlan(), 70000), '<span class="an-legend"><i style="--c:var(--accent)"></i>Факт <i style="--c:var(--ink)"></i>План</span>')}
+      </div>
+      <div class="an-row3${c.all ? '' : ' two'}">
+        ${card('', I.pie, 'Источники заявок', 'Откуда пришли сделки', `<div class="an-src"><div class="an-gauge"><svg viewBox="0 0 100 55" aria-hidden="true"><g transform="rotate(180 50 50)">${arcs}</g></svg><b>${Math.round(src[0]?.[1] / tot * 100 || 0)}%</b></div>
+          <ul class="an-list">${src.map(([k, n], i) => `<li><i style="--c:${SRC_C[i]}"></i>${esc(k)}<b>${Math.round(n / tot * 100)}%</b></li>`).join('')}</ul></div>`)}
+        ${card('', I.funnel, 'Воронка', 'Сколько сделок дошло до этапа', `<ul class="an-funnel">${S.stages.map((st, i) => `<li><span class="small">${esc(st.name)}</span><span class="an-bar"><i style="--w:${Math.max(reached[i] / top * 100, 8)}%">${reached[i]}</i></span><span class="muted small">${Math.round(reached[i] / top * 100)}%</span></li>`).join('')}</ul>`,
+          `<span class="an-conv"><span class="muted small">Конверсия</span><b>${Math.round(reached[reached.length - 1] / top * 100)}%</b></span>`)}
+        ${c.all ? card('', I.star, 'Лучшие агенты', 'Сумма сделок в работе', `<ul class="an-reps">${agents.map(([u, v]) => `<li>${avatar(u)}<span>${esc(u.name)}</span><b>${mlnShort(v)}</b><span class="an-bar thin"><i style="--w:${v / amax * 100}%"></i></span></li>`).join('')}</ul>`) : ''}
+      </div>
+      <div class="an-row4">
+        <section class="an-card an-plan"><div class="an-head"><span class="an-ico" aria-hidden="true"><svg viewBox="0 0 24 24">${I.target}</svg></span><div><h3>План на квартал</h3><span class="small">Комиссии агентства</span></div></div>
+          <div class="an-gauge big"><svg viewBox="0 0 100 55" aria-hidden="true"><g transform="rotate(180 50 50)"><circle r="40" cx="50" cy="50" pathLength="200" class="track"/><circle r="40" cx="50" cy="50" pathLength="200" stroke="var(--lime)" stroke-dasharray="${qp * 100} 200"/></g></svg>
+            <div><span class="small">Факт</span><b>${mlnShort(qFact)} ₽</b><span class="small">из ${mlnShort(qPlan)} ₽</span></div></div></section>
+        ${card('', I.chart, 'Продажи по месяцам', 'Комиссии: получено и в работе', `<div class="an-cols">${months.map(([m, a, b], i) => `<div class="${i === months.length - 1 ? 'cur' : ''}"><span class="an-col" style="--h:${(a + b) / mmax * 100}%;--i:${i}"><i style="flex:${a}"></i><i style="flex:${b}"></i></span><span class="small muted">${m}</span>
+          ${i === months.length - 1 ? `<span class="an-tip"><b>${m}</b><span><i style="--c:var(--lime)"></i>В работе ${mlnShort(b)} ₽</span><span><i style="--c:var(--accent)"></i>Получено ${mlnShort(a)} ₽</span></span>` : ''}</div>`).join('')}</div>`)}
+      </div>
+      <p class="muted small">Графики по дням и месяцам — демо-данные. Воронка, источники и агенты считаются по сделкам в CRM.</p>
+    </div>`;
+  },
   team() {
     const c = can();
     const row = u => {
@@ -999,6 +1171,15 @@ const views = {
 const initials = u => u.name.split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
 const avatar = (u, cls = '') => `<span class="avatar ${cls}" aria-hidden="true">${u.photo ? `<img src="${u.photo}" alt="">` : esc(initials(u))}</span>`;
 const PALETTES = [['trend', 'Тренд', '#FFFFFF', '#1F5EFF'], ['graphite', 'Графит', '#1C1D1F', '#D9480F'], ['burgundy', 'Бордо', '#F0EBE6', '#8A1C3B'], ['emerald', 'Изумруд', '#10301F', '#14724F'], ['mono', 'Монохром', '#FAFAFA', '#111111'], ['classic', 'Классика', '#FBFBFC', '#3A5BD9']];
+// Смена темы или схемы с анимацией: круг от кнопки или диагональная шторка (как в референсе)
+function morph(el, kind, fn) {
+  if (!document.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches) return fn();
+  const r = el.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2, h = document.documentElement;
+  h.style.setProperty('--tx', x + 'px'); h.style.setProperty('--ty', y + 'px');
+  h.style.setProperty('--tr', Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y)) + 'px');
+  h.dataset.vt = kind;
+  document.startViewTransition(fn).finished.finally(() => delete h.dataset.vt);
+}
 function applyTheme() {
   const pal = S.me && me().settings.palette;
   if (pal && pal !== 'trend') document.documentElement.dataset.palette = pal; else delete document.documentElement.dataset.palette;
@@ -1092,9 +1273,19 @@ const io = 'IntersectionObserver' in window && new IntersectionObserver(es => es
 }), { rootMargin: '0px 0px -40px' });
 function reveal(root) {
   if (!io || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  root.querySelectorAll('.hero > *, .login-title, .login-box, .hello, .section-head, .filters, .dash-main > .section, .dash > aside, .col, .rcard, .tbl, .stats, #map').forEach(el => {
+  root.querySelectorAll('.hero > *, .login-title, .login-box, .hello, .section-head, .filters, .dash-main > .section, .dash > aside, .col, .rcard, .tbl, .stats, #map, .an-kpi, .an-card').forEach(el => {
     el.classList.add('rise'); io.observe(el);
   });
+  root.querySelectorAll('.stat b, .an-kpi b').forEach(countUp);
+}
+// Цифры в статистике набегают от нуля до значения
+function countUp(el) {
+  const m = el.textContent.match(/\d(?:[\d\s]*\d)?/);
+  if (!m) return;
+  const to = Number(m[0].replace(/\s/g, '')), [pre, post] = [el.textContent.slice(0, m.index), el.textContent.slice(m.index + m[0].length)];
+  const fmt = n => pre + new Intl.NumberFormat('ru-RU').format(n) + post, t0 = performance.now();
+  const tick = now => { const k = Math.min((now - t0) / 1200, 1); el.textContent = fmt(Math.round(to * (1 - (1 - k) ** 3))); if (k < 1) requestAnimationFrame(tick); };
+  requestAnimationFrame(tick);
 }
 
 function render() {
@@ -1776,7 +1967,7 @@ document.addEventListener('click', e => {
     case 'deal': if (e.ctrlKey || e.metaKey || e.shiftKey) return; e.preventDefault(); if ($('modal').classList.contains('search')) $('modal').close(); openDeal(id); return;
     case 'search': openSearch(); return;
     case 'logout': logOut(); return;
-    case 'palette': me().settings.palette = id; applyTheme(); break;
+    case 'palette': me().settings.palette = id; save(); morph(el, el.closest('.an-switch') ? 'wipe' : 'circle', () => { applyTheme(); shownTab = ''; render(); }); return;
     case 'demo-login': logIn(id); return;
     case 'to-login': loginView = 'form'; renderLogin(); window.scrollTo(0, 0); $('lg-email').focus(); return;
     case 'land': loginView = 'land'; renderLogin(); return;
@@ -1788,6 +1979,11 @@ document.addEventListener('click', e => {
       d.stageId = S.stages[i - 1].id;
       d.notes.push({ date: iso(0), author: S.me, kind: 'stage', text: `Возвращена на этап «${S.stages[i - 1].name}»` });
       break;
+    }
+    case 'theme': {
+      const dark = matchMedia('(prefers-color-scheme: dark)').matches, cur = me().settings.theme;
+      me().settings.theme = (cur === 'dark' || (cur !== 'light' && dark)) ? 'light' : 'dark';
+      save(); morph(el, 'circle', () => { applyTheme(); render(); }); return;
     }
     case 'reopen': { const d = deal(id); d.notes.push({ date: iso(0), author: S.me, kind: 'stage', text: `Возвращена в работу после отказа: ${d.lost.reason}` }); d.lost = null; break; }
     case 'draft': openDeal(id, true); return;
