@@ -1,5 +1,9 @@
+<!doctype html>
 <html lang="ru">
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F4F4F5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111213" media="(prefers-color-scheme: dark)">
 <title>Realtika</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,10 +15,10 @@
 /* Цветовые схемы. Базовая — «Тренд»: нейтральный серый фон в точку, белые плашки, индиго для главного действия,
    оранжевый как второй акцент. Остальные включаются атрибутом data-palette на <html> из настроек кабинета. */
 :root {
-  --bg: #F4F4F5; --surface: #FFFFFF; --sunken: #F3F4F6; --hover: #E4E4E7; --ink: #18181B; --muted: #62626A; --line: #E4E4E7; --dot: #D4D4D8;
-  --accent: #3733FF; --accent-ink: #FFFFFF; --accent-d: #8F8CFF; --accent-ink-d: #07063A; --hot: #FE4B01;
+  --bg: #F4F4F5; --surface: #FFFFFF; --sunken: #F3F4F6; --hover: #E4E4E7; --ink: #18181B; --muted: #62626A; --line: #E4E4E7;
+  --accent: #3733FF; --accent-ink: #FFFFFF; --accent-d: #8F8CFF; --accent-ink-d: #07063A;
   --side-bg: #FFFFFF; --side-ink: #18181B; --side-muted: #62626A; --side-hover: #F3F4F6; --side-line: #E4E4E7; --side-field: #F3F4F6;
-  --panel: #3733FF; --lime: #C6F36B;
+  --panel: #3733FF; --lime: #C6F36B; --soft: color-mix(in srgb, var(--accent) 35%, var(--surface)); /* второй тон данных: светлый акцент, читается и на белом */
   --ok: #12805C; --warn: #A15C07; --crit: #D92D20;
   --f-display: Onest, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --f-body: Onest, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -63,7 +67,7 @@
     --bg: #111213; --surface: #1F2023; --sunken: #2A2B2F; --hover: #2A2B2F; --ink: #ECECEA; --muted: #A3A49F; --line: #303135;
     --accent: var(--accent-d); --accent-ink: var(--accent-ink-d);
     --side-bg: #141516; --side-ink: #E9E9E7; --side-muted: #9C9D99; --side-hover: #232427; --side-line: #2A2B2E; --side-field: #1B1C1E;
-    --ok: #4CC38A; --warn: #E3A04A; --crit: #F07468; --dot: #26272A; color-scheme: dark;
+    --ok: #4CC38A; --warn: #E3A04A; --crit: #F07468; color-scheme: dark;
     --col: #17181A; --card: #2A2B2F; --card-line: rgb(255 255 255 / .08);
   }
 }
@@ -71,16 +75,17 @@
   --bg: #111213; --surface: #1F2023; --sunken: #2A2B2F; --hover: #2A2B2F; --ink: #ECECEA; --muted: #A3A49F; --line: #303135;
   --accent: var(--accent-d); --accent-ink: var(--accent-ink-d);
   --side-bg: #141516; --side-ink: #E9E9E7; --side-muted: #9C9D99; --side-hover: #232427; --side-line: #2A2B2E; --side-field: #1B1C1E;
-  --ok: #4CC38A; --warn: #E3A04A; --crit: #F07468; --dot: #26272A; color-scheme: dark;
+  --ok: #4CC38A; --warn: #E3A04A; --crit: #F07468; color-scheme: dark;
     --col: #17181A; --card: #2A2B2F; --card-line: rgb(255 255 255 / .08);
 }
 [hidden] { display: none !important; }
-body { margin: 0; background: radial-gradient(circle, var(--dot) 1px, transparent 1.5px) 0 0 / 22px 22px fixed, var(--bg); color: var(--ink); font: var(--fs-md)/1.5 var(--f-body); }
+body { margin: 0; background: var(--bg); color: var(--ink); font: var(--fs-md)/1.5 var(--f-body); }
 .wrap { max-width: 1440px; margin: 0 auto; padding-inline: 16px; box-sizing: border-box; }
 h1, h2, h3 { margin: 0; text-wrap: balance; }
 h1, h2 { font-family: var(--f-display); font-weight: 600; letter-spacing: -.03em; }
-h2, :where(.section-head) h1 { font-size: var(--fs-2xl); line-height: 1.15; }
-.dlg h2 { font-size: var(--fs-xl); }
+/* один размер заголовка экрана на всех разделах; заголовки блоков на ступень меньше */
+h1 { font-size: var(--fs-2xl); line-height: 1.15; }
+h2 { font-size: var(--fs-xl); line-height: 1.2; }
 .muted { color: var(--muted); }
 .small { font-size: var(--fs-sm); }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -90,11 +95,12 @@ h2, :where(.section-head) h1 { font-size: var(--fs-2xl); line-height: 1.15; }
 .side-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 2px 4px; }
 .logo { display: flex; align-items: center; gap: 8px; font: 600 var(--fs-xl)/1 var(--f-display); letter-spacing: -.03em; }
 .logo small { font: 500 var(--fs-xs)/1 var(--f-body); color: var(--side-muted); }
-.mark { position: relative; overflow: hidden; width: 30px; height: 30px; border-radius: var(--r-m); color: var(--accent-ink); display: grid; place-items: center; flex: none;
-  /* Объём: светлый верхний край, тень снизу и цветное свечение вокруг */
-  background: linear-gradient(150deg, color-mix(in srgb, var(--accent) 55%, #fff), var(--accent) 50%, color-mix(in srgb, var(--accent) 70%, #000));
-  box-shadow: inset 0 1.5px 1px rgb(255 255 255 / .55), inset 0 -3px 6px rgb(0 0 0 / .28), 0 6px 16px -4px color-mix(in srgb, var(--accent) 75%, transparent), 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent); }
-.mark svg { width: 66%; height: 66%; fill: currentColor; filter: drop-shadow(0 1.5px 1.5px rgb(0 0 0 / .3)); }
+.mark { width: 30px; height: 30px; border-radius: var(--r-m); background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; flex: none; }
+.mark svg { width: 66%; height: 66%; fill: currentColor; }
+/* Поле выбора файла: само поле спрятано, но остаётся в порядке Tab; фокус видно на кнопке-подписи */
+.vh { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; clip-path: inset(50%); }
+label:has(> .vh:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+input[type="file"]::file-selector-button { font: 500 var(--fs-sm) var(--f-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; margin-right: 10px; cursor: pointer; }
 .icon-btn { position: relative; width: 30px; height: 30px; display: grid; place-items: center; border: 0; border-radius: var(--r-s); background: none; color: var(--side-muted); cursor: pointer; }
 .icon-btn:hover { background: var(--side-hover); color: var(--side-ink); }
 .icon-btn svg, .side-search svg, .tab svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
@@ -121,7 +127,7 @@ nav.tabs { display: grid; gap: 1px; flex: 1; align-content: start; }
 
 .demo-acc { display: grid; gap: 6px; border-top: 1px solid var(--line); padding-top: 14px; margin-top: 4px; }
 /* Главная до входа: на весь экран, логотип слева, «Войти» справа, крупное название по центру. Вход — отдельный экран */
-.login { background: radial-gradient(circle, var(--dot) 1px, transparent 1.5px) 0 0 / 22px 22px, var(--surface); min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; box-sizing: border-box; padding: 0 clamp(16px, 4vw, 56px) 32px; position: relative; overflow: hidden; }
+.login { background: var(--surface); min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; box-sizing: border-box; padding: 0 clamp(16px, 4vw, 56px) 32px; position: relative; overflow: hidden; }
 .land-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 24px; position: relative; z-index: 1; }
 .land-head .logo { font-size: var(--fs-2xl); gap: 10px; background: none; border: 0; padding: 0; color: var(--ink); cursor: pointer; }
 .land-head .mark { width: 40px; height: 40px; border-radius: var(--r-m); }
@@ -151,7 +157,6 @@ nav.tabs { display: grid; gap: 1px; flex: 1; align-content: start; }
 .acc small { display: block; color: var(--muted); font-size: var(--fs-sm); }
 
 .profile-head { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 20px; }
-.profile-head h2 { font-size: var(--fs-xl); }
 .palettes { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
 .pal { display: grid; gap: 8px; text-align: left; font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-m); padding: 8px; cursor: pointer; }
 .pal[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent); }
@@ -166,7 +171,6 @@ nav.tabs { display: grid; gap: 1px; flex: 1; align-content: start; }
 .btn.primary:hover { background: color-mix(in srgb, var(--accent) 88%, var(--ink)); }
 .btn:disabled { opacity: .4; cursor: default; }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-.btn.primary:not(:hover):not(:disabled) { box-shadow: inset 0 0 15px 10px rgb(255 255 255 / .15); }
 .btn:active:not(:disabled) { transform: scale(.98); }
 /* Круг со стрелкой в главной кнопке: при наведении стрелка улетает вверх-вправо, новая прилетает снизу-слева */
 .arr { position: relative; width: 26px; height: 26px; margin: -4px -12px -4px 8px; border-radius: 50%; background: rgb(255 255 255 / .2); overflow: hidden; display: inline-block; vertical-align: middle; flex: none; }
@@ -190,7 +194,7 @@ main { max-width: 1400px; padding-block: 32px 64px; display: grid; grid-template
 
 /* Статусы — цветным текстом; заливку оставляем только просрочке и отказу, чтобы они выделялись */
 .pill { display: inline-flex; align-items: center; border-radius: 999px; font-size: var(--fs-sm); font-weight: 500; white-space: nowrap; }
-.alert .pill, .card .pill { white-space: normal; }
+.alert .pill, .card .pill { white-space: normal; border-radius: var(--r-s); }
 .row .pill + .pill::before { content: "·"; margin-right: 6px; color: var(--muted); }
 .pill.crit { padding: 2px 9px; background: color-mix(in srgb, currentColor 13%, transparent); }
 .pill.ok { color: var(--ok); } .pill.warn { color: var(--warn); } .pill.crit { color: color-mix(in srgb, var(--crit) 75%, var(--ink)); } .pill.muted { color: var(--muted); } .pill.accent { color: var(--accent); }
@@ -215,15 +219,15 @@ main { max-width: 1400px; padding-block: 32px 64px; display: grid; grid-template
 .col { background: var(--col); border-radius: var(--r); padding: 8px; display: grid; gap: 8px; align-content: start; min-height: 120px; }
 .col.over { outline: 2px dashed var(--accent); outline-offset: -2px; }
 .col h3 { font-size: var(--fs-md); font-weight: 600; color: var(--ink); display: flex; justify-content: space-between; gap: 8px; padding: 2px 4px; }
-.card { display: grid; gap: 3px; width: 100%; box-sizing: border-box; text-align: left; font: inherit; color: inherit; text-decoration: none; background: var(--card); border: 1px solid var(--card-line); border-radius: var(--r-m); padding: 12px 14px; cursor: grab; box-shadow: var(--sh-1); }
-.card:hover { box-shadow: var(--sh-2); }
+.card { display: grid; gap: 3px; width: 100%; box-sizing: border-box; text-align: left; font: inherit; color: inherit; text-decoration: none; background: var(--card); border: 1px solid var(--card-line); border-radius: var(--r-m); padding: 12px 14px; cursor: grab; }
+.card:hover { border-color: color-mix(in srgb, var(--ink) 22%, transparent); }
 /* Давность контакта — текстом, без плашек; «давно не писали» — точкой цвета предупреждения */
 .since { font-size: var(--fs-sm); color: var(--muted); }
 .since.warn { color: var(--warn); }
 .since.crit { color: var(--crit); }
 .card .amt { margin-left: 0; justify-self: end; }
 @media (min-width: 641px) {
-  .kanban { grid-auto-columns: minmax(150px, 1fr); } /* все этапы одной ширины: 8 колонок влезают в 1400px */
+  .kanban { grid-auto-columns: minmax(200px, 1fr); } /* все этапы одной ширины; не влезают — прокрутка вбок, а не узкие карточки */
   .col { grid-template-columns: minmax(0, 1fr); } .card { overflow-wrap: anywhere; } /* длинный район не распирает узкую колонку */
 }
 .since.warn::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-right: 6px; vertical-align: 2px; }
@@ -243,17 +247,20 @@ tr:last-child td { border-bottom: 0; }
 td select { width: auto; padding-block: 4px; margin-block: -4px; }
 
 dialog { border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 0; }
+dialog:focus { outline: none; }
 dialog::backdrop { background: rgb(12 13 16 / .32); }
 dialog.drawer { margin: 0 0 0 auto; width: min(520px, 100%); max-width: 100%; height: 100%; max-height: 100%; border-width: 0 0 0 1px; }
 dialog.modal { width: min(600px, calc(100% - 32px)); border-radius: var(--r); }
 .dlg { padding: 20px; display: grid; gap: var(--s2); align-content: start; box-sizing: border-box; min-height: 100%; }
 .dlg-head { display: flex; justify-content: space-between; align-items: start; gap: 12px; position: sticky; top: 0; z-index: 5; background: var(--surface); margin: -20px -20px 0; padding: 16px 20px 12px; border-bottom: 1px solid var(--line); }
-.x { font: 24px/1 var(--f-body); background: none; border: 0; color: var(--muted); cursor: pointer; padding: 0 4px; }
+.x { width: 40px; height: 40px; flex: none; display: grid; place-items: center; font: 24px/1 var(--f-body); background: none; border: 0; border-radius: var(--r-s); color: var(--muted); cursor: pointer; padding: 0; }
+.x:hover { background: var(--hover); color: var(--ink); }
 dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; }
 dt { color: var(--muted); } dd { margin: 0; }
 .block { display: grid; gap: var(--s1); }
 .block > h3 { font-size: var(--fs-md); font-weight: 600; color: var(--ink); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .ai { border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line)); background: color-mix(in srgb, var(--accent) 6%, var(--surface)); border-radius: var(--r-m); padding: 12px 14px; display: grid; gap: 8px; }
+.ai input { background: var(--surface); border-color: var(--line); }
 .ai ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
 .ai s { color: var(--muted); }
 .match { display: grid; gap: 4px; padding: var(--s1) 0; border-bottom: 1px solid var(--line); }
@@ -272,7 +279,7 @@ textarea { resize: vertical; }
 .field { display: grid; gap: 4px; align-content: start; }
 .check { display: flex; gap: 8px; align-items: center; color: var(--ink); font-weight: 500; }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.stage-row { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto auto auto; gap: 6px; align-items: center; }
+.stage-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto auto auto; gap: 6px; align-items: center; }
 .steps { display: grid; grid-auto-flow: column; gap: 4px; }
 .steps span { height: 6px; border-radius: var(--r-s); background: var(--line); }
 .steps .done { background: color-mix(in srgb, var(--accent) 50%, var(--line)); }
@@ -355,7 +362,7 @@ dialog.modal.wide { width: min(860px, calc(100% - 32px)); }
 .rphoto { display: block; position: relative; padding: 0; border: 0; background: var(--sunken); cursor: pointer; aspect-ratio: 4 / 3; width: 100%; }
 .rphoto img, .rphoto svg, .gallery img, .gallery svg { width: 100%; height: 100%; object-fit: cover; display: block; }
 .rphoto { overflow: hidden; }
-.badge { position: absolute; left: 12px; top: 12px; z-index: 1; font: 500 var(--fs-xs)/1 var(--f-body); padding: 7px 12px; border-radius: 999px; background: var(--hot); color: #fff; }
+.badge { position: absolute; left: 12px; top: 12px; z-index: 1; font: 500 var(--fs-xs)/1 var(--f-body); padding: 7px 12px; border-radius: 999px; background: rgb(20 24 22 / .72); color: #fff; }
 .rbody { padding: 16px 18px 18px; display: grid; gap: 8px; align-content: start; }
 .rtitle { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 8px; align-items: start; }
 .rtitle .btn.link { color: var(--ink); font: 600 var(--fs-lg)/1.3 var(--f-display); letter-spacing: -.02em; text-decoration: none; }
@@ -372,35 +379,31 @@ dialog.modal.wide { width: min(860px, calc(100% - 32px)); }
 .thumbs { display: flex; flex-wrap: wrap; gap: 8px; }
 .thumbs figure { margin: 0; position: relative; width: 112px; aspect-ratio: 4 / 3; border-radius: var(--r-s); overflow: hidden; background: var(--sunken); }
 .thumbs img { width: 100%; height: 100%; object-fit: cover; }
-.thumbs .x { position: absolute; top: 2px; right: 2px; background: rgb(20 24 22 / .72); color: #fff; border-radius: var(--r-s); font-size: 16px; padding: 2px 6px; }
+.thumbs .x { position: absolute; top: 2px; right: 2px; width: 28px; height: 28px; background: rgb(20 24 22 / .72); color: #fff; font-size: 16px; }
 #unit-detail { scroll-margin-top: 96px; } /* не уезжает под шапку окна */
 #pickmap { height: 240px; border-radius: var(--r-m); border: 1px solid var(--line); background: var(--sunken); z-index: 0; }
 .info { color: var(--ok); font-size: var(--fs-sm); margin: 0; }
 
 /* Аналитика: дашборд по мотивам референса — KPI-плашки, графики, воронка */
 .an { display: grid; gap: 16px; padding-bottom: 56px; }
-.an-h1 { font-size: clamp(28px, 3vw, 40px); line-height: 1.1; }
-.an-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+/* Показатели — один блок с разделителями, без иконок и плашек */
+.an-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: var(--surface); border: 1px solid var(--card-line); border-radius: var(--r); overflow: hidden; }
 .an-row2 { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 16px; } .an-row2.solo, .an-row4 { grid-template-columns: minmax(0, 1fr); }
 .an-row3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; } .an-row3.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .an-row4 { display: grid; gap: 16px; }
-.an-card, .an-kpi { background: var(--surface); border: 1px solid var(--card-line); border-radius: var(--r); padding: 20px; box-shadow: var(--sh-1); min-width: 0; box-sizing: border-box; }
+.an-card { background: var(--surface); border: 1px solid var(--card-line); border-radius: var(--r); padding: 20px; min-width: 0; box-sizing: border-box; }
 .an-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; } .an-head > div { flex: 1; display: grid; }
 .an-head h3 { font-size: var(--fs-md); font-weight: 600; }
-.an-ico { width: 32px; height: 32px; border-radius: var(--r-m); display: grid; place-items: center; flex: none; background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); }
-.an-ico svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.an-kpi { position: relative; overflow: hidden; display: grid; gap: 2px; width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; }
+.an-kpi { display: grid; gap: 2px; align-content: start; width: 100%; min-width: 0; box-sizing: border-box; padding: 20px; text-align: left; font: inherit; color: inherit; background: none; border: 0; border-radius: 0; cursor: pointer; }
+.an-kpi + .an-kpi { border-left: 1px solid var(--line); }
+.an-kpi:hover { background: color-mix(in srgb, var(--hover) 50%, transparent); }
 .an-go { width: 32px; height: 32px; flex: none; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: none; color: var(--muted); cursor: pointer; overflow: hidden; }
 .an-go:hover { background: var(--ink); border-color: var(--ink); color: var(--surface); }
 .an-go .arr { margin: 0; background: none; }
 .an-go:hover .arr svg:first-child { transform: translate(130%, -130%); } .an-go:hover .arr svg + svg { transform: none; }
-.an-kpi-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
 .an-kpi b { font: 600 var(--fs-2xl)/1.15 var(--f-display); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
 .an-kpi .small { color: var(--muted); }
-.an-kpi.an-hero { background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 80%, #fff), var(--accent) 60%); color: var(--accent-ink); border-color: transparent; box-shadow: 0 14px 30px -12px color-mix(in srgb, var(--accent) 80%, transparent); }
-.an-hero .small { color: inherit; opacity: .85; }
-.an-hero .an-ico { background: rgb(255 255 255 / .2); color: inherit; }
-.an-swoosh { position: absolute; right: 18px; bottom: -14px; width: 26px; height: 84px; border-radius: var(--r-m); background: var(--lime); transform: rotate(32deg); }
+.an-kpi .small:first-child { margin-bottom: 4px; }
 .an-legend { display: flex; align-items: center; gap: 6px; font-size: var(--fs-xs); color: var(--muted); }
 .an-legend i, .an-list i, .an-tip i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); display: inline-block; flex: none; }
 .an-legend i + i { margin-left: 8px; }
@@ -408,7 +411,7 @@ dialog.modal.wide { width: min(860px, calc(100% - 32px)); }
 .an-y { display: flex; flex-direction: column; justify-content: space-between; height: 180px; font-size: var(--fs-xs); text-align: right; }
 .an-x { display: flex; justify-content: space-between; font-size: var(--fs-xs); }
 .an-plot { position: relative; height: 180px; touch-action: pan-y;
-  background: repeating-linear-gradient(to bottom, var(--line) 0 1px, transparent 1px 25%) 0 0 / 100% 100%; }
+  background: repeating-linear-gradient(to bottom, var(--line) 0 1px, transparent 1px 25%) 0 0 / 100% 100%; } /* taste-skill-ignore: сетка графика, 4 линии */
 .an-plot svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .an-plot .line, .an-plot .target { fill: none; stroke-width: 2.5; vector-effect: non-scaling-stroke; stroke-linecap: round; }
 .an-plot .line { stroke: var(--accent); } .an-plot .target { stroke: var(--ink); stroke-width: 1.5; }
@@ -426,7 +429,7 @@ dialog.modal.wide { width: min(860px, calc(100% - 32px)); }
 .an-list li { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: var(--r-m); background: var(--sunken); font-size: var(--fs-sm); }
 .an-list b { margin-left: auto; font-weight: 600; }
 .an-funnel, .an-reps { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-.an-funnel li { display: grid; grid-template-columns: 110px minmax(0, 1fr) 40px; gap: 10px; align-items: center; }
+.an-funnel li { display: grid; grid-template-columns: 136px minmax(0, 1fr) 40px; gap: 10px; align-items: center; }
 .an-funnel li > :first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .an-funnel li > :last-child { text-align: right; }
 .an-bar { display: block; height: 24px; border-radius: var(--r-m); background: var(--sunken); overflow: hidden; }
@@ -436,7 +439,7 @@ dialog.modal.wide { width: min(860px, calc(100% - 32px)); }
 .an-reps li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; font-size: var(--fs-sm); }
 .an-reps .an-bar { grid-column: 2 / -1; height: 6px; }
 .an-plan { background: var(--panel); color: #fff; border-color: transparent; }
-.an-plan .small { opacity: .85; } .an-plan .an-ico { background: rgb(255 255 255 / .12); color: var(--lime); }
+.an-plan .small { opacity: .85; }
 .an-gauge.big { padding-top: 8px; } .an-gauge.big svg { max-width: 260px; }
 .an-gauge.big > div { position: absolute; bottom: 0; display: grid; justify-items: center; }
 .an-gauge.big b { font: 600 var(--fs-2xl)/1.2 var(--f-display); }
@@ -445,15 +448,9 @@ dialog.modal.wide { width: min(860px, calc(100% - 32px)); }
 .an-cols > div { position: relative; display: grid; justify-items: center; gap: 6px; height: 100%; grid-template-rows: 1fr auto; }
 .an-col { align-self: end; display: flex; flex-direction: column; width: 100%; max-width: 64px; height: var(--h); border-radius: var(--r-m); overflow: hidden; background: var(--sunken); transform-origin: bottom; }
 .an-col i { display: block; }
-.an-cols .cur .an-col i:first-child { background: var(--accent); } .an-cols .cur .an-col i:last-child { background: var(--lime); }
+.an-cols .cur .an-col i:first-child { background: var(--accent); } .an-cols .cur .an-col i:last-child { background: var(--soft); }
 .an-cols .cur .an-tip { left: auto; right: calc(50% + 40px); top: 20%; transform: none; text-align: left; }
-.an-switch { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 45; display: flex; gap: 2px; padding: 4px; border-radius: 999px; background: color-mix(in srgb, var(--surface) 85%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border: 1px solid var(--line); box-shadow: var(--sh-3); max-width: calc(100% - 32px); overflow-x: auto; box-sizing: border-box; }
-.an-switch button { display: flex; align-items: center; gap: 6px; padding: 7px 12px; border: 0; border-radius: 999px; background: none; color: color-mix(in srgb, var(--muted) 60%, var(--ink)); font: 500 var(--fs-sm) var(--f-body); cursor: pointer; white-space: nowrap; }
-.an-switch button:hover { color: var(--ink); }
-.an-switch button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1.5px var(--ink); }
-.an-switch i { width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
 .hello { display: grid; gap: 2px; }
-.hello h1 { font-size: clamp(32px, 4vw, 52px); line-height: 1.05; }
 .dash { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 48px; align-items: start; }
 .dash.solo { grid-template-columns: minmax(0, 960px); }
 .start { margin-top: 6px; font-size: var(--fs-md); }
@@ -486,18 +483,18 @@ dialog.modal.search { margin-top: 12vh; width: min(580px, calc(100% - 32px)); }
   .side-head { display: contents; }
   .side .logo { order: 0; margin-right: 12px; }
   nav.tabs { order: 1; display: flex; flex: 1; gap: 2px; }
-  .tab { padding: 9px 16px; border-radius: 999px; white-space: nowrap; }
+  .tab { padding: 9px 14px; border-radius: 999px; white-space: nowrap; }
   .tab svg { display: none; }
-  .tab[aria-current="page"] { background: var(--accent); color: var(--accent-ink); font-weight: 500; box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--accent) 70%, transparent); }
+  .tab[aria-current="page"] { background: var(--side-hover); color: var(--side-ink); font-weight: 600; }
   .tab b { margin-left: 4px; }
-  .side-search { order: 2; width: 240px; border: 0; border-radius: 999px; padding: 9px 16px; }
+  .side-search { order: 2; width: 220px; border: 0; border-radius: 999px; padding: 9px 16px; }
   .side .icon-btn { order: 3; width: 40px; height: 40px; border-radius: 50%; }
   .side-new { order: 4; width: auto; }
   .me { order: 5; width: auto; }
   .me-name { display: none; }
   .main-col { max-width: 1400px; margin: 0 auto; }
 }
-@media (min-width: 641px) and (max-width: 1320px) { .side-search { width: 180px; } .side-search kbd { display: none; } }
+@media (min-width: 641px) and (max-width: 1520px) { .side-search { width: 160px; } .side-search kbd, .side-new .only-desktop { display: none; } }
 @media (min-width: 641px) and (max-width: 1100px) {
   .side { flex-wrap: wrap; padding-inline: 16px; }
   .side-search { width: auto; }
@@ -510,12 +507,11 @@ footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: f
 .only-mobile { display: none; }
 
 /* Телефон: нижняя панель вкладок, свайп по этапам, окна на весь экран, таблицы карточками */
-@media (max-width: 1100px) { .an-row3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .an-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 1100px) { .an-row3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .an-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .an-kpi:nth-child(3) { border-left: 0; } .an-kpi:nth-child(n+3) { border-top: 1px solid var(--line); } }
 @media (max-width: 640px) {
   .an-row2, .an-row3, .an-row3.two, .an-row4 { grid-template-columns: minmax(0, 1fr); }
-  .an-kpis { gap: 10px; } .an-kpi { padding: 14px; } .an-kpi b { font-size: var(--fs-lg); } .an-swoosh { display: none; }
+  .an-kpi { padding: 14px; } .an-kpi b { font-size: var(--fs-lg); }
   .an-cols .cur .an-tip { right: calc(50% + 24px); }
-  .an-switch { position: static; transform: none; max-width: 100%; justify-self: start; }
   .alert { grid-template-columns: 1fr; }
   .trow { grid-template-columns: auto minmax(0, 1fr); }
   .trow > :last-child { grid-column: 2; justify-self: start; }
@@ -528,7 +524,6 @@ footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: f
   .side-search { width: auto; padding: 6px; border: 0; background: none; }
   .side-search span, .side-search kbd { display: none; }
   .main-col { padding-inline: 16px; }
-  .side-new .arr { display: none; }
   .side-new { width: 52px; height: 52px; padding: 0; font-size: var(--fs-xl); position: fixed; right: 16px; bottom: calc(78px + env(safe-area-inset-bottom, 0px)); z-index: 51; border-radius: 50%; align-items: center; box-shadow: var(--sh-3); }
   .side-new .fab-text { display: none; }
 
@@ -579,24 +574,15 @@ footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: f
   .btn:hover .arr svg:first-child { transform: translate(130%, -130%); }
   .btn:hover .arr svg + svg, .cta:hover .arr svg + svg { transform: none; }
   .cta:hover .arr svg:first-child { transform: translate(300%, -300%); }
-  .card { transition: border-color var(--t-fast), transform var(--t) var(--ease), box-shadow var(--t); }
-  .card:hover { transform: translateY(-2px); }
-  .rcard { transition: transform var(--t) var(--ease), box-shadow var(--t); }
-  .rcard:hover { transform: translateY(-6px); }
-  .rphoto img, .rphoto svg { transition: transform var(--t-slow) var(--ease); }
-  .rcard:hover .rphoto img, .rcard:hover .rphoto svg { transform: scale(1.05); }
-  /* Появление контента при открытии раздела и при прокрутке: снизу с затуханием, по очереди */
+  /* Экраны приложения открывают десятки раз в день: никаких входных анимаций и подъёмов, только отклик на действие */
+  .card, .rcard { transition: border-color var(--t-fast), box-shadow var(--t-fast); }
+  /* Плавное появление — только на главной и экране входа */
   .rise:not(.in) { opacity: 0; }
-  .rise.in { animation: rise .8s var(--ease) calc(var(--i, 0) * 70ms) backwards; }
-  dialog.drawer[open] { animation: drawer-in var(--t) var(--ease); }
-  .an-plot svg, .an-gauge svg { animation: wipe 1.4s var(--ease) .2s backwards; }
-  .an-plot .an-dot, .an-plot .an-tip, .an-plot::after { transition: left var(--t-fast) var(--ease), top var(--t-fast) var(--ease); animation: rise .6s var(--ease) 1.2s backwards; }
-  .an-col { animation: grow-y 1s var(--ease) calc(var(--i, 0) * 70ms + .2s) backwards; }
-  .an-bar i { animation: grow-x 1s var(--ease) .2s backwards; }
-  .an-kpi, .an-card { transition: transform var(--t) var(--ease), box-shadow var(--t); }
-  .an-kpi:hover { transform: translateY(-5px); box-shadow: var(--sh-3); }
+  .rise.in { animation: rise .5s var(--ease) calc(var(--i, 0) * 60ms) backwards; }
+  dialog.drawer[open] { animation: drawer-in .2s var(--ease); }
+  .an-plot .an-dot, .an-plot .an-tip, .an-plot::after { transition: left var(--t-fast) var(--ease), top var(--t-fast) var(--ease); }
   .an-go { transition: background-color var(--t-fast), color var(--t-fast); } .an-go .arr svg { transition: transform var(--t) cubic-bezier(.4, 0, .6, 1); }
-  dialog.modal[open] { animation: pop-in var(--t) var(--ease); }
+  dialog.modal[open] { animation: pop-in .2s var(--ease); }
   .logo:hover .mark { transform: translateY(-1px) rotate(-6deg); }
   .mark { transition: transform var(--t) var(--ease); }
 }
@@ -604,12 +590,7 @@ footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: f
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 @keyframes theme-in { from { clip-path: circle(0 at var(--tx) var(--ty)); } to { clip-path: circle(var(--tr) at var(--tx) var(--ty)); } }
 ::view-transition-new(root) { animation: theme-in .7s var(--ease); }
-@keyframes wipe-in { from { clip-path: polygon(0 0, 0 0, 0 0); } to { clip-path: polygon(0 0, 200% 0, 0 200%); } }
-:root[data-vt="wipe"]::view-transition-new(root) { animation: wipe-in .9s var(--ease); }
-@keyframes wipe { from { clip-path: inset(0 100% 0 0); } }
-@keyframes grow-y { from { transform: scaleY(0); } }
-@keyframes grow-x { from { transform: scaleX(0); } }
-@keyframes rise { from { opacity: 0; transform: translateY(28px); } }
+@keyframes rise { from { opacity: 0; transform: translateY(20px); } }
 @keyframes drawer-in { from { transform: translateX(100%); } }
 .skip { position: fixed; left: 12px; top: -48px; z-index: 100; padding: 8px 14px; border-radius: 999px; background: var(--ink); color: var(--bg); font-weight: 500; text-decoration: none; }
 .skip:focus { top: 12px; }
@@ -625,23 +606,24 @@ footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: f
       <button class="icon-btn" id="theme-btn" data-act="theme" aria-label="Сменить тему"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg></button>
 </div>
     <button class="side-search" data-act="search" aria-label="Поиск"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg><span>Поиск</span><kbd id="search-kbd">Ctrl K</kbd></button>
-    <button class="btn primary side-new" data-act="import-open" aria-label="Новая сделка из переписки">+<span class="fab-text">&nbsp;Сделка</span><span class="only-desktop">&nbsp;из переписки</span><span class="arr" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2 10 10 2M4 2h6v6"/></svg><svg viewBox="0 0 12 12"><path d="M2 10 10 2M4 2h6v6"/></svg></span></button>
+    <button class="btn primary side-new" data-act="import-open" aria-label="Новая сделка из переписки">+<span class="fab-text">&nbsp;Сделка</span><span class="only-desktop">&nbsp;из переписки</span></button>
     <nav class="tabs" id="tabs" aria-label="Разделы"></nav>
     <button class="me" id="me" data-act="tab" data-tab="profile" aria-label="Личный кабинет"></button>
   </aside>
   <div class="main-col">
     <main id="view" tabindex="-1"></main>
     <footer class="small muted">
-      <span>Вымышленные данные. Вход демонстрационный: пароль для всех аккаунтов — demo. ИИ работает в режиме заглушки: правила вместо модели.</span>
+      <span>Демо на вымышленных данных: пароль для всех аккаунтов — demo, ИИ работает по правилам без модели, файлы и отправка на площадки имитируются.</span>
       <button class="btn link small" data-act="reset">Сбросить демо-данные</button>
     </footer>
   </div>
 </div>
 
-<dialog id="drawer" class="drawer" aria-label="Сделка"></dialog>
-<dialog id="modal" class="modal"></dialog>
+<!-- tabindex: при открытии фокус встаёт на само окно, а не на крестик -->
+<dialog id="drawer" class="drawer" aria-label="Сделка" tabindex="-1"></dialog>
+<dialog id="modal" class="modal" tabindex="-1"></dialog>
 
-<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="parse.js"></script>
 <script>
 const K = 'realtika-demo-v7';
@@ -665,14 +647,15 @@ const today = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
 const iso = off => { const d = new Date(today().getTime() + off * DAY + DAY / 2); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
 const days = s => { const [y, m, d] = s.split('-').map(Number); return Math.round((new Date(y, m - 1, d) - today()) / DAY); };
 const fmtDate = s => s.split('-').reverse().join('.');
-const rub = n => new Intl.NumberFormat('ru-RU').format(Math.round(n)) + ' ₽';
-const mln = n => (n / 1e6).toLocaleString('ru-RU', { maximumFractionDigits: 1 }) + ' млн ₽';
+const rub = n => new Intl.NumberFormat('ru-RU').format(Math.round(n)) + '\u00a0₽';
+const mln = n => (n / 1e6).toLocaleString('ru-RU', { maximumFractionDigits: 1 }) + '\u00a0млн\u00a0₽';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const plural = (n, f) => f[n % 10 === 1 && n % 100 !== 11 ? 0 : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 1 : 2];
 const dayWord = n => `${n} ${plural(n, ['день', 'дня', 'дней'])}`;
 const roomsLabel = r => r == null ? 'любая' : r === 0 ? 'студия' : `${r}-к`;
 const yesNo = v => v ? 'да' : 'нет';
-const dueLabel = s => { const d = days(s); return d === 0 ? 'сегодня' : d === 1 ? 'завтра' : d === -1 ? 'вчера' : fmtDate(s); };
+const shortDate = s => s.startsWith(iso(0).slice(0, 4)) ? fmtDate(s).slice(0, 5) : fmtDate(s);
+const dueLabel = s => { const d = days(s); return d === 0 ? 'сегодня' : d === 1 ? 'завтра' : d === -1 ? 'вчера' : d < 0 && d > -7 ? `${dayWord(-d)} назад` : shortDate(s); };
 const dueCls = s => { const d = days(s); return d < 0 ? 'crit' : d === 0 ? 'warn' : 'muted'; };
 
 // Поля сделки, которые заполняет ИИ или агент вручную
@@ -710,13 +693,13 @@ function genUnits(c) {
 const COMPLEX_DOCS = ['Разрешение на строительство', 'Проектная декларация', 'Договор ДДУ (шаблон)', 'Аккредитованные банки', 'Планировки и отделка'];
 // Что агент обязан заполнить, чтобы перевести сделку НА этап с этим требованием
 const GATES = {
-  '': { label: 'ничего, просто переход', need: 'ничего заполнять не нужно' },
-  call: { label: 'комментарий после звонка', need: 'комментарий после звонка, запись по желанию' },
-  meeting: { label: 'дата и время встречи', need: 'дата, время и место встречи' },
-  meetingDone: { label: 'итоги встречи с вопросами ИИ', need: 'запись или итоги встречи, ответы на вопросы ИИ' },
-  showing: { label: 'объект, дата и время показа', need: 'объект, дата, время и место показа' },
-  booking: { label: 'бронь объекта', need: 'объект, сумма и срок брони' },
-  won: { label: 'размер комиссии', need: 'объект и размер комиссии' },
+  '': { label: 'без условий', need: 'ничего заполнять не нужно' },
+  call: { label: 'итог звонка', need: 'комментарий после звонка, запись по желанию' },
+  meeting: { label: 'дата встречи', need: 'дата, время и место встречи' },
+  meetingDone: { label: 'итоги встречи', need: 'запись или итоги встречи, ответы на вопросы ИИ' },
+  showing: { label: 'дата показа', need: 'объект, дата, время и место показа' },
+  booking: { label: 'бронь', need: 'объект, сумма и срок брони' },
+  won: { label: 'комиссия', need: 'объект и размер комиссии' },
 };
 const LOSE_REASONS = ['Не выходит на связь', 'Купил через другое агентство', 'Передумал покупать', 'Не прошёл по ипотеке', 'Не подошли объекты', 'Другое'];
 const NOTE_KIND = { call: 'Звонок', contact: 'Контакт', meeting: 'Встреча', stage: 'Этап', lost: 'Отказ' };
@@ -856,7 +839,8 @@ const cold = d => isOpen(d) && days(d.lastContact) <= -5 && !S.tasks.some(t => t
 const activeBooking = d => S.bookings.find(b => b.dealId === d.id && !b.closed);
 const meetWhere = m => m.place && m.place.toLowerCase().includes(m.format) ? m.place : [m.format, m.place].filter(Boolean).join(', ');
 const objTitle = o => o ? `${roomsLabel(o.rooms)}, ${o.area} м² · ${o.address}${o.complexId ? `, кв. ${o.number}` : ''}` : '—';
-const mlnShort = n => (n / 1e6).toLocaleString('ru-RU', { maximumFractionDigits: 1 }) + ' млн';
+const Q_PLAN = 4.5e6; // план агентства на квартал по комиссиям, демо
+const mlnShort = n => (n / 1e6).toLocaleString('ru-RU', { maximumFractionDigits: 1 }) + '\u00a0млн';
 // shortcut: история комиссий по дням и месяцам — детерминированные демо-цифры; с бэкендом считать из закрытых сделок
 const DEMO = {
   daily: () => Array.from({ length: 30 }, (_, i) => Math.round(42000 + 30000 * Math.sin(i / 4.2 - 1.6) + 9000 * Math.sin(i * 1.3) + i * 900, -3)),
@@ -869,7 +853,7 @@ function plot(v, target) {
   let d = `M${pts[0]}`;
   for (let i = 1; i < pts.length; i++) { const [a, b, c, e] = [pts[i - 2] || pts[i - 1], pts[i - 1], pts[i], pts[i + 1] || pts[i]];
     d += ` C${b[0] + (c[0] - a[0]) / 6},${b[1] + (c[1] - a[1]) / 6} ${c[0] - (e[0] - b[0]) / 6},${c[1] - (e[1] - b[1]) / 6} ${c[0]},${c[1]}`; }
-  const peak = v.indexOf(Math.max(...v)), ticks = [1, .75, .5, .25, 0].map(k => Math.round(max * k / 1000) + 'K');
+  const peak = v.indexOf(Math.max(...v)), ticks = [1, .75, .5, .25, 0].map(k => Math.round(max * k / 1000) + '\u00a0тыс.');
   return `<div class="an-chart"><div class="an-y small muted">${ticks.map(t => `<span>${t}</span>`).join('')}</div>
     <div class="an-plot" role="img" aria-label="${esc(`График за 30 дней: максимум ${rub(v[peak])} ${fmtDate(iso(peak - v.length + 1))}, сегодня ${rub(v[v.length - 1])}${target ? `, план ${rub(target)} в день` : ''}`)}" data-v="${v.join(',')}" data-max="${max}" style="--x:${peak / (v.length - 1) * 100}%;--y:${Y(v[peak])}%">
       <svg viewBox="0 0 300 100" preserveAspectRatio="none" aria-hidden="true"><path class="area" d="${d} L300,100 L0,100Z"/><path class="line" d="${d}"/>${target ? `<path class="target" d="M0,${Y(target)} H300"/>` : ''}</svg>
@@ -891,7 +875,7 @@ const callBtn = phone => phone ? `<a class="btn sm primary call" href="${telHref
 // У каждой сделки свой адрес: открывается в новой вкладке и переживает перезагрузку
 const dealHref = id => '#/deal/' + id;
 const dealLink = d => `<a class="btn link" href="${dealHref(d.id)}" data-act="deal" data-id="${d.id}">${esc(d.name)}</a>`;
-const EMPTY_COL = '<p class="empty" style="margin:0;text-align:center">Перетащите сюда сделку</p>';
+const EMPTY_COL = '<p class="empty" style="margin:0;text-align:center"><span class="only-desktop">Перетащите сюда сделку</span><span class="only-mobile">Пока пусто</span></p>';
 const taskTitle = kind => kind === 'Звонок' ? 'Позвонить клиенту' : kind;
 
 let tab = location.hash.startsWith('#/deal/') ? 'deals' : location.hash.slice(1) || 'tasks';
@@ -997,11 +981,13 @@ function feedHtml() {
       <div>${dealLink(d)}<p>${esc(n.text)}</p></div></div>`; }).join('')}</div>`;
 }
 
+// Окно получает имя по своему заголовку, чтобы экранный диктор его объявил
+function openModal() { const m = $('modal'); m.setAttribute('aria-label', m.querySelector('h2')?.textContent || 'Поиск'); if (!m.open) { m.showModal(); m.focus(); } }
 function openSearch() {
   $('drawer').close();
   $('modal').classList.add('search');
   $('modal').innerHTML = `<div class="dlg search-box"><input id="gs-q" type="search" placeholder="Клиент, телефон, ЖК, улица или задача" aria-label="Поиск по CRM" autocomplete="off"><div id="gs-res" class="gs-res"></div></div>`;
-  if (!$('modal').open) $('modal').showModal();
+  openModal();
   fillSearch(''); $('gs-q').focus();
 }
 function fillSearch(raw) {
@@ -1025,15 +1011,15 @@ const views = {
     const alertRow = x => `<div class="alert"><div>${x.p}</div><p>${dealLink(x.dl)}: ${x.text}</p><div>${x.act}</div></div>`;
     const rows = [...late.map(taskRow), ...h.map(alertRow), ...now.map(taskRow)];
     return `<div class="hello"><h1>${hi}, ${esc(me().name.split(' ')[0])}</h1>
-      <span class="muted">${new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' })} · ${n} ${plural(n, ['дело', 'дела', 'дел'])} на сегодня${late.length ? `, просрочено: ${late.length}` : ''}</span>
-      ${first ? `<span class="start">Начните с клиента ${dealLink(first)}</span>` : ''}</div>
+      <span class="muted">${new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' })}${late.length ? ` · просрочено: ${late.length}` : ''}</span>
+      ${first ? `<span class="start">Первым делом: ${dealLink(first)}</span>` : ''}</div>
     <div class="dash${c.all ? '' : ' solo'}"><div class="dash-main">
     <section class="section"><div class="section-head"><h2>Что сделать сегодня · ${n}</h2><div class="toolbar">${agentFilter()}</div></div>
       <div class="list">${rows.join('') || '<div class="empty">На сегодня всё сделано. Новые дела появятся, когда вы назначите встречу или показ или добавите задачу в сделке.</div>'}</div>
     </section>
     ${later.length ? `<section class="section"><div class="section-head"><h2>Дальше · ${later.length}</h2></div><div class="list">${later.map(taskRow).join('')}</div></section>` : ''}
     </div>
-    ${c.all ? `<aside class="section"><div class="section-head"><h2>Что происходит в команде</h2></div>${feedHtml()}</aside>` : ''}</div>`;
+    ${c.all ? `<aside class="section"><div class="section-head"><h2>Лента команды</h2></div>${feedHtml()}</aside>` : ''}</div>`;
   },
   deals() {
     const ds = scoped(), c = can(), open = openTasks();
@@ -1044,10 +1030,11 @@ const views = {
         const cs = cols[i];
         return `<div class="col" data-stage="${st.id}"><h3><span>${esc(st.name)}</span><span>${cs.length}</span></h3>${cs.length ? '' : EMPTY_COL}${cs.map(d => {
           const n = -days(d.lastContact), t = open.find(x => x.dealId === d.id), b = activeBooking(d), bs = b && bookingState(b);
-          const next = !isOpen(d) ? '' : t ? `<span class="since${days(t.due) < 0 ? ' crit' : ''}">${esc(t.title)}, ${dueLabel(t.due)}</span>` : '<span class="since warn">нет следующего шага</span>';
+          // одна строка о следующем шаге: задача, иначе бронь, иначе сколько дней без связи, иначе «нет шага»
+          const next = !isOpen(d) ? '' : t ? `<span class="since${days(t.due) < 0 ? ' crit' : ''}">${esc(t.title)}, ${dueLabel(t.due)}</span>` : b ? '' : cold(d) ? `<span class="since warn">${dayWord(n)} без связи</span>` : '<span class="since warn">нет следующего шага</span>';
           return `<a class="card" draggable="true" href="${dealHref(d.id)}" data-act="deal" data-id="${d.id}"><strong>${esc(d.name)}</strong>
             <span class="small muted">${roomsLabel(d.rooms)} · ${esc(d.district || 'любой район')}${c.all ? ` · ${esc(user(d.agentId)?.name)}` : ''}</span>
-            ${bs && bs[0] !== 'ok' ? `<span class="since ${bs[0]}">бронь: ${bs[1]}</span>` : ''}${next}${cold(d) ? `<span class="since warn">${dayWord(n)} без связи</span>` : ''}
+            ${bs && bs[0] !== 'ok' ? `<span class="since ${bs[0]}">бронь: ${bs[1]}</span>` : ''}${next}
             ${d.budget ? `<span class="amt">${mlnShort(d.budget)}</span>` : ''}</a>`;
         }).join('')}</div>`;
       }).join('')}
@@ -1067,8 +1054,8 @@ const views = {
           <button type="button" class="btn" data-act="toggle-filters" aria-expanded="${!!ui.filtersOpen}">${ui.filtersOpen ? 'Скрыть фильтры' : 'Ещё фильтры'}${activeFilters() ? ` · ${activeFilters()}` : ''}</button></div></div>
         <div class="field more"><label for="f-market">Рынок</label><select id="f-market">${opts([['', 'любой'], ['новостройка', 'новостройки'], ['вторичка', 'вторичка']], F.market)}</select></div>
         <div class="field"><span class="lbl">Комнаты</span><div class="actions">${[[0, 'Ст'], [1, '1'], [2, '2'], [3, '3']].map(([r, t]) => `<button type="button" class="btn sm chip" data-act="f-room" data-rooms="${r}" aria-pressed="${F.rooms.includes(r)}" aria-label="${roomsLabel(r)}">${t}</button>`).join('')}</div></div>
-        <div class="field"><span class="lbl">Цена, млн ₽</span><div class="range"><input id="f-pf" type="number" min="0" step="0.1" placeholder="от" aria-label="Цена от, млн" value="${n(F.priceFrom)}"><input id="f-pt" type="number" min="0" step="0.1" placeholder="до" aria-label="Цена до, млн" value="${n(F.priceTo)}"></div></div>
-        <div class="field more"><span class="lbl">Площадь, м²</span><div class="range"><input id="f-af" type="number" min="0" placeholder="от" aria-label="Площадь от" value="${n(F.areaFrom)}"><input id="f-at" type="number" min="0" placeholder="до" aria-label="Площадь до" value="${n(F.areaTo)}"></div></div>
+        <div class="field"><span class="lbl">Цена, млн ₽</span><div class="range"><input id="f-pf" type="number" inputmode="decimal" min="0" step="0.1" placeholder="от" aria-label="Цена от, млн" value="${n(F.priceFrom)}"><input id="f-pt" type="number" inputmode="decimal" min="0" step="0.1" placeholder="до" aria-label="Цена до, млн" value="${n(F.priceTo)}"></div></div>
+        <div class="field more"><span class="lbl">Площадь, м²</span><div class="range"><input id="f-af" type="number" inputmode="decimal" min="0" placeholder="от" aria-label="Площадь от" value="${n(F.areaFrom)}"><input id="f-at" type="number" inputmode="decimal" min="0" placeholder="до" aria-label="Площадь до" value="${n(F.areaTo)}"></div></div>
         <div class="field" style="grid-column: 1 / -1"><span class="lbl">Район · можно несколько</span><div class="actions">${districts.map(d => `<button type="button" class="btn sm chip" data-act="f-district" data-district="${esc(d)}" aria-pressed="${F.district.includes(d)}">${esc(d)}</button>`).join('')}</div></div>
         <div class="field more"><span class="lbl">Этаж</span><label class="check"><input type="checkbox" id="f-nf"${F.notFirst ? ' checked' : ''}> не первый</label><label class="check"><input type="checkbox" id="f-nl"${F.notLast ? ' checked' : ''}> не последний</label></div>
         <div class="field more"><label for="f-sort">Сортировка</label><select id="f-sort">${opts([['price', 'сначала дешевле'], ['priceDesc', 'сначала дороже'], ['area', 'больше площадь'], ['m2', 'дешевле за м²']], F.sort)}</select>
@@ -1081,7 +1068,7 @@ const views = {
   },
   bookings() {
     const ids = scopedIds(), bs = S.bookings.filter(b => ids.has(b.dealId)), all = can().all;
-    return `<section class="section"><div class="section-head"><h1>Брони</h1><span class="muted small">Только учёт: деньги держит указанная сторона, Realtika их не принимает</span></div>
+    return `<section class="section"><div class="section-head"><h1>Брони</h1><span class="muted small">Деньги хранит сторона из колонки «Деньги у»</span></div>
       <div class="tbl cards"><table><thead><tr><th>Сделка</th>${all ? '<th>Агент</th>' : ''}<th>Объект</th><th>Тип</th><th class="num">Сумма</th><th>Деньги у</th><th>Срок</th><th>Статус</th><th></th></tr></thead><tbody>
       ${bs.map(b => { const d = deal(b.dealId), [cls, txt] = bookingState(b); return `<tr><td>${dealLink(d)}</td>${all ? `<td>${esc(user(d.agentId)?.name)}</td>` : ''}<td>${esc(objTitle(ob(b.objectId)))}</td><td>${b.kind}</td><td class="num">${rub(b.amount)}</td><td>${b.holder}</td><td>${fmtDate(b.expires)}</td><td>${pill(cls, txt)}</td>
         <td>${b.closed ? '' : `<div class="actions"><button class="btn sm" data-act="extend" data-id="${b.id}">Продлить на неделю</button><button class="btn sm" data-act="close-booking" data-id="${b.id}">Снять бронь</button></div>`}</td></tr>`; }).join('') || `<tr><td colspan="9" class="muted">Броней нет. Забронируйте квартиру в «Объектах» или переведите сделку на этап «Бронь».</td></tr>`}
@@ -1105,52 +1092,45 @@ const views = {
     const c = can(), ds = scoped(), won = ds.filter(d => !d.lost && d.stageId === lastStageId()).length, lost = ds.filter(d => d.lost).length;
     const ids = scopedIds(), ym = iso(0).slice(0, 7), budgets = ds.filter(d => d.budget);
     const month = S.commissions.filter(k => ids.has(k.dealId) && k.dealDate.startsWith(ym)).reduce((t, k) => t + k.amount, 0);
-    // Кликабельно только то, что ведёт в раздел: плашка KPI целиком или стрелка в заголовке карточки
+    // Кликабельно только то, что ведёт в раздел: показатель целиком или стрелка в заголовке карточки
     const go = (tab, name) => `<button type="button" class="an-go" data-act="tab" data-tab="${tab}" aria-label="Открыть раздел «${name}»" title="Открыть «${name}»">${ARR}</button>`;
-    const card = (cls, icon, title, sub, body, extra = '', tab) => `<section class="an-card ${cls}"><div class="an-head"><span class="an-ico" aria-hidden="true"><svg viewBox="0 0 24 24">${icon}</svg></span><div><h3>${title}</h3>${sub ? `<span class="muted small">${sub}</span>` : ''}</div>${extra}${tab ? go(tab, TABS.find(t => t[0] === tab)[1]) : ''}</div>${body}</section>`;
-    const kpi = (hero, icon, value, label, tab) => `<button type="button" class="an-kpi${hero ? ' an-hero' : ''}" data-act="tab" data-tab="${tab}" aria-label="${label}: открыть раздел «${TABS.find(t => t[0] === tab)[1]}»"><span class="an-kpi-top"><span class="an-ico" aria-hidden="true"><svg viewBox="0 0 24 24">${icon}</svg></span></span><b>${value}</b><span class="small">${label}</span>${hero ? '<i class="an-swoosh" aria-hidden="true"></i>' : ''}</button>`;
-    // Источники заявок: доля каждого источника, полукольцо как в референсе
+    const card = (cls, title, sub, body, extra = '', tab) => `<section class="an-card ${cls}"><div class="an-head"><div><h3>${title}</h3>${sub ? `<span class="muted small">${sub}</span>` : ''}</div>${extra}${tab ? go(tab, TABS.find(t => t[0] === tab)[1]) : ''}</div>${body}</section>`;
+    const kpi = (value, label, tab) => `<button type="button" class="an-kpi" data-act="tab" data-tab="${tab}" aria-label="${label}: открыть раздел «${TABS.find(t => t[0] === tab)[1]}»"><span class="small">${label}</span><b>${value}</b></button>`;
+    // Источники заявок: доля каждого источника
     const src = Object.entries(ds.filter(d => d.source).reduce((m, d) => (m[d.source] = (m[d.source] || 0) + 1, m), {})).sort((a, b) => b[1] - a[1]).slice(0, 4);
-    const tot = src.reduce((t, [, n]) => t + n, 0) || 1, SRC_C = ['var(--accent)', 'var(--lime)', 'var(--ink)', 'var(--muted)'];
+    const srcN = src.reduce((t, [, n]) => t + n, 0), tot = srcN || 1, SRC_C = ['var(--accent)', 'var(--soft)', 'var(--ink)', 'var(--muted)'];
     let acc = 0;
     const arcs = src.map(([, n], i) => { const p = n / tot * 100, a = `<circle r="40" cx="50" cy="50" pathLength="200" stroke="${SRC_C[i]}" stroke-dasharray="${Math.max(p - 1.2, .1)} 200" stroke-dashoffset="${-acc}"/>`; acc += p; return a; }).join('');
     // Воронка: сколько сделок дошло до каждого этапа
     const reached = S.stages.map((st, i) => ds.filter(d => S.stages.findIndex(x => x.id === d.stageId) >= i).length), top = reached[0] || 1;
     const agents = S.users.filter(u => u.role === 'agent').map(u => [u, S.deals.filter(d => d.agentId === u.id && isOpen(d)).reduce((t, d) => t + d.budget, 0)]).sort((a, b) => b[1] - a[1]);
     const amax = agents[0]?.[1] || 1, months = DEMO.months(), mmax = Math.max(...months.map(m => m[1] + m[2]));
-    const qFact = months.slice(-3).reduce((t, m) => t + m[1], 0), qPlan = 4.5e6, qp = Math.min(qFact / qPlan, 1);
-    const I = {
-      rub: '<circle cx="12" cy="12" r="9"/><path d="M10 17V7h3a3 3 0 0 1 0 6h-5"/><path d="M8 15h5"/>', user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
-      pct: '<path d="M5 19 19 5"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/>', bag: '<path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 0 1 6 0"/>',
-      chart: '<path d="M4 20V10M10 20V4M16 20v-7"/>', target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/>', pie: '<path d="M12 3a9 9 0 1 0 9 9h-9z"/>',
-      funnel: '<path d="M3 4h18l-7 9v6l-4 2v-8z"/>', star: '<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',
-    };
-    return `<div class="an"><div class="section-head"><div><h1 class="an-h1">Аналитика</h1><span class="muted small">${c.all ? 'Как работает отдел продаж' : 'Как идут ваши продажи'}</span></div></div>
-      <div class="an-switch" role="group" aria-label="Цветовая схема">${PALETTES.map(([k, n, , a]) => `<button type="button" data-act="palette" data-id="${k}" aria-pressed="${(me().settings.palette || 'trend') === k}"><i style="--c:${a}"></i>${n}</button>`).join('')}</div>
+    // дневной план — из квартального, чтобы два плана на экране не расходились
+    const qFact = months.slice(-3).reduce((t, m) => t + m[1], 0), qp = Math.min(qFact / Q_PLAN, 1), dayPlan = Math.round(Q_PLAN / 91 / 1000) * 1000;
+    return `<div class="an"><div class="section-head"><h1>Аналитика</h1></div>
       <div class="an-kpis">
-        ${kpi(true, I.rub, rub(month), 'Комиссии за месяц', 'commissions')}
-        ${kpi(false, I.user, ds.filter(isOpen).length, 'Сделок в работе', 'deals')}
-        ${kpi(false, I.pct, won + lost ? Math.round(won / (won + lost) * 100) + '%' : '—', 'Конверсия в сделку', 'deals')}
-        ${kpi(false, I.bag, budgets.length ? mlnShort(budgets.reduce((t, d) => t + d.budget, 0) / budgets.length) : '—', 'Средний бюджет', 'deals')}
+        ${kpi(rub(month), 'Комиссии за месяц', 'commissions')}
+        ${kpi(ds.filter(isOpen).length, 'Сделок в работе', 'deals')}
+        ${kpi(won + lost ? Math.round(won / (won + lost) * 100) + '%' : '—', 'Закрыто из завершённых', 'deals')}
+        ${kpi(budgets.length ? mlnShort(budgets.reduce((t, d) => t + d.budget, 0) / budgets.length) : '—', 'Средний бюджет', 'deals')}
       </div>
       <div class="an-row2${c.all ? '' : ' solo'}">
-        ${card('', I.chart, 'Комиссии по дням', 'Демо-данные агентства: закрытых сделок в CRM пока мало', plot(DEMO.daily(), 60000), '<span class="an-legend"><i style="--c:var(--accent)"></i>Факт <i style="--c:var(--ink)"></i>План</span>', 'commissions')}
-        ${c.all ? `<section class="an-card an-plan"><div class="an-head"><span class="an-ico" aria-hidden="true"><svg viewBox="0 0 24 24">${I.target}</svg></span><div><h3>План на квартал</h3><span class="small">Комиссии агентства, демо</span></div></div>
+        ${card('', 'Комиссии по дням', 'Демо: в CRM пока мало закрытых сделок', plot(DEMO.daily(), dayPlan), '<span class="an-legend"><i style="--c:var(--accent)"></i>Факт <i style="--c:var(--ink)"></i>План</span>', 'commissions')}
+        ${c.all ? `<section class="an-card an-plan"><div class="an-head"><div><h3>План на квартал</h3><span class="small">Комиссии агентства, демо</span></div></div>
           <div class="an-gauge big"><svg viewBox="0 0 100 55" aria-hidden="true"><g transform="rotate(180 50 50)"><circle r="40" cx="50" cy="50" pathLength="200" class="track"/><circle r="40" cx="50" cy="50" pathLength="200" stroke="var(--lime)" stroke-dasharray="${qp * 100} 200"/></g></svg>
-            <div><span class="small">Факт</span><b>${mlnShort(qFact)} ₽</b><span class="small">из ${mlnShort(qPlan)} ₽</span></div></div></section>` : ''}
+            <div><span class="small">Факт</span><b>${mlnShort(qFact)} ₽</b><span class="small">из ${mlnShort(Q_PLAN)} ₽</span></div></div></section>` : ''}
       </div>
       <div class="an-row3${c.all ? '' : ' two'}">
-        ${card('', I.pie, 'Источники сделок', 'Откуда пришли сделки', `<div class="an-src"><div class="an-gauge"><svg viewBox="0 0 100 55" aria-hidden="true"><g transform="rotate(180 50 50)">${arcs}</g></svg><b>${Math.round(src[0]?.[1] / tot * 100 || 0)}%</b></div>
-          <ul class="an-list">${src.map(([k, n], i) => `<li><i style="--c:${SRC_C[i]}"></i>${esc(k)}<b>${Math.round(n / tot * 100)}%</b></li>`).join('')}</ul></div>`)}
-        ${card('', I.funnel, 'Воронка', 'Сколько сделок дошло до этапа', `<ul class="an-funnel">${S.stages.map((st, i) => `<li><span class="small">${esc(st.name)}</span><span class="an-bar"><i style="--w:${Math.max(reached[i] / top * 100, 8)}%">${reached[i]}</i></span><span class="muted small">${Math.round(reached[i] / top * 100)}%</span></li>`).join('')}</ul>`,
-          `<span class="an-conv"><span class="muted small">Конверсия</span><b>${Math.round(reached[reached.length - 1] / top * 100)}%</b></span>`, 'deals')}
-        ${c.all ? card('', I.star, 'Лучшие агенты', 'Сумма сделок в работе', `<ul class="an-reps">${agents.map(([u, v]) => `<li>${avatar(u)}<span>${esc(u.name)}</span><b>${mlnShort(v)}</b><span class="an-bar thin"><i style="--w:${v / amax * 100}%"></i></span></li>`).join('')}</ul>`, '', 'team') : ''}
+        ${card('', 'Источники сделок', 'Откуда пришли сделки', `<div class="an-src"><div class="an-gauge"><svg viewBox="0 0 100 55" aria-hidden="true"><g transform="rotate(180 50 50)">${arcs}</g></svg><b>${srcN}</b></div>
+          <ul class="an-list">${src.map(([k, n], i) => `<li><i style="--c:${SRC_C[i]}"></i>${esc(k)}<b>${n} · ${Math.round(n / tot * 100)}%</b></li>`).join('') || '<li>Источник не указан ни в одной сделке</li>'}</ul></div>`)}
+        ${card('', 'Воронка', 'Сколько сделок дошло до этапа', `<ul class="an-funnel">${S.stages.map((st, i) => `<li><span class="small">${esc(st.name)}</span><span class="an-bar"><i style="--w:${Math.max(reached[i] / top * 100, 8)}%">${reached[i]}</i></span><span class="muted small">${Math.round(reached[i] / top * 100)}%</span></li>`).join('')}</ul>`,
+          `<span class="an-conv"><span class="muted small">Дошли до сделки</span><b>${Math.round(reached[reached.length - 1] / top * 100)}%</b></span>`, 'deals')}
+        ${c.all ? card('', 'Лучшие агенты', 'Сумма сделок в работе', `<ul class="an-reps">${agents.map(([u, v]) => `<li>${avatar(u)}<span>${esc(u.name)}</span><b>${mlnShort(v)}</b><span class="an-bar thin"><i style="--w:${v / amax * 100}%"></i></span></li>`).join('')}</ul>`, '', 'team') : ''}
       </div>
       <div class="an-row4">
-        ${card('', I.chart, 'Продажи по месяцам', 'Демо-данные агентства: получено и в работе', `<div class="an-cols" role="img" aria-label="${esc(months.map(([m, a, b]) => `${m}: получено ${mlnShort(a)} ₽, в работе ${mlnShort(b)} ₽`).join('; '))}">${months.map(([m, a, b], i) => `<div class="${i === months.length - 1 ? 'cur' : ''}"><span class="an-col" style="--h:${(a + b) / mmax * 100}%;--i:${i}"><i style="flex:${a}"></i><i style="flex:${b}"></i></span><span class="small muted">${m}</span>
-          ${i === months.length - 1 ? `<span class="an-tip"><b>${m}</b><span><i style="--c:var(--lime)"></i>В работе ${mlnShort(b)} ₽</span><span><i style="--c:var(--accent)"></i>Получено ${mlnShort(a)} ₽</span></span>` : ''}</div>`).join('')}</div>`)}
+        ${card('', 'Продажи по месяцам', 'Получено и в работе, демо', `<div class="an-cols" role="img" aria-label="${esc(months.map(([m, a, b]) => `${m}: получено ${mlnShort(a)} ₽, в работе ${mlnShort(b)} ₽`).join('; '))}">${months.map(([m, a, b], i) => `<div class="${i === months.length - 1 ? 'cur' : ''}"><span class="an-col" style="--h:${(a + b) / mmax * 100}%"><i style="flex:${a}"></i><i style="flex:${b}"></i></span><span class="small muted">${m}</span>
+          ${i === months.length - 1 ? `<span class="an-tip"><b>${m}</b><span><i style="--c:var(--soft)"></i>В работе ${mlnShort(b)} ₽</span><span><i style="--c:var(--accent)"></i>Получено ${mlnShort(a)} ₽</span></span>` : ''}</div>`).join('')}</div>`)}
       </div>
-      <p class="muted small">Плашки сверху, источники, воронка и агенты считаются по сделкам в CRM. Графики по дням и месяцам — демо, пока в CRM мало закрытых сделок.</p>
     </div>`;
   },
   team() {
@@ -1163,8 +1143,9 @@ const views = {
       const roleCell = c.users && u.id !== S.me
         ? `<select data-role="${u.id}" aria-label="Роль: ${esc(u.name)}">${Object.entries(ROLES).map(([k, v]) => `<option value="${k}"${k === u.role ? ' selected' : ''}>${v}</option>`).join('')}</select>`
         : ROLES[u.role];
-      return `<tr><td>${esc(u.name)}${u.id === S.me ? ' <span class="muted small">(вы)</span>' : ''}</td><td>${roleCell}</td><td class="num">${open || '—'}</td>
-        <td class="num">${overdue ? pill('crit', overdue) : '—'}</td><td class="num">${coldN ? pill('warn', coldN) : '—'}</td><td class="num">${ds.filter(d => !d.lost && d.stageId === lastStageId()).length || '—'}</td><td class="num">${due ? rub(due) : '—'}</td></tr>`;
+      const none = !ds.length, v = x => none ? '—' : x; // у директора и руководителя своих сделок нет
+      return `<tr><td>${esc(u.name)}${u.id === S.me ? ' <span class="muted small">(вы)</span>' : ''}</td><td>${roleCell}</td><td class="num">${v(open)}</td>
+        <td class="num">${overdue ? pill('crit', overdue) : v(0)}</td><td class="num">${coldN ? pill('warn', coldN) : v(0)}</td><td class="num">${v(ds.filter(d => !d.lost && d.stageId === lastStageId()).length)}</td><td class="num">${v(rub(due))}</td></tr>`;
     };
     return `<section class="section"><div class="section-head"><h1>Команда</h1><span class="muted small">${c.users ? 'Вы назначаете роли и добавляете сотрудников' : 'Роли назначает директор'}</span></div>
       <div class="tbl cards"><table><thead><tr><th>Сотрудник</th><th>Роль</th><th class="num">Сделок в работе</th><th class="num">Просрочено задач</th><th class="num">Без связи 5+ дней</th><th class="num">Закрыто</th><th class="num">Комиссии к получению</th></tr></thead>
@@ -1173,10 +1154,10 @@ const views = {
     </section>
     <section class="section"><h2>Права доступа</h2>
       <div class="tbl"><table><thead><tr><th>Что можно</th><th>Агент</th><th>Руководитель отдела продаж</th><th>Директор</th></tr></thead><tbody>
-        <tr><td>Свои сделки, задачи, брони, комиссии</td><td>✓</td><td>✓</td><td>✓</td></tr>
-        <tr><td>Сделки всех агентов, переназначение</td><td>—</td><td>✓</td><td>✓</td></tr>
-        <tr><td>Настройка этапов воронки</td><td>—</td><td>✓</td><td>✓</td></tr>
-        <tr><td>Сотрудники и роли</td><td>—</td><td>—</td><td>✓</td></tr>
+        <tr><td>Свои сделки, задачи, брони, комиссии</td><td>да</td><td>да</td><td>да</td></tr>
+        <tr><td>Сделки всех агентов, переназначение</td><td class="muted">нет</td><td>да</td><td>да</td></tr>
+        <tr><td>Настройка этапов воронки</td><td class="muted">нет</td><td>да</td><td>да</td></tr>
+        <tr><td>Сотрудники и роли</td><td class="muted">нет</td><td class="muted">нет</td><td>да</td></tr>
       </tbody></table></div></section>`;
   },
 };
@@ -1184,14 +1165,13 @@ const views = {
 const initials = u => u.name.split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
 const avatar = (u, cls = '') => `<span class="avatar ${cls}" aria-hidden="true">${u.photo ? `<img src="${u.photo}" alt="">` : esc(initials(u))}</span>`;
 const PALETTES = [['trend', 'Тренд', '#FFFFFF', '#3733FF'], ['graphite', 'Графит', '#1C1D1F', '#D9480F'], ['burgundy', 'Бордо', '#F0EBE6', '#8A1C3B'], ['emerald', 'Изумруд', '#10301F', '#14724F'], ['mono', 'Монохром', '#FAFAFA', '#111111'], ['classic', 'Классика', '#FBFBFC', '#3A5BD9']];
-// Смена темы или схемы с анимацией: круг от кнопки или диагональная шторка (как в референсе)
-function morph(el, kind, fn) {
+// Смена темы или схемы с анимацией: новая тема расходится кругом от кнопки
+function morph(el, fn) {
   if (!document.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches) return fn();
   const r = el.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2, h = document.documentElement;
   h.style.setProperty('--tx', x + 'px'); h.style.setProperty('--ty', y + 'px');
   h.style.setProperty('--tr', Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y)) + 'px');
-  h.dataset.vt = kind;
-  document.startViewTransition(fn).finished.finally(() => delete h.dataset.vt);
+  document.startViewTransition(fn);
 }
 function applyTheme() {
   const pal = S.me && me().settings.palette;
@@ -1233,7 +1213,6 @@ function logIn(id, restore = false) {
   try { localStorage.setItem(SK, id); } catch (e) {}
   ui = { dealId: null, placeId: null, unitId: null, rooms: null, draft: false, editing: false, preview: null, stageErr: '' }; filterAgent = '';
   if (!restore) tab = 'tasks';
-  shownTab = '';
   save(); applyTheme();
   $('login').hidden = true; $('app').hidden = false;
   render(); window.scrollTo(0, 0);
@@ -1254,9 +1233,9 @@ views.profile = () => {
   const st = u.settings;
   return `<section class="section">
     <div class="profile-head">
-      <label class="avatar big" style="cursor:pointer" title="Сменить фото">${u.photo ? `<img src="${u.photo}" alt="Фото профиля">` : esc(initials(u))}<input id="pf-photo" type="file" accept="image/*" hidden></label>
-      <div style="display:grid;gap:4px;flex:1;min-width:200px"><h2>${esc(u.name)}</h2><span class="muted">${ROLES[u.role]} · ${esc(u.email)}</span><span class="small muted">Нажмите на аватар, чтобы загрузить фото</span></div>
-      <button class="btn" data-act="logout">Выйти</button>
+      <span class="avatar big">${u.photo ? `<img src="${u.photo}" alt="Фото профиля">` : esc(initials(u))}</span>
+      <div style="display:grid;gap:4px;flex:1;min-width:200px"><h2>${esc(u.name)}</h2><span class="muted">${ROLES[u.role]} · ${esc(u.email)}</span></div>
+      <div class="actions"><label class="btn">${u.photo ? 'Сменить фото' : 'Загрузить фото'}<input id="pf-photo" class="vh" type="file" accept="image/*"></label><button class="btn" data-act="logout">Выйти</button></div>
     </div>
     ${team ? '<p class="small muted" style="margin:0">Показатели по всей команде</p>' : ''}
     <div class="stats">
@@ -1274,31 +1253,19 @@ views.profile = () => {
       <div class="panel"><h3>Настройки</h3>
         <div class="field"><label for="pf-theme">Тема оформления</label><select id="pf-theme">${[['system', 'как в системе'], ['light', 'светлая'], ['dark', 'тёмная']].map(([v, t]) => `<option value="${v}"${st.theme === v ? ' selected' : ''}>${t}</option>`).join('')}</select></div>
         <div class="field"><span class="lbl">Цветовая схема</span><div class="palettes">${PALETTES.map(([k, n, side, acc]) => `<button type="button" class="pal" data-act="palette" data-id="${k}" aria-pressed="${(st.palette || 'trend') === k}"><i><b style="background:${side}"></b><b style="background:${acc}"></b></i>${n}</button>`).join('')}</div></div>
-        <label class="check"><input type="checkbox" id="pf-hints"${st.aiHints ? ' checked' : ''}> Подсказки ИИ во вкладке «Задачи»</label>
-        <span class="small muted">Уведомления в Telegram и утренняя сводка появятся в рабочей версии.</span></div>
+        <label class="check"><input type="checkbox" id="pf-hints"${st.aiHints ? ' checked' : ''}> Подсказки ИИ во вкладке «Задачи»</label></div>
     </div></section>`;
 };
 
-// Плавное появление блоков раздела: видимые сразу — по очереди, остальные — когда доскроллили
-let shownTab = '';
+// Плавное появление главной и экрана входа; экраны приложения показываются сразу
 const io = 'IntersectionObserver' in window && new IntersectionObserver(es => es.filter(e => e.isIntersecting).forEach((e, n) => {
   e.target.style.setProperty('--i', Math.min(n, 8)); e.target.classList.add('in'); io.unobserve(e.target);
 }), { rootMargin: '0px 0px -40px' });
 function reveal(root) {
   if (!io || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  root.querySelectorAll('.hero > *, .login-title, .login-box, .hello, .section-head, .filters, .dash-main > .section, .dash > aside, .col, .rcard, .tbl, .stats, #map, .an-kpi, .an-card').forEach(el => {
+  root.querySelectorAll('.hero > *, .login-title, .login-box').forEach(el => {
     el.classList.add('rise'); io.observe(el);
   });
-  root.querySelectorAll('.stat b, .an-kpi b').forEach(countUp);
-}
-// Цифры в статистике набегают от нуля до значения
-function countUp(el) {
-  const m = el.textContent.match(/\d(?:[\d\s]*\d)?/);
-  if (!m) return;
-  const to = Number(m[0].replace(/\s/g, '')), [pre, post] = [el.textContent.slice(0, m.index), el.textContent.slice(m.index + m[0].length)];
-  const fmt = n => pre + new Intl.NumberFormat('ru-RU').format(n) + post, t0 = performance.now();
-  const tick = now => { const k = Math.min((now - t0) / 1200, 1); el.textContent = fmt(Math.round(to * (1 - (1 - k) ** 3))); if (k < 1) requestAnimationFrame(tick); };
-  requestAnimationFrame(tick);
 }
 
 function render() {
@@ -1312,7 +1279,6 @@ function render() {
   if (map) { map.remove(); map = null; }
   $('view').innerHTML = views[tab]();
   if (tab === 'objects') fillResults();
-  if (tab !== shownTab) { shownTab = tab; reveal($('view')); }
   // подписи колонок для таблиц, которые на телефоне показываются карточками
   document.querySelectorAll('.tbl.cards table').forEach(t => {
     const hs = [...t.querySelectorAll('thead th')].map(th => th.textContent);
@@ -1363,7 +1329,7 @@ function openAdvance(id, to, objectId) {
   const d = deal(id), i = S.stages.findIndex(s => s.id === d.stageId);
   ui.adv = { dealId: id, to: to || S.stages[i + 1].id, objectId, err: '' };
   renderAdvance();
-  if (!$('modal').open) $('modal').showModal();
+  openModal();
 }
 function renderAdvance() {
   const a = ui.adv, d = deal(a.dealId), to = stage(a.to), g = to.gate || '';
@@ -1387,13 +1353,13 @@ function renderAdvance() {
     body = `${b ? `<span class="small muted">Сейчас бронь на ${esc(objTitle(ob(b.objectId)))} до ${fmtDate(b.expires)}. Новая бронь заменит её.</span>` : ''}
       <div class="field"><label for="adv-obj">Объект</label><select id="adv-obj" required>${objectOptions(d, cur)}</select></div>
       <div class="fields"><div class="field"><label for="adv-kind">Тип</label><select id="adv-kind">${['Бронь у застройщика', 'Аванс', 'Задаток'].map(k => `<option${(o?.complexId ? 'Бронь у застройщика' : 'Аванс') === k ? ' selected' : ''}>${k}</option>`).join('')}</select></div>
-      <div class="field"><label for="adv-amount">Сумма, ₽</label><input id="adv-amount" type="number" min="0" step="1000" required value="${o?.complexId ? 50000 : 100000}"></div>
+      <div class="field"><label for="adv-amount">Сумма, ₽</label><input id="adv-amount" type="number" inputmode="numeric" min="0" step="1000" required value="${o?.complexId ? 50000 : 100000}"></div>
       <div class="field"><label for="adv-holder">Деньги у</label><select id="adv-holder">${['Застройщик', 'Агентство', 'Агент', 'Собственник'].map(h => `<option${(o?.complexId ? 'Застройщик' : 'Агентство') === h ? ' selected' : ''}>${h}</option>`).join('')}</select></div>
       <div class="field"><label for="adv-exp">Бронь до</label><input id="adv-exp" type="date" required value="${iso(7)}"></div></div>`;
   } else if (g === 'won') {
     const o = cur && ob(cur), hint = o ? Math.round(o.price * 0.03 / 1000) * 1000 : '';
     body = `<div class="field"><label for="adv-obj">Объект сделки</label><select id="adv-obj" required>${objectOptions(d, cur)}</select></div>
-      <div class="fields"><div class="field"><label for="adv-comm">Комиссия агентства, ₽</label><input id="adv-comm" type="number" min="1" step="1" required value="${hint}"></div>
+      <div class="fields"><div class="field"><label for="adv-comm">Комиссия агентства, ₽</label><input id="adv-comm" type="number" inputmode="numeric" min="1" step="1" required value="${hint}"></div>
       <div class="field"><label for="adv-payer">Кто платит</label><select id="adv-payer">${['Застройщик', 'Продавец', 'Покупатель'].map(x => `<option${(o?.complexId ? 'Застройщик' : 'Продавец') === x ? ' selected' : ''}>${x}</option>`).join('')}</select></div></div>
       ${hint ? '<span class="small muted">Подставлено 3% от цены объекта. Исправьте под договор.</span>' : ''}`;
   } else body = comment('Комментарий', false);
@@ -1455,7 +1421,7 @@ function openLose(id) {
     <div class="field"><label for="lose-reason">Причина</label><select id="lose-reason" required><option value="">выберите причину</option>${LOSE_REASONS.map(r => `<option>${r}</option>`).join('')}</select></div>
     <div class="field"><label for="lose-comment">Комментарий</label><textarea id="lose-comment" rows="3" placeholder="Что произошло, можно ли вернуть клиента позже"></textarea></div>
     <div class="actions"><button class="btn primary" type="submit">Перенести в «Отказ»</button><button type="button" class="btn" data-act="close">Отмена</button></div></form>`;
-  if (!$('modal').open) $('modal').showModal();
+  openModal();
 }
 // Сообщение об успехе внизу экрана; undo — подпись и действие для кнопки «Вернуть»
 const MOD = /Mac|iP/.test(navigator.platform) ? '⌘' : 'Ctrl';
@@ -1504,7 +1470,7 @@ function renderDeal() {
       <div class="block"><h3>Клиент</h3>
         <div class="actions">${d.phone ? `<a href="${telHref(d.phone)}" style="color:var(--ink);font-weight:600">${esc(d.phone)}</a>` : '<span class="muted">телефон не указан</span>'}${callBtn(d.phone)}</div>
         <span class="small ${cold(d) ? 'since warn' : 'muted'}">Последний контакт: ${n === 0 ? 'сегодня' : `${dayWord(n)} назад`}</span>
-        <div class="actions"><button class="btn sm" data-act="contact" data-id="${d.id}">Связался сегодня</button><button class="btn sm" data-act="draft" data-id="${d.id}">Черновик сообщения</button></div>
+        <div class="actions"><button class="btn sm" data-act="contact" data-id="${d.id}">Был контакт сегодня</button><button class="btn sm" data-act="draft" data-id="${d.id}">Черновик сообщения</button></div>
         ${ui.draft ? `<textarea id="draft-box" rows="6" aria-label="Черновик сообщения">${esc(draftText(d))}</textarea><div class="actions"><button class="btn sm primary" data-act="copy">Копировать</button><span class="small muted" id="copy-status"></span></div>` : ''}
         <div class="field"><label for="deal-agent">Ответственный</label>${c.all ? `<select id="deal-agent">${S.users.map(u => `<option value="${u.id}"${u.id === d.agentId ? ' selected' : ''}>${esc(u.name)}</option>`).join('')}</select>` : `<span id="deal-agent">${esc(user(d.agentId)?.name)}</span>`}</div>
       </div>
@@ -1521,8 +1487,8 @@ function renderDeal() {
     <section class="deal-main">
       <div class="block"><h3>Новый звонок или комментарий</h3>
         <div class="actions"><select id="note-kind" aria-label="Тип записи" style="width:auto"><option value="comment">Комментарий</option><option value="call"${keepKind === 'call' ? ' selected' : ''}>Звонок</option></select>
-          <label class="btn sm" style="color:var(--ink)">Прикрепить запись<input id="note-file" type="file" accept="audio/*" hidden></label><span class="small muted" id="note-file-name"></span></div>
-        <textarea id="note" rows="3" placeholder="Своими словами: «Созвонился, ипотека одобрена, взнос 3 млн. Встреча в четверг»">${esc(keepNote)}</textarea>
+          <label class="btn sm" style="color:var(--ink)">Прикрепить запись<input id="note-file" class="vh" type="file" accept="audio/*"></label><span class="small muted" id="note-file-name"></span></div>
+        <textarea id="note" rows="3" placeholder="Своими словами: «Созвонились, ипотека одобрена, взнос 3 млн. Встреча в четверг»">${esc(keepNote)}</textarea>
         <div class="actions"><button class="btn primary sm" data-act="note-save">Сохранить</button><button class="btn sm link" data-act="ai-example">Вставить пример</button></div>
         ${p ? `<div class="ai"><strong>${any ? 'ИИ предлагает обновить сделку' : 'Новых данных не найдено'}</strong>
           ${any ? `<ul>
@@ -1545,13 +1511,13 @@ function dealFields(d) {
   const opt = (vals, cur) => vals.map(([v, t]) => `<option value="${v}"${String(v) === String(cur ?? '') ? ' selected' : ''}>${t}</option>`).join('');
   return `<div class="fields">
       <div class="field"><label for="e-name">Клиент</label><input id="e-name" required value="${esc(d.name)}"></div>
-      <div class="field"><label for="e-phone">Телефон</label><input id="e-phone" value="${esc(d.phone)}"></div>
-      <div class="field"><label for="e-budget">Бюджет, млн ₽</label><input id="e-budget" type="number" step="0.1" min="0" value="${d.budget ? d.budget / 1e6 : ''}"></div>
+      <div class="field"><label for="e-phone">Телефон</label><input id="e-phone" type="tel" value="${esc(d.phone)}"></div>
+      <div class="field"><label for="e-budget">Бюджет, млн ₽</label><input id="e-budget" type="number" inputmode="decimal" step="0.1" min="0" value="${d.budget ? d.budget / 1e6 : ''}"></div>
       <div class="field"><label for="e-rooms">Комнаты</label><select id="e-rooms">${opt([['', 'любая'], [0, 'студия'], [1, '1-к'], [2, '2-к'], [3, '3-к'], [4, '4-к']], d.rooms)}</select></div>
       <div class="field"><label for="e-district">Район</label><select id="e-district">${opt([['', 'любой'], ...[...new Set(Object.values(DISTRICTS))].map(x => [x, x])], d.district)}</select></div>
       <div class="field"><label for="e-type">Рынок</label><select id="e-type">${opt([['любая', 'любой'], ['новостройка', 'новостройка'], ['вторичка', 'вторичка']], d.type)}</select></div>
       <div class="field"><label for="e-payment">Оплата</label><select id="e-payment">${opt(PAYMENTS.map(x => [x, x || '—']), d.payment)}</select></div>
-      <div class="field"><label for="e-down">Первый взнос, млн ₽</label><input id="e-down" type="number" step="0.1" min="0" value="${d.downPayment ? d.downPayment / 1e6 : ''}"></div>
+      <div class="field"><label for="e-down">Первый взнос, млн ₽</label><input id="e-down" type="number" inputmode="decimal" step="0.1" min="0" value="${d.downPayment ? d.downPayment / 1e6 : ''}"></div>
       <div class="field"><label for="e-source">Источник</label><input id="e-source" value="${esc(d.source)}"></div>
     </div>
     <label class="check"><input type="checkbox" id="e-approved"${d.mortgageApproved ? ' checked' : ''}> Ипотека одобрена</label>
@@ -1570,10 +1536,10 @@ function readForm() {
 function openDeal(id, draft = false) {
   if (!scopedIds().has(id)) return;
   if (ui.dealId !== id || ui.placeId) { ui = { ...ui, dealId: id, placeId: null, editing: false, preview: null }; if ($('note')) $('note').value = ''; }
-  $('drawer').classList.remove('wide'); $('drawer').classList.add('page');
+  $('drawer').classList.remove('wide'); $('drawer').classList.add('page'); $('drawer').setAttribute('aria-label', 'Сделка');
   ui.draft = draft;
   renderDeal();
-  if (!$('drawer').open) { $('drawer').showModal(); $('drawer').scrollTop = 0; }
+  if (!$('drawer').open) { $('drawer').showModal(); $('drawer').focus(); $('drawer').scrollTop = 0; }
   if (location.hash !== dealHref(id)) try { history.pushState(null, '', dealHref(id)); } catch (err) {}
 }
 
@@ -1711,9 +1677,9 @@ function planSvg(rooms, area) {
 
 function openPlace(id, unitId) {
   ui = { ...ui, placeId: id, unitId: unitId || (id.startsWith('c') ? null : id), rooms: null, dealId: null };
-  $('drawer').classList.toggle('wide', id.startsWith('c')); $('drawer').classList.remove('page');
+  $('drawer').classList.toggle('wide', id.startsWith('c')); $('drawer').classList.remove('page'); $('drawer').setAttribute('aria-label', id.startsWith('c') ? 'Жилой комплекс' : 'Объект');
   renderPlace();
-  if (!$('drawer').open) $('drawer').showModal();
+  if (!$('drawer').open) { $('drawer').showModal(); $('drawer').focus(); }
   $('drawer').scrollTop = 0;
 }
 
@@ -1747,11 +1713,11 @@ function renderPlace() {
     const sizes = [...new Set(c.layout)].sort();
     chess = `<div class="block"><h3>Шахматка</h3>
       <div class="actions">${[['', 'Все'], ...sizes.map(r => [r, roomsLabel(r)])].map(([r, t]) => `<button class="btn sm chip" data-act="rooms" data-rooms="${r}" aria-pressed="${String(ui.rooms ?? '') === String(r)}">${t}</button>`).join('')}</div>
-      <div class="legend"><span><i style="background:color-mix(in srgb, var(--ok) 18%, var(--surface))"></i>свободна · ${count('свободна')}</span><span><i style="background:color-mix(in srgb, var(--warn) 20%, var(--surface))"></i>бронь · ${count('бронь')}</span><span><i style="background:var(--sunken)"></i>продана · ${count('продана')}</span></div>
+      <div class="legend"><span><i style="background:color-mix(in srgb, var(--ok) 18%, var(--surface))"></i>свободна · ${count('свободна')}</span><span><i style="background:color-mix(in srgb, var(--warn) 20%, var(--surface))"></i>бронь · ${count('бронь')}</span><span><i style="background:var(--sunken)"></i>продана · ${count('продана')}</span><span>цена в млн ₽</span></div>
       <div class="chess" style="grid-template-columns: 32px repeat(${c.layout.length}, minmax(46px, 1fr))">
         ${Array.from({ length: c.floors - 1 }, (_, i) => c.floors - i).map(fl => `<div class="fl">${fl}</div>` + units.filter(o => o.floor === fl).map(o =>
           `<button class="unit ${UNIT_STATUS[o.status]}${ui.rooms != null && o.rooms !== ui.rooms ? ' dim' : ''}" data-act="unit" data-id="${o.id}" aria-pressed="${o.id === ui.unitId}" aria-label="Квартира ${o.number}, ${roomsLabel(o.rooms)}, ${o.area} м², ${mln(o.price)}, ${o.status}">${o.number}<small>${roomsShort(o.rooms)} · ${(o.price / 1e6).toLocaleString('ru-RU', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</small></button>`).join('')).join('')}
-      </div><p class="small muted" style="margin:0">Этаж слева, в ячейке номер квартиры, комнаты и цена в млн ₽. Нажмите на квартиру, чтобы увидеть планировку.</p></div>`;
+      </div></div>`;
   }
   const docs = c ? COMPLEX_DOCS.map(n => [n, 'загружен']) : REQUIRED_DOCS.map(n => [n, u.docs.find(d => d.kind === n)?.file]);
   const slides = c ? [[facadeOf(c), 'иллюстрация дома'], ...[...new Set(c.layout)].sort().map(r => [planSvg(r, AREA[r]), `типовая планировка: ${roomsLabel(r)}, ${AREA[r]} м²`])]
@@ -1770,7 +1736,7 @@ function renderPlace() {
       ${u.ownerName ? `<div class="actions"><span class="small">Собственник: ${esc(u.ownerName)}, ${esc(u.ownerPhone)}</span>${callBtn(u.ownerPhone)}</div>` : ''}</div>` : ''}
     <div class="block"><h3>Документы</h3>
       ${docs.map(([n, file]) => `<div class="doc"><span>${n}${file && file !== 'загружен' ? `<br><span class="small muted">${esc(file)}</span>` : ''}</span>${file ? pill('ok', 'загружен') : pill('warn', 'запросить')}</div>`).join('')}
-      ${c ? '<span class="small muted">В демо файлы застройщика не прикладываются.</span>' : ''}</div>
+      </div>
   </div>`;
 }
 
@@ -1799,7 +1765,7 @@ function openListing(id) {
   $('drawer').close();
   $('modal').classList.add('wide');
   renderListing();
-  if (!$('modal').open) $('modal').showModal();
+  openModal();
   initPickMap();
 }
 function renderListing() {
@@ -1818,11 +1784,11 @@ function renderListing() {
       <div class="field" style="grid-column:1/-1"><label for="l-address">Адрес</label><input id="l-address" value="${val(l.address)}" placeholder="ул. Савушкина, д. 12"></div>
       <div class="field"><label for="l-district">Район</label><select id="l-district">${opt([['', '—'], ...[...new Set(Object.values(DISTRICTS))].map(x => [x, x])], l.district)}</select></div>
       <div class="field"><label for="l-rooms">Комнаты</label><select id="l-rooms">${opt([['', '—'], [0, 'студия'], [1, '1'], [2, '2'], [3, '3'], [4, '4']], l.rooms)}</select></div>
-      <div class="field"><label for="l-area">Площадь, м²</label><input id="l-area" type="number" min="0" step="0.1" value="${val(l.area)}"></div>
-      <div class="field"><label for="l-kitchen">Кухня, м²</label><input id="l-kitchen" type="number" min="0" step="0.1" value="${val(l.kitchen)}"></div>
-      <div class="field"><label for="l-floor">Этаж</label><input id="l-floor" type="number" min="1" value="${val(l.floor)}"></div>
-      <div class="field"><label for="l-floors">Этажей в доме</label><input id="l-floors" type="number" min="1" value="${val(l.floors)}"></div>
-      <div class="field"><label for="l-price">Цена, млн ₽</label><input id="l-price" type="number" min="0" step="0.1" value="${l.price ? l.price / 1e6 : ''}"></div>
+      <div class="field"><label for="l-area">Площадь, м²</label><input id="l-area" type="number" inputmode="decimal" min="0" step="0.1" value="${val(l.area)}"></div>
+      <div class="field"><label for="l-kitchen">Кухня, м²</label><input id="l-kitchen" type="number" inputmode="decimal" min="0" step="0.1" value="${val(l.kitchen)}"></div>
+      <div class="field"><label for="l-floor">Этаж</label><input id="l-floor" type="number" inputmode="numeric" min="1" value="${val(l.floor)}"></div>
+      <div class="field"><label for="l-floors">Этажей в доме</label><input id="l-floors" type="number" inputmode="numeric" min="1" value="${val(l.floors)}"></div>
+      <div class="field"><label for="l-price">Цена, млн ₽</label><input id="l-price" type="number" inputmode="decimal" min="0" step="0.1" value="${l.price ? l.price / 1e6 : ''}"></div>
       <div class="field"><label for="l-reno">Ремонт</label><select id="l-reno">${opt(RENOVATIONS.map(r => [r, r || '—']), l.renovation)}</select></div>
       <div class="field"><label for="l-bath">Санузел</label><select id="l-bath">${opt([['', '—'], ['раздельный', 'раздельный'], ['совмещённый', 'совмещённый']], l.bathroom)}</select></div>
       <div class="field" style="align-content:end"><label class="check"><input type="checkbox" id="l-balcony"${l.balcony ? ' checked' : ''}> Балкон или лоджия</label></div>
@@ -1833,25 +1799,25 @@ function renderListing() {
 
     <div class="block"><h3><span>Фото квартиры</span><span>${l.photos.length} из 12</span></h3>
       ${l.photos.length ? `<div class="thumbs">${l.photos.map((src, i) => `<figure><img src="${src}" alt="Фото ${i + 1}"><button type="button" class="x" data-act="l-photo-del" data-i="${i}" aria-label="Удалить фото ${i + 1}">×</button></figure>`).join('')}</div>` : ''}
-      <label class="btn sm" style="justify-self:start;color:var(--ink)">Добавить фото<input id="l-photos" type="file" accept="image/*" multiple hidden></label>
-      <span class="small muted">Первое фото станет обложкой. Фото уменьшаются до 1000 px, чтобы поместиться в браузере.</span></div>
+      <label class="btn sm" style="justify-self:start;color:var(--ink)">Добавить фото<input id="l-photos" class="vh" type="file" accept="image/*" multiple></label>
+      <span class="small muted">Первое фото станет обложкой.</span></div>
 
     <div class="block"><h3>Документы</h3>
       ${REQUIRED_DOCS.map((n, i) => { const d = l.docs.find(x => x.kind === n); return `<div class="doc"><span>${n}${d ? `<br><span class="small muted">${esc(d.file)}</span>` : ''}</span>
-        <label class="btn sm" style="color:var(--ink)">${d ? 'Заменить' : 'Загрузить'}<input type="file" data-doc="${i}" accept=".pdf,image/*" hidden></label></div>`; }).join('')}
-      <span class="small muted">В демо сохраняется только имя файла. В рабочей версии файлы хранятся на сервере.</span></div>
+        <label class="btn sm" style="color:var(--ink)">${d ? 'Заменить' : 'Загрузить'}<input type="file" class="vh" data-doc="${i}" accept=".pdf,image/*"></label></div>`; }).join('')}
+      </div>
 
     <div class="block"><h3><span>Текст объявления</span><button type="button" class="btn sm" data-act="l-desc">Написать описание</button></h3>
       <textarea id="l-desc" rows="4">${esc(l.description)}</textarea></div>
 
     <div class="block"><h3>Собственник</h3><div class="fields">
       <div class="field"><label for="l-owner">Имя</label><input id="l-owner" value="${val(l.ownerName)}"></div>
-      <div class="field"><label for="l-owner-phone">Телефон</label><input id="l-owner-phone" value="${val(l.ownerPhone)}"></div></div></div>
+      <div class="field"><label for="l-owner-phone">Телефон</label><input id="l-owner-phone" type="tel" value="${val(l.ownerPhone)}"></div></div></div>
 
     <div class="block"><h3>Где опубликовать</h3>
       <label class="check"><input type="checkbox" checked disabled> Сайт Realtika: объект увидят все агенты агентства</label>
       ${PLATFORMS.map(([k, t]) => `<label class="check"><input type="checkbox" id="l-p-${k}"${l.platforms[k] ? ' checked' : ''}> ${t}</label>`).join('')}
-      <span class="small muted">Демо: отправка на площадки имитируется. В рабочей версии объявления уходят через XML-фиды площадок.</span></div>
+      </div>
 
     <div class="actions"><button class="btn primary" type="submit" value="publish">Опубликовать</button><button class="btn" type="submit" value="draft">Сохранить черновик</button></div>
   </form>`;
@@ -1918,7 +1884,7 @@ function saveListing(mode) {
 }
 
 const SAMPLE_CHAT = 'Добрый день! Меня зовут Ксения Романова, нам посоветовали ваше агентство. Ищем однушку в новостройке, лучше Московский район, бюджет до 8,2 млн, берём ипотеку. Звоните: +7 900 000-00-15';
-const SAMPLE_NOTE = 'Созвонился с клиентом. Ипотека одобрена, первоначальный взнос 3 млн, бюджет вырос до 14 млн. Продают свою однушку. Встреча в четверг в офисе.';
+const SAMPLE_NOTE = 'Созвонились с клиентом. Ипотека одобрена, первоначальный взнос 3 млн, бюджет вырос до 14 млн. Продают свою однушку. Встреча в четверг в офисе.';
 
 function openImport() {
   $('modal').innerHTML = `<div class="dlg">
@@ -1926,7 +1892,7 @@ function openImport() {
     <div class="field"><label for="chat">Переписка</label><textarea id="chat" rows="5" placeholder="Например: «Ищем однушку в Московском районе до 8 млн, ипотека. Ксения, +7 900 000-00-15»"></textarea></div>
     <div class="actions"><button class="btn primary" data-act="parse">Разобрать переписку</button><button class="btn sm link" data-act="chat-example">Вставить пример</button></div>
     <form id="parsed" class="block" hidden></form></div>`;
-  $('modal').showModal();
+  openModal();
 }
 function showParsed(r) {
   const c = can();
@@ -1945,11 +1911,11 @@ function openStages() {
     <button class="btn sm" data-act="st-down" data-id="${s.id}" aria-label="Ниже"${i === S.stages.length - 1 ? ' disabled' : ''}>↓</button>
     <button class="btn sm" data-act="st-del" data-id="${s.id}">Удалить</button></div>`).join('');
   $('modal').innerHTML = `<div class="dlg">
-    <div class="dlg-head"><div><h2>Этапы воронки</h2><span class="muted small">Название меняется прямо в поле. Справа выбирается, что агент обязан заполнить при переходе на этап. Последний этап считается закрытой сделкой.</span></div><button class="x" data-act="close" aria-label="Закрыть">×</button></div>
+    <div class="dlg-head"><div><h2>Этапы воронки</h2><span class="muted small">Справа — что агент заполняет при переходе на этап. Последний этап означает закрытую сделку.</span></div><button class="x" data-act="close" aria-label="Закрыть">×</button></div>
     <div class="block">${rows}</div>
     ${ui.stageErr ? `<p class="err">${esc(ui.stageErr)}</p>` : ''}
     <div class="actions"><button class="btn sm" data-act="st-add">+ Добавить этап</button><button class="btn primary sm" data-act="close">Готово</button></div></div>`;
-  if (!$('modal').open) $('modal').showModal();
+  openModal();
 }
 
 function openInvoice(id) {
@@ -1961,9 +1927,9 @@ function openInvoice(id) {
       <dt>Плательщик</dt><dd>${k.payer === 'Застройщик' ? `Застройщик, ${esc(o.address)}` : `Продавец объекта: ${esc(o.address)}`}</dd>
       <dt>Услуга</dt><dd>Агентское вознаграждение по сделке: ${esc(objTitle(o))}, покупатель ${esc(d.name)}, сделка ${fmtDate(k.dealDate)}</dd>
     </dl><div class="total"><span>Итого к оплате</span><span>${rub(k.amount)}</span></div></div>
-    <p class="small muted" style="margin:0">Оплата поступает напрямую на счёт агентства. Realtika платежи не принимает.</p>
+    <p class="small muted" style="margin:0">Оплата поступает напрямую на счёт агентства.</p>
     <div class="actions">${k.status === 'ожидается' ? `<button class="btn primary" data-act="issue" data-id="${k.id}">Отметить: счёт выставлен</button>` : pill(commState(k.status), k.status)}</div></div>`;
-  if (!$('modal').open) $('modal').showModal();
+  openModal();
 }
 
 function moveStage(id, delta) {
@@ -1985,7 +1951,7 @@ document.addEventListener('click', e => {
     case 'deal': if (e.ctrlKey || e.metaKey || e.shiftKey) return; e.preventDefault(); if ($('modal').classList.contains('search')) $('modal').close(); openDeal(id); return;
     case 'search': openSearch(); return;
     case 'logout': logOut(); return;
-    case 'palette': me().settings.palette = id; save(); morph(el, el.closest('.an-switch') ? 'wipe' : 'circle', () => { applyTheme(); shownTab = ''; render(); }); return;
+    case 'palette': me().settings.palette = id; save(); morph(el, () => { applyTheme(); render(); }); return;
     case 'demo-login': logIn(id); return;
     case 'to-login': loginView = 'form'; renderLogin(); window.scrollTo(0, 0); $('lg-email').focus(); return;
     case 'land': loginView = 'land'; renderLogin(); return;
@@ -2001,12 +1967,12 @@ document.addEventListener('click', e => {
     case 'theme': {
       const dark = matchMedia('(prefers-color-scheme: dark)').matches, cur = me().settings.theme;
       me().settings.theme = (cur === 'dark' || (cur !== 'light' && dark)) ? 'light' : 'dark';
-      save(); morph(el, 'circle', () => { applyTheme(); render(); }); return;
+      save(); morph(el, () => { applyTheme(); render(); }); return;
     }
     case 'reopen': { const d = deal(id); d.notes.push({ date: iso(0), author: S.me, kind: 'stage', text: `Возвращена в работу после отказа: ${d.lost.reason}` }); d.lost = null; break; }
     case 'draft': openDeal(id, true); return;
     case 'close': el.closest('dialog').close(); return;
-    case 'contact': { const d = deal(id), was = d.lastContact, n = { date: iso(0), author: S.me, kind: 'contact', text: 'Связался с клиентом' };
+    case 'contact': { const d = deal(id), was = d.lastContact, n = { date: iso(0), author: S.me, kind: 'contact', text: 'Контакт с клиентом' };
       d.lastContact = iso(0); d.notes.push(n); toast('Контакт отмечен в ленте сделки', ['Вернуть', () => { d.lastContact = was; d.notes.splice(d.notes.indexOf(n), 1); }]); break; }
     case 'done': { const t = S.tasks.find(x => x.id === id); t.done = true; toast(`Готово: «${t.title}»`, ['Вернуть', () => { t.done = false; }]); break; }
     case 'copy': {
@@ -2048,9 +2014,10 @@ document.addEventListener('click', e => {
     case 'edit-cancel': ui.editing = false; renderDeal(); return;
     case 'extend': { const b = S.bookings.find(x => x.id === id), was = b.expires; b.expires = iso(Math.max(days(b.expires), 0) + 7); toast(`Бронь продлена до ${fmtDate(b.expires)}`, ['Вернуть', () => { b.expires = was; }]); break; }
     case 'close-booking': {
-      const b = S.bookings.find(x => x.id === id), o = ob(b.objectId);
+      const b = S.bookings.find(x => x.id === id), o = ob(b.objectId), was = o?.status;
       b.closed = true;
       if (o?.status === 'бронь') o.status = isOpen(deal(b.dealId)) ? 'свободна' : 'продана';
+      toast('Бронь снята', ['Вернуть', () => { b.closed = false; if (o) o.status = was; }]);
       break;
     }
     case 'place': if ($('modal').classList.contains('search')) $('modal').close(); openPlace(id, el.dataset.unit); return;
