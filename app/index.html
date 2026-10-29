@@ -627,6 +627,8 @@ footer { padding-block: 16px 32px; border-top: 1px solid var(--line); display: f
 <script src="parse.js"></script>
 <script>
 const K = 'realtika-demo-v7';
+const DEFAULT_SHARE = 50; // доля агента от комиссии, %; в агентствах СПб обычно 40–60
+const EXPENSE_KINDS = ['Реклама: Авито', 'Реклама: Циан', 'Реклама: Домклик', 'Реклама: сайт', 'Офис и аренда', 'Зарплаты и налоги', 'Прочее'];
 const ROLES = { agent: 'Агент', head: 'Руководитель отдела продаж', director: 'Директор' };
 const TABS = [['tasks', 'Задачи'], ['analytics', 'Аналитика'], ['deals', 'Сделки'], ['objects', 'Объекты'], ['bookings', 'Брони'], ['commissions', 'Комиссии'], ['team', 'Команда']];
 const TAB_ICONS = {
@@ -769,9 +771,9 @@ function seed() {
     users: [
       { id: 'u1', name: 'Ирина Белова', role: 'director', email: 'irina.belova@realtika.demo', phone: '+7 900 100-00-01' },
       { id: 'u2', name: 'Олег Савин', role: 'head', email: 'oleg.savin@realtika.demo', phone: '+7 900 100-00-02' },
-      { id: 'u3', name: 'Анна Ким', role: 'agent', email: 'anna.kim@realtika.demo', phone: '+7 900 100-00-03' },
-      { id: 'u4', name: 'Максим Егоров', role: 'agent', email: 'maxim.egorov@realtika.demo', phone: '+7 900 100-00-04' },
-      { id: 'u5', name: 'Дарья Лис', role: 'agent', email: 'darya.lis@realtika.demo', phone: '+7 900 100-00-05' },
+      { id: 'u3', name: 'Анна Ким', role: 'agent', email: 'anna.kim@realtika.demo', phone: '+7 900 100-00-03', share: 50, plan: 600000 },
+      { id: 'u4', name: 'Максим Егоров', role: 'agent', email: 'maxim.egorov@realtika.demo', phone: '+7 900 100-00-04', share: 55, plan: 800000 },
+      { id: 'u5', name: 'Дарья Лис', role: 'agent', email: 'darya.lis@realtika.demo', phone: '+7 900 100-00-05', share: 45, plan: 500000 },
     ],
     stages: [['Новая заявка', ''], ['Связались', 'call'], ['Встреча назначена', 'meeting'], ['Встреча прошла', 'meetingDone'], ['Показ', 'showing'], ['Бронь', 'booking'], ['Сделка состоялась', 'won']].map(([name, gate], i) => ({ id: 's' + (i + 1), name, gate })),
     deals,
@@ -794,8 +796,14 @@ function seed() {
       { id: 'b5', dealId: 'd11', objectId: u11.id, kind: 'Бронь у застройщика', amount: 50000, holder: 'Застройщик', expires: iso(-14), closed: true },
     ],
     commissions: [
-      { id: 'k1', dealId: 'd6', objectId: 'o7', payer: 'Продавец', amount: 290000, dealDate: iso(-5), status: 'ожидается' },
-      { id: 'k2', dealId: 'd11', objectId: u11.id, payer: 'Застройщик', amount: Math.round(u11.price * 0.03 / 1000) * 1000, dealDate: iso(-12), status: 'счёт выставлен' },
+      { id: 'k1', dealId: 'd6', objectId: 'o7', payer: 'Продавец', amount: 290000, dealDate: iso(-5), status: 'ожидается', share: 45 },
+      { id: 'k2', dealId: 'd11', objectId: u11.id, payer: 'Застройщик', amount: Math.round(u11.price * 0.03 / 1000) * 1000, dealDate: iso(-12), status: 'получена', paidAt: iso(-3), share: 55 },
+    ],
+    expenses: [
+      { id: 'e1', date: iso(-20), kind: 'Офис и аренда', amount: 120000, note: 'Аренда офиса' },
+      { id: 'e2', date: iso(-15), kind: 'Реклама: Авито', amount: 45000, note: 'Продвижение объявлений' },
+      { id: 'e3', date: iso(-10), kind: 'Реклама: Циан', amount: 30000, note: '' },
+      { id: 'e4', date: iso(-4), kind: 'Прочее', amount: 8500, note: 'Выписки ЕГРН' },
     ],
     tasks: [
       { id: 't1', dealId: 'd1', title: 'Отправить подборку на Приморском, не ниже 3-го этажа', due: iso(0), done: false },
@@ -818,8 +826,11 @@ const fixUsers = () => S.users.forEach(u => {
   u.email ??= SEED_USERS[u.id]?.email || `${u.id}@realtika.demo`;
   u.phone ??= SEED_USERS[u.id]?.phone || '';
   u.settings ??= { theme: 'system', aiHints: true };
+  u.share ??= SEED_USERS[u.id]?.share ?? DEFAULT_SHARE;
+  u.plan ??= SEED_USERS[u.id]?.plan ?? 0;
 });
 fixUsers();
+S.expenses ??= seed().expenses;
 const SK = 'realtika-session';
 let session = null;
 try { session = localStorage.getItem(SK); } catch (e) {}
@@ -932,6 +943,9 @@ function bookingState(b) {
   if (d === 0) return ['warn', 'истекает сегодня'];
   return [d <= 3 ? 'warn' : 'ok', `осталось ${dayWord(d)}`];
 }
+// Доля фиксируется при закрытии сделки, чтобы смена ставки не переписывала прошлые выплаты
+const agentPart = k => Math.round(k.amount * (k.share ?? user(deal(k.dealId).agentId)?.share ?? DEFAULT_SHARE) / 100);
+const toPay = k => k.status === 'получена' && !k.payout;
 const commState = s => ({ 'ожидается': 'warn', 'счёт выставлен': 'accent', 'получена': 'ok' }[s]);
 
 // Подсказки ИИ: то, что агент забыл бы без CRM
@@ -1077,16 +1091,19 @@ const views = {
   commissions() {
     const ids = scopedIds(), ks = S.commissions.filter(k => ids.has(k.dealId)), all = can().all;
     const sum = s => ks.filter(k => k.status === s).reduce((t, k) => t + k.amount, 0);
+    const pay = ks.filter(toPay).reduce((t, k) => t + agentPart(k), 0);
+    const payout = k => k.payout ? pill('ok', `выплачено ${fmtDate(k.payout)}`) : toPay(k) ? pill('warn', 'к выплате') : '<span class="muted small">после оплаты</span>';
     return `<section class="section"><div class="section-head"><h1>Комиссии</h1><span class="muted small">Новостройки: платит застройщик после сделки. Вторичка: платит продавец</span></div>
       <div class="stats">
         <div class="stat"><span class="muted small">Ожидается, счёт не выставлен</span><b>${rub(sum('ожидается'))}</b></div>
         <div class="stat"><span class="muted small">Счёт выставлен</span><b>${rub(sum('счёт выставлен'))}</b></div>
         <div class="stat"><span class="muted small">Получено</span><b>${rub(sum('получена'))}</b></div>
+        <div class="stat"><span class="muted small">${all ? 'К выплате агентам' : 'Вам к выплате'}</span><b>${rub(pay)}</b></div>
       </div>
-      <div class="tbl cards"><table><thead><tr><th>Сделка</th>${all ? '<th>Агент</th>' : ''}<th>Объект</th><th>Платит</th><th class="num">Сумма</th><th>Дата сделки</th><th>Статус</th><th></th></tr></thead><tbody>
-      ${ks.map(k => { const d = deal(k.dealId); return `<tr><td>${dealLink(d)}</td>${all ? `<td>${esc(user(d.agentId)?.name)}</td>` : ''}<td>${esc(objTitle(ob(k.objectId)))}</td><td>${k.payer}</td><td class="num">${rub(k.amount)}</td><td>${fmtDate(k.dealDate)}</td><td>${pill(commState(k.status), k.status)}</td>
-        <td>${k.status === 'ожидается' ? `<button class="btn sm" data-act="invoice" data-id="${k.id}">Выставить счёт</button>` : k.status === 'счёт выставлен' ? `<div class="actions"><button class="btn sm" data-act="invoice" data-id="${k.id}">Открыть счёт</button><button class="btn sm" data-act="paid" data-id="${k.id}">Отметить оплату</button></div>` : ''}</td></tr>`; }).join('') || `<tr><td colspan="8" class="muted">Комиссий пока нет: они появляются после закрытия сделки.</td></tr>`}
-      </tbody></table></div></section>`;
+      <div class="tbl cards"><table><thead><tr><th>Сделка</th>${all ? '<th>Агент</th>' : ''}<th>Объект</th><th>Платит</th><th class="num">Сумма</th><th class="num">Агенту</th><th>Дата сделки</th><th>Статус</th><th>Выплата агенту</th><th></th></tr></thead><tbody>
+      ${ks.map(k => { const d = deal(k.dealId); return `<tr><td>${dealLink(d)}</td>${all ? `<td>${esc(user(d.agentId)?.name)}</td>` : ''}<td>${esc(objTitle(ob(k.objectId)))}</td><td>${k.payer}</td><td class="num">${rub(k.amount)}</td><td class="num"><span>${rub(agentPart(k))} <span class="muted small">(${k.share ?? user(d.agentId)?.share ?? DEFAULT_SHARE}%)</span></span></td><td>${fmtDate(k.dealDate)}</td><td>${pill(commState(k.status), k.status)}</td><td>${payout(k)}</td>
+        <td>${toPay(k) && can().users ? `<button class="btn sm" data-act="payout" data-id="${k.id}">Выплатить агенту</button>` : k.status === 'ожидается' ? `<button class="btn sm" data-act="invoice" data-id="${k.id}">Выставить счёт</button>` : k.status === 'счёт выставлен' ? `<div class="actions"><button class="btn sm" data-act="invoice" data-id="${k.id}">Открыть счёт</button><button class="btn sm" data-act="paid" data-id="${k.id}">Отметить оплату</button></div>` : ''}</td></tr>`; }).join('') || `<tr><td colspan="10" class="muted">Комиссий пока нет: они появляются после закрытия сделки.</td></tr>`}
+      </tbody></table></div></section>${all ? finance() : ''}`;
   },
   analytics() {
     const c = can(), ds = scoped(), won = ds.filter(d => !d.lost && d.stageId === lastStageId()).length, lost = ds.filter(d => d.lost).length;
@@ -1145,10 +1162,12 @@ const views = {
         : ROLES[u.role];
       const none = !ds.length, v = x => none ? '—' : x; // у директора и руководителя своих сделок нет
       return `<tr><td>${esc(u.name)}${u.id === S.me ? ' <span class="muted small">(вы)</span>' : ''}</td><td>${roleCell}</td><td class="num">${v(open)}</td>
-        <td class="num">${overdue ? pill('crit', overdue) : v(0)}</td><td class="num">${coldN ? pill('warn', coldN) : v(0)}</td><td class="num">${v(ds.filter(d => !d.lost && d.stageId === lastStageId()).length)}</td><td class="num">${v(rub(due))}</td></tr>`;
+        <td class="num">${overdue ? pill('crit', overdue) : v(0)}</td><td class="num">${coldN ? pill('warn', coldN) : v(0)}</td><td class="num">${v(ds.filter(d => !d.lost && d.stageId === lastStageId()).length)}</td><td class="num">${v(rub(due))}</td>
+        <td class="num">${u.role !== 'agent' ? '—' : c.users ? `<input type="number" min="0" max="100" step="1" value="${u.share}" data-share="${u.id}" aria-label="Доля от комиссии, %: ${esc(u.name)}" style="width:72px">` : u.share + '%'}</td>
+        <td class="num">${u.role !== 'agent' ? '—' : c.users ? `<input type="number" min="0" step="10000" value="${u.plan}" data-plan="${u.id}" aria-label="План комиссий на месяц, ₽: ${esc(u.name)}" style="width:120px">` : u.plan ? rub(u.plan) : '—'}</td></tr>`;
     };
     return `<section class="section"><div class="section-head"><h1>Команда</h1><span class="muted small">${c.users ? 'Вы назначаете роли и добавляете сотрудников' : 'Роли назначает директор'}</span></div>
-      <div class="tbl cards"><table><thead><tr><th>Сотрудник</th><th>Роль</th><th class="num">Сделок в работе</th><th class="num">Просрочено задач</th><th class="num">Без связи 5+ дней</th><th class="num">Закрыто</th><th class="num">Комиссии к получению</th></tr></thead>
+      <div class="tbl cards"><table><thead><tr><th>Сотрудник</th><th>Роль</th><th class="num">Сделок в работе</th><th class="num">Просрочено задач</th><th class="num">Без связи 5+ дней</th><th class="num">Закрыто</th><th class="num">Комиссии к получению</th><th class="num">Доля агента, %</th><th class="num">План комиссий на месяц, ₽</th></tr></thead>
       <tbody>${S.users.map(row).join('')}</tbody></table></div>
       ${c.users ? `<form id="add-user" class="actions"><input id="nu-name" required placeholder="Имя и фамилия" aria-label="Имя нового сотрудника" style="max-width:220px"><input id="nu-email" type="email" required placeholder="Почта для входа" aria-label="Почта нового сотрудника" style="max-width:220px"><select id="nu-role" aria-label="Роль нового сотрудника" style="width:auto">${Object.entries(ROLES).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select><button class="btn" type="submit">Добавить сотрудника</button></form>` : ''}
     </section>
@@ -1157,10 +1176,32 @@ const views = {
         <tr><td>Свои сделки, задачи, брони, комиссии</td><td>да</td><td>да</td><td>да</td></tr>
         <tr><td>Сделки всех агентов, переназначение</td><td class="muted">нет</td><td>да</td><td>да</td></tr>
         <tr><td>Настройка этапов воронки</td><td class="muted">нет</td><td>да</td><td>да</td></tr>
+        <tr><td>Доли агентов, планы и выплаты</td><td class="muted">нет</td><td class="muted">нет</td><td>да</td></tr>
         <tr><td>Сотрудники и роли</td><td class="muted">нет</td><td class="muted">нет</td><td>да</td></tr>
       </tbody></table></div></section>`;
   },
 };
+
+// P&L агентства за текущий месяц: комиссии по дате оплаты, доля агентов с них, расходы по дате
+function finance() {
+  const ym = iso(0).slice(0, 7), dir = can().users;
+  const got = S.commissions.filter(k => k.status === 'получена' && (k.paidAt || k.dealDate).startsWith(ym));
+  const income = got.reduce((t, k) => t + k.amount, 0), agents = got.reduce((t, k) => t + agentPart(k), 0);
+  const ex = S.expenses.filter(x => x.date.startsWith(ym)).sort((a, b) => b.date.localeCompare(a.date)), spent = ex.reduce((t, x) => t + x.amount, 0);
+  const profit = income - agents - spent;
+  return `<section class="section"><div class="section-head"><h2>Финансы агентства за ${new Date().toLocaleString('ru', { month: 'long' })}</h2><span class="muted small">Видят руководитель и директор</span></div>
+    <div class="stats">
+      <div class="stat"><span class="muted small">Получено комиссий</span><b>${rub(income)}</b></div>
+      <div class="stat"><span class="muted small">Доля агентов</span><b>−${rub(agents)}</b></div>
+      <div class="stat"><span class="muted small">Расходы</span><b>−${rub(spent)}</b></div>
+      <div class="stat"><span class="muted small">Прибыль агентства</span><b${profit < 0 ? ' style="color:var(--crit)"' : ''}>${profit < 0 ? '−' : ''}${rub(Math.abs(profit))}</b></div>
+    </div>
+    <div class="tbl cards"><table><thead><tr><th>Дата</th><th>Статья</th><th>Комментарий</th><th class="num">Сумма</th>${dir ? '<th></th>' : ''}</tr></thead><tbody>
+    ${ex.map(x => `<tr><td>${fmtDate(x.date)}</td><td>${esc(x.kind)}</td><td>${esc(x.note) || '<span class="muted">—</span>'}</td><td class="num">${rub(x.amount)}</td>${dir ? `<td><button class="btn sm" data-act="del-expense" data-id="${x.id}" aria-label="Удалить расход ${rub(x.amount)} от ${fmtDate(x.date)}">Удалить</button></td>` : ''}</tr>`).join('') || `<tr><td colspan="5" class="muted">Расходов в этом месяце нет.</td></tr>`}
+    </tbody></table></div>
+    ${dir ? `<form id="add-expense" class="actions"><input id="ne-date" type="date" required value="${iso(0)}" aria-label="Дата расхода" style="width:auto"><select id="ne-kind" aria-label="Статья расхода" style="width:auto">${EXPENSE_KINDS.map(k => `<option>${k}</option>`).join('')}</select><input id="ne-amount" type="number" min="1" step="1" required placeholder="Сумма, ₽" aria-label="Сумма расхода, ₽" style="max-width:140px"><input id="ne-note" placeholder="Комментарий" aria-label="Комментарий к расходу" style="max-width:220px"><button class="btn" type="submit">Добавить расход</button></form>` : ''}
+  </section>`;
+}
 
 const initials = u => u.name.split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
 const avatar = (u, cls = '') => `<span class="avatar ${cls}" aria-hidden="true">${u.photo ? `<img src="${u.photo}" alt="">` : esc(initials(u))}</span>`;
@@ -1244,6 +1285,12 @@ views.profile = () => {
       <div class="stat"><span class="muted small">Конверсия в сделку</span><b>${won + lost ? Math.round(won / (won + lost) * 100) + '%' : '—'}</b><span class="muted small">от завершённых сделок</span></div>
       <div class="stat"><span class="muted small">Комиссии: получено</span><b>${rub(sum(k => k.status === 'получена'))}</b><span class="muted small">ожидается ${rub(sum(k => k.status !== 'получена'))}</span></div>
     </div>
+    ${!team && u.plan ? (() => {
+      // план — по комиссиям сделок, закрытых в этом месяце: момент закрытия зависит от агента, дата оплаты нет
+      const ym = iso(0).slice(0, 7), mk = ks.filter(k => k.dealDate.startsWith(ym)), fact = mk.reduce((t, k) => t + k.amount, 0), pct = Math.round(fact / u.plan * 100);
+      return `<div class="block"><h3>План на месяц</h3><div class="actions" style="justify-content:space-between"><span><b>${rub(fact)}</b> из ${rub(u.plan)} · ${pct}%</span><span class="muted small">ваш доход с этих сделок: ${rub(mk.reduce((t, k) => t + agentPart(k), 0))}</span></div>
+        <span class="an-bar" style="height:8px" role="img" aria-label="Выполнено ${pct}% плана"><i style="--w:${Math.min(pct, 100)}%"></i></span></div>`;
+    })() : ''}
     <div class="profile-grid">
       <form id="profile-form" class="panel"><h3>Профиль</h3>
         <div class="field"><label for="pf-name">Имя и фамилия</label><input id="pf-name" required value="${esc(u.name)}"></div>
@@ -1404,7 +1451,7 @@ function applyAdvance() {
     // бронь на другой квартире больше не нужна: возвращаем её в продажу
     S.bookings.filter(x => x.dealId === d.id && !x.closed).forEach(x => { x.closed = true; const xo = ob(x.objectId); if (xo !== o && xo?.status === 'бронь') xo.status = 'свободна'; });
     o.status = 'продана';
-    S.commissions.push({ id: 'k' + (++S.seq), dealId: d.id, objectId: o.id, payer: v('adv-payer'), amount, dealDate: iso(0), status: 'ожидается' });
+    S.commissions.push({ id: 'k' + (++S.seq), dealId: d.id, objectId: o.id, payer: v('adv-payer'), amount, dealDate: iso(0), status: 'ожидается', share: user(d.agentId)?.share ?? DEFAULT_SHARE });
     note(`Сделка закрыта: ${objTitle(o)}. Комиссия ${rub(amount)}, платит ${v('adv-payer').toLowerCase()}`, 'stage');
   } else if (v('adv-comment')) note(v('adv-comment'), 'stage');
   const from = S.stages.findIndex(s => s.id === d.stageId), passed = S.stages.slice(from + 1, S.stages.indexOf(to) + 1).map(s => s.gate || '');
@@ -2050,7 +2097,9 @@ document.addEventListener('click', e => {
     case 'l-photo-del': syncListing(); ui.listing.photos.splice(Number(el.dataset.i), 1); renderListing(); initPickMap(); return;
     case 'invoice': openInvoice(id); return;
     case 'issue': { const k = S.commissions.find(x => x.id === id); k.status = 'счёт выставлен'; $('modal').close(); toast(`Счёт на ${rub(k.amount)} выставлен`); break; }
-    case 'paid': { const k = S.commissions.find(x => x.id === id); k.status = 'получена'; toast(`Комиссия ${rub(k.amount)} получена`, ['Вернуть', () => { k.status = 'счёт выставлен'; }]); break; }
+    case 'payout': { const k = S.commissions.find(x => x.id === id); k.payout = iso(0); toast(`${user(deal(k.dealId).agentId)?.name}: выплачено ${rub(agentPart(k))}`, ['Вернуть', () => { delete k.payout; }]); break; }
+    case 'paid': { const k = S.commissions.find(x => x.id === id); k.status = 'получена'; k.paidAt = iso(0); toast(`Комиссия ${rub(k.amount)} получена`, ['Вернуть', () => { k.status = 'счёт выставлен'; delete k.paidAt; }]); break; }
+    case 'del-expense': { const i = S.expenses.findIndex(x => x.id === id), [x] = S.expenses.splice(i, 1); toast(`Расход ${rub(x.amount)} удалён`, ['Вернуть', () => { S.expenses.splice(i, 0, x); }]); break; }
     case 'import-open': openImport(); return;
     case 'chat-example': $('chat').value = SAMPLE_CHAT; return;
     case 'parse': if (!$('chat').value.trim()) { $('chat').focus(); return; } busy(el, 'ИИ разбирает переписку…', () => showParsed(parseChat($('chat').value))); return;
@@ -2111,6 +2160,8 @@ document.addEventListener('change', async e => {
   else if (t.id === 'filter-agent') filterAgent = t.value;
   else if (t.id === 'deal-agent') deal(ui.dealId).agentId = t.value;
   else if (t.dataset.role) user(t.dataset.role).role = t.value;
+  else if (t.dataset.plan) { const n = Math.round(Number(t.value)); if (t.value === '' || !(n >= 0)) { toast('План: сумма от 0 ₽'); render(); return; } user(t.dataset.plan).plan = n; }
+  else if (t.dataset.share) { const n = Math.round(Number(t.value)); if (t.value === '' || !(n >= 0 && n <= 100)) { toast('Доля агента: число от 0 до 100'); render(); return; } user(t.dataset.share).share = n; toast('Новая доля применится к следующим сделкам'); }
   else if (t.dataset.stageGate !== undefined) { stage(t.dataset.stageGate).gate = t.value; save(); return; }
   else if (t.dataset.stageName) { const v = t.value.trim(); if (v) stage(t.dataset.stageName).name = v; save(); render(); return; }
   else return;
@@ -2136,7 +2187,12 @@ document.addEventListener('submit', e => {
   else if (f.id === 'add-user') {
     const email = $('nu-email').value.trim().toLowerCase();
     if (S.users.some(u => u.email.toLowerCase() === email)) { toast('Сотрудник с такой почтой уже есть.'); return; }
-    S.users.push({ id: 'u' + (++S.seq), name: $('nu-name').value.trim(), role: $('nu-role').value, email, phone: '', settings: { theme: 'system', aiHints: true } });
+    S.users.push({ id: 'u' + (++S.seq), name: $('nu-name').value.trim(), role: $('nu-role').value, email, phone: '', share: DEFAULT_SHARE, settings: { theme: 'system', aiHints: true } });
+  }
+  else if (f.id === 'add-expense') {
+    const amount = Math.round(Number($('ne-amount').value));
+    if (!(amount > 0)) { toast('Сумма расхода должна быть больше нуля'); return; }
+    S.expenses.push({ id: 'e' + (++S.seq), date: $('ne-date').value, kind: $('ne-kind').value, amount, note: $('ne-note').value.trim() });
   }
   else if (f.id === 'login-form') {
     const u = S.users.find(x => x.email.toLowerCase() === $('lg-email').value.trim().toLowerCase());
