@@ -771,9 +771,9 @@ function seed() {
     users: [
       { id: 'u1', name: 'Ирина Белова', role: 'director', email: 'irina.belova@realtika.demo', phone: '+7 900 100-00-01' },
       { id: 'u2', name: 'Олег Савин', role: 'head', email: 'oleg.savin@realtika.demo', phone: '+7 900 100-00-02' },
-      { id: 'u3', name: 'Анна Ким', role: 'agent', email: 'anna.kim@realtika.demo', phone: '+7 900 100-00-03', share: 50 },
-      { id: 'u4', name: 'Максим Егоров', role: 'agent', email: 'maxim.egorov@realtika.demo', phone: '+7 900 100-00-04', share: 55 },
-      { id: 'u5', name: 'Дарья Лис', role: 'agent', email: 'darya.lis@realtika.demo', phone: '+7 900 100-00-05', share: 45 },
+      { id: 'u3', name: 'Анна Ким', role: 'agent', email: 'anna.kim@realtika.demo', phone: '+7 900 100-00-03', share: 50, plan: 600000 },
+      { id: 'u4', name: 'Максим Егоров', role: 'agent', email: 'maxim.egorov@realtika.demo', phone: '+7 900 100-00-04', share: 55, plan: 800000 },
+      { id: 'u5', name: 'Дарья Лис', role: 'agent', email: 'darya.lis@realtika.demo', phone: '+7 900 100-00-05', share: 45, plan: 500000 },
     ],
     stages: [['Новая заявка', ''], ['Связались', 'call'], ['Встреча назначена', 'meeting'], ['Встреча прошла', 'meetingDone'], ['Показ', 'showing'], ['Бронь', 'booking'], ['Сделка состоялась', 'won']].map(([name, gate], i) => ({ id: 's' + (i + 1), name, gate })),
     deals,
@@ -827,6 +827,7 @@ const fixUsers = () => S.users.forEach(u => {
   u.phone ??= SEED_USERS[u.id]?.phone || '';
   u.settings ??= { theme: 'system', aiHints: true };
   u.share ??= SEED_USERS[u.id]?.share ?? DEFAULT_SHARE;
+  u.plan ??= SEED_USERS[u.id]?.plan ?? 0;
 });
 fixUsers();
 S.expenses ??= seed().expenses;
@@ -1162,10 +1163,11 @@ const views = {
       const none = !ds.length, v = x => none ? '—' : x; // у директора и руководителя своих сделок нет
       return `<tr><td>${esc(u.name)}${u.id === S.me ? ' <span class="muted small">(вы)</span>' : ''}</td><td>${roleCell}</td><td class="num">${v(open)}</td>
         <td class="num">${overdue ? pill('crit', overdue) : v(0)}</td><td class="num">${coldN ? pill('warn', coldN) : v(0)}</td><td class="num">${v(ds.filter(d => !d.lost && d.stageId === lastStageId()).length)}</td><td class="num">${v(rub(due))}</td>
-        <td class="num">${u.role !== 'agent' ? '—' : c.users ? `<input type="number" min="0" max="100" step="1" value="${u.share}" data-share="${u.id}" aria-label="Доля от комиссии, %: ${esc(u.name)}" style="width:72px">` : u.share + '%'}</td></tr>`;
+        <td class="num">${u.role !== 'agent' ? '—' : c.users ? `<input type="number" min="0" max="100" step="1" value="${u.share}" data-share="${u.id}" aria-label="Доля от комиссии, %: ${esc(u.name)}" style="width:72px">` : u.share + '%'}</td>
+        <td class="num">${u.role !== 'agent' ? '—' : c.users ? `<input type="number" min="0" step="10000" value="${u.plan}" data-plan="${u.id}" aria-label="План комиссий на месяц, ₽: ${esc(u.name)}" style="width:120px">` : u.plan ? rub(u.plan) : '—'}</td></tr>`;
     };
     return `<section class="section"><div class="section-head"><h1>Команда</h1><span class="muted small">${c.users ? 'Вы назначаете роли и добавляете сотрудников' : 'Роли назначает директор'}</span></div>
-      <div class="tbl cards"><table><thead><tr><th>Сотрудник</th><th>Роль</th><th class="num">Сделок в работе</th><th class="num">Просрочено задач</th><th class="num">Без связи 5+ дней</th><th class="num">Закрыто</th><th class="num">Комиссии к получению</th><th class="num">Доля агента, %</th></tr></thead>
+      <div class="tbl cards"><table><thead><tr><th>Сотрудник</th><th>Роль</th><th class="num">Сделок в работе</th><th class="num">Просрочено задач</th><th class="num">Без связи 5+ дней</th><th class="num">Закрыто</th><th class="num">Комиссии к получению</th><th class="num">Доля агента, %</th><th class="num">План комиссий на месяц, ₽</th></tr></thead>
       <tbody>${S.users.map(row).join('')}</tbody></table></div>
       ${c.users ? `<form id="add-user" class="actions"><input id="nu-name" required placeholder="Имя и фамилия" aria-label="Имя нового сотрудника" style="max-width:220px"><input id="nu-email" type="email" required placeholder="Почта для входа" aria-label="Почта нового сотрудника" style="max-width:220px"><select id="nu-role" aria-label="Роль нового сотрудника" style="width:auto">${Object.entries(ROLES).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select><button class="btn" type="submit">Добавить сотрудника</button></form>` : ''}
     </section>
@@ -1174,7 +1176,7 @@ const views = {
         <tr><td>Свои сделки, задачи, брони, комиссии</td><td>да</td><td>да</td><td>да</td></tr>
         <tr><td>Сделки всех агентов, переназначение</td><td class="muted">нет</td><td>да</td><td>да</td></tr>
         <tr><td>Настройка этапов воронки</td><td class="muted">нет</td><td>да</td><td>да</td></tr>
-        <tr><td>Доли агентов и выплаты</td><td class="muted">нет</td><td class="muted">нет</td><td>да</td></tr>
+        <tr><td>Доли агентов, планы и выплаты</td><td class="muted">нет</td><td class="muted">нет</td><td>да</td></tr>
         <tr><td>Сотрудники и роли</td><td class="muted">нет</td><td class="muted">нет</td><td>да</td></tr>
       </tbody></table></div></section>`;
   },
@@ -1283,6 +1285,12 @@ views.profile = () => {
       <div class="stat"><span class="muted small">Конверсия в сделку</span><b>${won + lost ? Math.round(won / (won + lost) * 100) + '%' : '—'}</b><span class="muted small">от завершённых сделок</span></div>
       <div class="stat"><span class="muted small">Комиссии: получено</span><b>${rub(sum(k => k.status === 'получена'))}</b><span class="muted small">ожидается ${rub(sum(k => k.status !== 'получена'))}</span></div>
     </div>
+    ${!team && u.plan ? (() => {
+      // план — по комиссиям сделок, закрытых в этом месяце: момент закрытия зависит от агента, дата оплаты нет
+      const ym = iso(0).slice(0, 7), mk = ks.filter(k => k.dealDate.startsWith(ym)), fact = mk.reduce((t, k) => t + k.amount, 0), pct = Math.round(fact / u.plan * 100);
+      return `<div class="block"><h3>План на месяц</h3><div class="actions" style="justify-content:space-between"><span><b>${rub(fact)}</b> из ${rub(u.plan)} · ${pct}%</span><span class="muted small">ваш доход с этих сделок: ${rub(mk.reduce((t, k) => t + agentPart(k), 0))}</span></div>
+        <span class="an-bar" style="height:8px" role="img" aria-label="Выполнено ${pct}% плана"><i style="--w:${Math.min(pct, 100)}%"></i></span></div>`;
+    })() : ''}
     <div class="profile-grid">
       <form id="profile-form" class="panel"><h3>Профиль</h3>
         <div class="field"><label for="pf-name">Имя и фамилия</label><input id="pf-name" required value="${esc(u.name)}"></div>
@@ -2152,6 +2160,7 @@ document.addEventListener('change', async e => {
   else if (t.id === 'filter-agent') filterAgent = t.value;
   else if (t.id === 'deal-agent') deal(ui.dealId).agentId = t.value;
   else if (t.dataset.role) user(t.dataset.role).role = t.value;
+  else if (t.dataset.plan) { const n = Math.round(Number(t.value)); if (t.value === '' || !(n >= 0)) { toast('План: сумма от 0 ₽'); render(); return; } user(t.dataset.plan).plan = n; }
   else if (t.dataset.share) { const n = Math.round(Number(t.value)); if (t.value === '' || !(n >= 0 && n <= 100)) { toast('Доля агента: число от 0 до 100'); render(); return; } user(t.dataset.share).share = n; toast('Новая доля применится к следующим сделкам'); }
   else if (t.dataset.stageGate !== undefined) { stage(t.dataset.stageGate).gate = t.value; save(); return; }
   else if (t.dataset.stageName) { const v = t.value.trim(); if (v) stage(t.dataset.stageName).name = v; save(); render(); return; }
